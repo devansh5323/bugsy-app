@@ -1,28 +1,101 @@
 @import "tailwindcss";
 
+/*
+  Bugsy design system — Duolingo-style with coral primary
+  (instead of Duo green or AirLearn blue). White canvas,
+  3D buttons with bottom shadow, heavy Nunito throughout.
+*/
 :root {
-  --bg: oklch(98% 0.008 70);
-  --surface: oklch(100% 0 0);
-  --ink: oklch(22% 0.02 280);
-  --ink-80: oklch(22% 0.02 280 / 0.8);
-  --ink-70: oklch(22% 0.02 280 / 0.7);
-  --ink-60: oklch(22% 0.02 280 / 0.55);
-  --ink-50: oklch(22% 0.02 280 / 0.48);
-  --ink-40: oklch(22% 0.02 280 / 0.35);
-  --ink-10: oklch(22% 0.02 280 / 0.09);
-  --ink-08: oklch(22% 0.02 280 / 0.06);
-  --accent: oklch(68% 0.16 295);
-  --accent-soft: oklch(94% 0.04 295);
-  --notif-bg: oklch(100% 0 0 / 0.75);
+  /* Brand */
+  --primary: #FF5C8A;          /* coral pink — our "Duo green" equivalent */
+  --primary-hover: #E04778;
+  --primary-shadow: #D6396B;   /* darker coral for the 3D button base */
+  --on-primary: #FFFFFF;
+
+  /* Secondary actions */
+  --secondary: #A78BFA;
+  --secondary-shadow: #7E5BE0;
+  --on-secondary: #FFFFFF;
+
+  /* Behavioral accents (kept from Duolingo because they map to specific
+     psychological loops — orange = streak heat, yellow = XP/gold,
+     red = wrong/negative, purple = premium) */
+  --accent-yellow: #FFC800;
+  --accent-red:    #FF4B4B;
+  --accent-purple: #CE82FF;
+  --streak:        #FF9600;
+  --xp:            #FFC800;
+  --correct:       #4CC76B; /* status only, never a brand surface */
+
+  /* Neutrals */
+  --ink:        #3C3C3C;
+  --ink-muted:  #777777;
+  --ink-80: rgba(60, 60, 60, 0.85);
+  --ink-70: rgba(60, 60, 60, 0.72);
+  --ink-60: rgba(60, 60, 60, 0.6);
+  --ink-50: rgba(60, 60, 60, 0.5);
+  --ink-40: rgba(60, 60, 60, 0.4);
+  --ink-10: rgba(60, 60, 60, 0.1);
+  --ink-08: rgba(60, 60, 60, 0.08);
+
+  --canvas:    #FFFFFF;
+  --surface:   #FFFFFF;
+  --surface-1: #F7F7F7;
+  --surface-2: #EBEBEB;
+  --border:    #E5E5E5;
+  --border-strong: #D0D0D0;
+
+  /* Back-compat: old code uses these names */
+  --bg: var(--canvas);
+  --accent: var(--primary);
+  --accent-soft: #FFE9F0;       /* very light coral wash */
+  --notif-bg: rgba(255, 255, 255, 0.92);
+
+  /* Font aliases — old code references these names */
+  --font-fraunces: var(--font-nunito);
+  --font-inter:    var(--font-nunito);
+
+  /* Spacing scale (Duolingo 8px base) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 9999px;
+
+  /* Shadows */
+  --shadow-btn: 0 4px 0 var(--primary-shadow);
+  --shadow-btn-secondary: 0 4px 0 var(--secondary-shadow);
+  --shadow-card: 0 2px 0 var(--border);
+  --shadow-elevated: 0 4px 16px rgba(0, 0, 0, 0.1);
+
+  /* Motion */
+  --duration-fast: 80ms;
+  --duration-base: 200ms;
+  --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 html,
 body {
   margin: 0;
   padding: 0;
-  background: var(--bg);
+  background: var(--canvas);
   color: var(--ink);
-  font-family: var(--font-inter), system-ui, sans-serif;
+  font-family: var(--font-nunito), -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 700;          /* Duolingo body is heavy */
+  font-size: 15px;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior: none;
@@ -36,33 +109,155 @@ body,
 
 button {
   font-family: inherit;
+  font-weight: 800;          /* button text always heavy */
   -webkit-tap-highlight-color: transparent;
 }
 
-.btn-primary:active:not(:disabled) {
-  transform: scale(0.98);
+input,
+textarea {
+  font-family: inherit;
+  font-weight: 700;
 }
 
-/* App frame — center on desktop, full screen on mobile */
+/* App frame — centered phone-sized container on desktop */
 .app-frame {
   position: relative;
   width: 100%;
   max-width: 480px;
   margin: 0 auto;
   min-height: 100dvh;
-  background: var(--bg);
+  background: var(--canvas);
   overflow: hidden;
   box-shadow: 0 0 80px rgba(0, 0, 0, 0.06);
 }
 
 @media (min-width: 481px) {
   body {
-    background: radial-gradient(ellipse at top, #f0eef6 0%, #d9d4e6 70%);
+    background: var(--surface-1);
   }
-  .app-frame {
-    margin-top: env(safe-area-inset-top, 0);
-    margin-bottom: env(safe-area-inset-bottom, 0);
-  }
+}
+
+/* ── 3D primary button — the signature Duolingo button ────────
+   White text on coral, with a darker coral "base" peeking out at
+   the bottom (no shadow, hard offset). Pressing it depresses the
+   button into the base, simulating physical tactility. */
+.btn-3d {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 56px;
+  padding: 14px 20px;
+  background: var(--primary);
+  color: var(--on-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-nunito), sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: var(--shadow-btn);
+  transition: filter var(--duration-fast) ease,
+              transform var(--duration-fast) ease,
+              box-shadow var(--duration-fast) ease;
+}
+.btn-3d:hover:not(:disabled) {
+  filter: brightness(0.97);
+}
+.btn-3d:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 var(--primary-shadow);
+}
+.btn-3d:disabled {
+  background: #E5E5E5;
+  color: #9E9E9E;
+  cursor: not-allowed;
+  box-shadow: 0 4px 0 #C5C5C5;
+}
+.btn-3d.btn-3d--secondary {
+  background: var(--secondary);
+  box-shadow: var(--shadow-btn-secondary);
+}
+.btn-3d.btn-3d--secondary:active:not(:disabled) {
+  box-shadow: 0 0 0 var(--secondary-shadow);
+}
+.btn-3d.btn-3d--ghost {
+  background: var(--surface);
+  color: var(--primary);
+  border: 2px solid var(--border);
+  box-shadow: 0 4px 0 var(--border);
+}
+.btn-3d.btn-3d--ghost:active:not(:disabled) {
+  box-shadow: 0 0 0 var(--border);
+}
+
+/* Back-compat: components using `.chunky-btn` get the same 3D treatment */
+.child-flow .chunky-btn,
+.chunky-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 56px;
+  padding: 14px 20px;
+  background: var(--primary);
+  color: var(--on-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-nunito), sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: var(--shadow-btn);
+  transition: filter var(--duration-fast) ease,
+              transform var(--duration-fast) ease,
+              box-shadow var(--duration-fast) ease;
+}
+.child-flow .chunky-btn:hover:not(:disabled),
+.chunky-btn:hover:not(:disabled) {
+  filter: brightness(0.97);
+}
+.child-flow .chunky-btn:active:not(:disabled),
+.chunky-btn:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 var(--primary-shadow);
+}
+.child-flow .chunky-btn:disabled,
+.chunky-btn:disabled {
+  background: #E5E5E5;
+  color: #9E9E9E;
+  cursor: not-allowed;
+  box-shadow: 0 4px 0 #C5C5C5;
+}
+
+/* Old btn-primary (used in app/components/ui.tsx) gets the same treatment */
+.btn-primary {
+  font-weight: 800 !important;
+  letter-spacing: 0.4px;
+}
+.btn-primary:active:not(:disabled) {
+  transform: translateY(3px);
+}
+
+/* ── Card / surface ── */
+.surface-card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+/* ── Focus indicator — non-color reinforced ── */
+*:focus-visible {
+  outline: 2px solid var(--secondary);
+  outline-offset: 2px;
+  border-radius: 6px;
 }
 
 /* Animations */
@@ -97,6 +292,10 @@ button {
 }
 @keyframes screen-in {
   0%   { opacity: 0; transform: translateX(24px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+@keyframes screen-in-back {
+  0%   { opacity: 0; transform: translateX(-24px); }
   100% { opacity: 1; transform: translateX(0); }
 }
 @keyframes bobo-bump {
@@ -140,42 +339,9 @@ button {
   55%  { opacity: 1; transform: scale(1.08) translateY(0); }
   100% { opacity: 1; transform: scale(1) translateY(0); }
 }
-
-/* Child flow theming — vibrant, energetic */
-.child-flow {
-  --bg-grad: linear-gradient(160deg, oklch(72% 0.16 320) 0%, oklch(78% 0.18 30) 100%);
-}
-.child-flow .hero {
-  font-family: var(--font-fraunces), serif;
-  font-variation-settings: "'SOFT' 100, 'WONK' 1";
-  font-weight: 500;
-  letter-spacing: -0.5px;
-}
-.child-flow .chunky-btn {
-  border: none;
-  border-radius: 26px;
-  padding: 22px 24px;
-  min-height: 64px;
-  font-family: var(--font-inter), system-ui;
-  font-weight: 700;
-  font-size: 18px;
-  letter-spacing: -0.2px;
-  cursor: pointer;
-  box-shadow: 0 8px 0 rgba(0, 0, 0, 0.22), 0 14px 28px rgba(0, 0, 0, 0.16);
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
-}
-.child-flow .chunky-btn:active:not(:disabled) {
-  transform: translateY(4px);
-  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.22), 0 6px 16px rgba(0, 0, 0, 0.14);
-}
-.child-flow .chunky-btn:disabled {
-  opacity: 0.55;
-  cursor: default;
-  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.14);
-}
-@keyframes screen-in-back {
-  0%   { opacity: 0; transform: translateX(-24px); }
-  100% { opacity: 1; transform: translateX(0); }
+@keyframes fade-in {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
 }
 
 .screen-wrap > * {
@@ -185,7 +351,7 @@ button {
   animation: screen-in-back 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Range slider thumb */
+/* Range slider thumb — coral primary */
 .range-input {
   -webkit-appearance: none;
   appearance: none;
@@ -197,8 +363,8 @@ button {
   height: 32px;
   border-radius: 16px;
   background: white;
-  border: 3px solid var(--accent);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: 3px solid var(--primary);
+  box-shadow: 0 2px 8px rgba(214, 57, 107, 0.25);
   cursor: grab;
 }
 .range-input::-moz-range-thumb {
@@ -206,8 +372,8 @@ button {
   height: 32px;
   border-radius: 16px;
   background: white;
-  border: 3px solid var(--accent);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: 3px solid var(--primary);
+  box-shadow: 0 2px 8px rgba(214, 57, 107, 0.25);
   cursor: grab;
 }
 
@@ -224,4 +390,18 @@ button {
   border-radius: 50%;
   filter: blur(40px);
   opacity: 0.35;
+}
+
+/* Respect reduced motion — the design system's springy easing and
+   bouncy entrances can trigger vestibular discomfort */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .btn-3d:active:not(:disabled),
+  .chunky-btn:active:not(:disabled) {
+    transform: none;
+  }
 }

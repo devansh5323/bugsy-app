@@ -8,9 +8,7 @@ import {
   TINT,
   type ClanIntent,
   type Tab,
-  type UserType,
 } from "./lib/data";
-import { WhoAreYou } from "./components/onboarding/WhoAreYou";
 import {
   PARENT_STEPS,
   ParentAccount,
@@ -21,14 +19,7 @@ import {
   ParentIntro,
   ParentName,
 } from "./components/onboarding/ParentFlow";
-import {
-  CHILD_STEPS,
-  ChildAge,
-  ChildClan,
-  ChildIntro,
-  ChildSendoff,
-  ChildTeamUp,
-} from "./components/onboarding/ChildFlow";
+import { Welcome } from "./components/onboarding/Welcome";
 import {
   ChildHelloKnown,
   DailyMap,
@@ -44,13 +35,10 @@ import {
   ScreenReward,
 } from "./components/AppScreens";
 
-type HandoverSource = "parent" | "child";
-
 type Stage =
-  | { kind: "who" }
+  | { kind: "welcome" }
   | { kind: "parent"; step: number }
-  | { kind: "child"; step: number }
-  | { kind: "handover"; step: number; from: HandoverSource }
+  | { kind: "handover"; step: number }
   | { kind: "app"; tab: Tab }
   | { kind: "project"; projectId: string }
   | { kind: "reward"; projectId: string; unlockedHatKey: string | null };
@@ -58,17 +46,16 @@ type Stage =
 const HANDOVER_STEPS = 4; // 0: helloKnown, 1: pinky, 2: dailyMap, 3: firstAction
 
 export default function Home() {
-  const [stage, setStage] = useState<Stage>({ kind: "who" });
+  const [stage, setStage] = useState<Stage>({ kind: "welcome" });
   const [prevStep, setPrevStep] = useState(0);
 
-  // shared
-  const [userType, setUserType] = useState<UserType | null>(null);
+  // Onboarding state
   const [parentName, setParentName] = useState("");
   const [childName, setChildName] = useState("");
   const [childAge, setChildAge] = useState<number | null>(null);
   const [clanIntent, setClanIntent] = useState<ClanIntent | null>(null);
 
-  // app
+  // App state
   const [completedIds, setCompletedIds] = useState<string[]>([]);
   const [totalPoints, setTotalPoints] = useState(0);
   const [equippedHat, setEquippedHat] = useState<string | null>(null);
@@ -85,7 +72,6 @@ export default function Home() {
   const setTab = (t: Tab) => setStage({ kind: "app", tab: t });
 
   const restart = () => {
-    setUserType(null);
     setParentName("");
     setChildName("");
     setChildAge(null);
@@ -94,7 +80,7 @@ export default function Home() {
     setTotalPoints(0);
     setEquippedHat(null);
     setPrevStep(0);
-    setStage({ kind: "who" });
+    setStage({ kind: "welcome" });
   };
 
   const logout = () => {
@@ -122,7 +108,7 @@ export default function Home() {
     const next = stage.step + 1;
     if (next >= PARENT_STEPS) {
       // Parent flow ends → hand the phone to the child (handover step 0)
-      setStage({ kind: "handover", step: 0, from: "parent" });
+      setStage({ kind: "handover", step: 0 });
     } else {
       setStage({ kind: "parent", step: next });
     }
@@ -130,21 +116,8 @@ export default function Home() {
   const backParent = () => {
     if (stage.kind !== "parent") return;
     setPrevStep(stage.step);
-    const prev = stage.step - 1;
-    if (prev < 0) setStage({ kind: "who" });
-    else setStage({ kind: "parent", step: prev });
-  };
-
-  const advanceChild = () => {
-    if (stage.kind !== "child") return;
-    setPrevStep(stage.step);
-    const next = stage.step + 1;
-    if (next >= CHILD_STEPS) {
-      // Child direct flow → skip helloKnown (they already met) and join handover at pinky promise
-      setStage({ kind: "handover", step: 1, from: "child" });
-    } else {
-      setStage({ kind: "child", step: next });
-    }
+    const prev = Math.max(0, stage.step - 1);
+    setStage({ kind: "parent", step: prev });
   };
 
   const advanceHandover = () => {
@@ -154,33 +127,31 @@ export default function Home() {
     if (next >= HANDOVER_STEPS) {
       setStage({ kind: "app", tab: "home" });
     } else {
-      setStage({ kind: "handover", step: next, from: stage.from });
+      setStage({ kind: "handover", step: next });
     }
   };
 
   const direction =
     (stage.kind === "parent" && stage.step < prevStep) ||
-    (stage.kind === "child" && stage.step < prevStep) ||
     (stage.kind === "handover" && stage.step < prevStep)
       ? "screen-wrap-back"
       : "screen-wrap";
 
   const renderStage = () => {
-    if (stage.kind === "who") {
+    if (stage.kind === "welcome") {
       return (
-        <WhoAreYou
+        <Welcome
           tint={TINT}
-          onPick={(t) => {
-            setUserType(t);
-            setPrevStep(0);
-            setStage({ kind: t, step: 0 });
-          }}
+          onGetStarted={() => setStage({ kind: "parent", step: 0 })}
+          // "I already have an account" → jump straight to the account/sign-in step
+          onHaveAccount={() => setStage({ kind: "parent", step: 2 })}
         />
       );
     }
 
     if (stage.kind === "parent") {
-      const back = stage.step === 0 ? () => setStage({ kind: "who" }) : backParent;
+      // Step 0 has no "back" target — onBack is undefined so the chevron hides
+      const back = stage.step === 0 ? undefined : backParent;
       switch (stage.step) {
         case 0:
           return (
@@ -243,54 +214,6 @@ export default function Home() {
               childName={childName}
               onHandOver={advanceParent}
               onBack={back}
-            />
-          );
-      }
-      return null;
-    }
-
-    if (stage.kind === "child") {
-      switch (stage.step) {
-        case 0:
-          return (
-            <ChildIntro
-              tint={TINT}
-              childName={childName}
-              setChildName={setChildName}
-              onNext={advanceChild}
-            />
-          );
-        case 1:
-          return (
-            <ChildAge
-              tint={TINT}
-              childName={childName || "friend"}
-              childAge={childAge}
-              setChildAge={setChildAge}
-              onNext={advanceChild}
-            />
-          );
-        case 2:
-          return (
-            <ChildTeamUp tint={TINT} childName={childName || "friend"} onNext={advanceChild} />
-          );
-        case 3:
-          return (
-            <ChildClan
-              tint={TINT}
-              childName={childName || "friend"}
-              intent={clanIntent}
-              setIntent={setClanIntent}
-              onNext={advanceChild}
-            />
-          );
-        case 4:
-          return (
-            <ChildSendoff
-              tint={TINT}
-              childName={childName || "friend"}
-              equippedHat={equippedHat}
-              onEnter={advanceChild}
             />
           );
       }
@@ -455,12 +378,10 @@ export default function Home() {
 
   // unique key for screen-transition animation
   const key =
-    stage.kind === "who"
-      ? "who"
+    stage.kind === "welcome"
+      ? "welcome"
       : stage.kind === "parent"
       ? `parent-${stage.step}`
-      : stage.kind === "child"
-      ? `child-${stage.step}`
       : stage.kind === "handover"
       ? `handover-${stage.step}`
       : stage.kind === "app"
@@ -468,9 +389,6 @@ export default function Home() {
       : stage.kind === "project"
       ? `project-${stage.projectId}`
       : `reward-${stage.projectId}`;
-
-  // suppress unused-warning
-  void userType;
 
   return (
     <div className="app-frame">

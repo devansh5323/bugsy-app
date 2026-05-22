@@ -5,17 +5,22 @@ import { Bobo } from "../Mascot";
 import { Typewriter } from "../Typewriter";
 import type { Mood } from "../../lib/data";
 
-// Gradient palette — both child and parent flows pick from the same array,
-// indexed by step. Both feel vibrant; parent just goes through more of them.
-export const GRADIENTS = [
-  "linear-gradient(160deg, oklch(78% 0.16 320) 0%, oklch(80% 0.18 25) 100%)",   // pink → coral
-  "linear-gradient(160deg, oklch(80% 0.17 60) 0%,  oklch(78% 0.15 30) 100%)",   // sun
-  "linear-gradient(160deg, oklch(75% 0.15 195) 0%, oklch(72% 0.16 250) 100%)",  // sky → teal
-  "linear-gradient(160deg, oklch(78% 0.16 145) 0%, oklch(80% 0.16 175) 100%)",  // mint
-  "linear-gradient(160deg, oklch(78% 0.17 320) 0%, oklch(78% 0.18 55) 100%)",   // rainbow finale
-  "linear-gradient(160deg, oklch(78% 0.14 280) 0%, oklch(78% 0.15 320) 100%)",  // lavender
-  "linear-gradient(160deg, oklch(78% 0.14 225) 0%, oklch(78% 0.15 195) 100%)",  // azure
+// Step-keyed accent colors. White canvas, but the soft wash behind
+// Bugsy gently shifts per step so the journey still has visual
+// variety. (Duolingo onboarding does this with the language-tile
+// background color.)
+const STEP_WASHES = [
+  "rgba(255, 92, 138, 0.16)",   // coral primary (default)
+  "rgba(167, 139, 250, 0.18)",  // lavender
+  "rgba(255, 200, 0, 0.20)",    // accent yellow
+  "rgba(206, 130, 255, 0.18)",  // accent purple
+  "rgba(255, 150, 0, 0.18)",    // streak orange
+  "rgba(255, 124, 168, 0.20)",  // soft coral
+  "rgba(167, 139, 250, 0.18)",  // lavender repeat
 ];
+
+// Back-compat alias — older callers indexed into GRADIENTS
+export const GRADIENTS = STEP_WASHES;
 
 export function ConvoStage({
   step,
@@ -24,13 +29,14 @@ export function ConvoStage({
   step: number;
   children: ReactNode;
 }) {
+  const wash = STEP_WASHES[step % STEP_WASHES.length];
   return (
     <div
       className="child-flow"
       style={{
         position: "absolute",
         inset: 0,
-        background: GRADIENTS[step % GRADIENTS.length],
+        background: `radial-gradient(ellipse 90% 55% at 50% 0%, ${wash} 0%, transparent 70%), var(--canvas)`,
         display: "flex",
         flexDirection: "column",
         paddingTop: 56,
@@ -38,47 +44,20 @@ export function ConvoStage({
         paddingLeft: 20,
         paddingRight: 20,
         boxSizing: "border-box",
-        color: "#fff",
+        color: "var(--ink)",
         overflow: "hidden",
       }}
     >
-      <Sparkles />
       {children}
     </div>
   );
 }
 
+// Kept for backwards compatibility — used to render white dots
+// over a gradient. On a white canvas we don't want dots so this
+// is now a no-op.
 export function Sparkles() {
-  const dots = [
-    { x: 12, y: 14, d: 0,   s: 8 },
-    { x: 88, y: 18, d: 0.4, s: 10 },
-    { x: 22, y: 38, d: 0.9, s: 6 },
-    { x: 80, y: 46, d: 1.5, s: 7 },
-    { x: 16, y: 70, d: 0.6, s: 9 },
-    { x: 86, y: 78, d: 1.1, s: 8 },
-  ];
-  return (
-    <>
-      {dots.map((d, i) => (
-        <div
-          key={i}
-          aria-hidden
-          style={{
-            position: "absolute",
-            top: `${d.y}%`,
-            left: `${d.x}%`,
-            width: d.s,
-            height: d.s,
-            borderRadius: 999,
-            background: "#fff",
-            opacity: 0.85,
-            animation: `sparkle 2.4s ease-in-out ${d.d}s infinite`,
-            pointerEvents: "none",
-          }}
-        />
-      ))}
-    </>
-  );
+  return null;
 }
 
 export function BackChevron({ onBack }: { onBack: () => void }) {
@@ -90,24 +69,25 @@ export function BackChevron({ onBack }: { onBack: () => void }) {
         position: "absolute",
         top: 14,
         left: 14,
-        width: 38,
-        height: 38,
-        borderRadius: 999,
-        border: "none",
+        width: 40,
+        height: 40,
+        borderRadius: 12,
+        border: "2px solid var(--border)",
         cursor: "pointer",
-        background: "rgba(255,255,255,0.95)",
+        background: "var(--surface)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
+        boxShadow: "0 2px 0 var(--border)",
         zIndex: 5,
+        color: "var(--ink-muted)",
       }}
     >
       <svg width="14" height="14" viewBox="0 0 14 14">
         <path
           d="M9 1L3 7l6 6"
-          stroke="var(--ink)"
-          strokeWidth="2"
+          stroke="currentColor"
+          strokeWidth="2.5"
           fill="none"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -131,57 +111,87 @@ export function SpeechBubble({
       style={{
         position: "relative",
         padding: "16px 20px",
-        borderRadius: 24,
-        background: "#fff",
+        borderRadius: 20,
+        background: "var(--surface)",
+        border: "2px solid var(--border)",
+        boxShadow: "0 2px 0 var(--border)",
         color: "var(--ink)",
-        boxShadow: "0 14px 36px rgba(0,0,0,0.18)",
         animation: "bubble-pop 0.35s cubic-bezier(0.22, 1.5, 0.36, 1)",
-        fontFamily: "var(--font-inter), system-ui",
+        fontFamily: "var(--font-nunito), system-ui",
         fontSize: 16,
+        fontWeight: 700,
         lineHeight: 1.45,
-        letterSpacing: -0.1,
+        letterSpacing: 0,
         minHeight: 80,
       }}
     >
       <Typewriter text={text} onDone={onDone} />
       {tail !== "none" && (
-        <span
-          aria-hidden
-          style={{
-            position: "absolute",
-            ...(tail === "up"
-              ? { top: -8, left: "50%", transform: "translateX(-50%) rotate(45deg)" }
-              : { bottom: -8, left: "50%", transform: "translateX(-50%) rotate(45deg)" }),
-            width: 18,
-            height: 18,
-            background: "#fff",
-          }}
-        />
+        <>
+          {/* Border tail (slightly larger, behind) */}
+          <span
+            aria-hidden
+            style={{
+              position: "absolute",
+              ...(tail === "up"
+                ? { top: -12, left: "50%", transform: "translateX(-50%) rotate(45deg)" }
+                : { bottom: -12, left: "50%", transform: "translateX(-50%) rotate(45deg)" }),
+              width: 18,
+              height: 18,
+              background: "var(--border)",
+              borderRadius: 3,
+            }}
+          />
+          {/* Fill tail (smaller, in front) */}
+          <span
+            aria-hidden
+            style={{
+              position: "absolute",
+              ...(tail === "up"
+                ? { top: -8, left: "50%", transform: "translateX(-50%) rotate(45deg)" }
+                : { bottom: -8, left: "50%", transform: "translateX(-50%) rotate(45deg)" }),
+              width: 14,
+              height: 14,
+              background: "var(--surface)",
+              borderRadius: 2,
+            }}
+          />
+        </>
       )}
     </div>
   );
 }
 
+// The 3D button — coral primary by default. Accepts an explicit
+// color/textColor only for special cases (e.g. lavender secondary).
 export function ChunkyButton({
   children,
   onClick,
   disabled,
-  color = "#fff",
-  textColor = "var(--ink)",
+  color,
+  textColor,
+  variant = "primary",
 }: {
   children: ReactNode;
   onClick: () => void;
   disabled?: boolean;
   color?: string;
   textColor?: string;
+  variant?: "primary" | "secondary" | "ghost";
 }) {
+  const className =
+    variant === "secondary"
+      ? "btn-3d btn-3d--secondary"
+      : variant === "ghost"
+      ? "btn-3d btn-3d--ghost"
+      : "btn-3d";
+
+  const style: React.CSSProperties = {};
+  if (color) style.background = color;
+  if (textColor) style.color = textColor;
+
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className="chunky-btn"
-      style={{ background: color, color: textColor, width: "100%" }}
-    >
+    <button onClick={onClick} disabled={disabled} className={className} style={style}>
       {children}
     </button>
   );

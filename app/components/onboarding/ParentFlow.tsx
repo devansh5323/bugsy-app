@@ -12,7 +12,7 @@ import {
 
 export const PARENT_STEPS = 7;
 
-type Common = { tint: number; onBack: () => void };
+type Common = { tint: number; onBack?: () => void };
 
 // ── Step 1: Parent name ───────────────────────────────────────
 export function ParentName({
@@ -28,7 +28,7 @@ export function ParentName({
 
   return (
     <ConvoStage step={5 /* lavender */}>
-      <BackChevron onBack={onBack} />
+      {onBack && <BackChevron onBack={onBack} />}
       <BugsyStage mood="waving" tint={tint} size={190} animationKey="p-intro" />
       <div style={{ marginTop: 10 }} />
       <SpeechBubble text={line} onDone={() => setDone(true)} tail="up" />
@@ -69,7 +69,7 @@ export function ParentIntro({
 
   return (
     <ConvoStage step={6 /* azure */}>
-      <BackChevron onBack={onBack} />
+      {onBack && <BackChevron onBack={onBack} />}
       <BugsyStage mood="happy" tint={tint} size={180} animationKey="p-intro2" />
       <div style={{ marginTop: 10 }} />
       <SpeechBubble text={line} onDone={() => setDone(true)} tail="up" />
@@ -94,7 +94,7 @@ export function ParentAccount({
 
   return (
     <ConvoStage step={2 /* sky-teal */}>
-      <BackChevron onBack={onBack} />
+      {onBack && <BackChevron onBack={onBack} />}
       <BugsyStage mood="thinking" tint={tint} size={170} animationKey="p-account" />
       <div style={{ marginTop: 10 }} />
       <SpeechBubble text={line} onDone={() => setDone(true)} tail="up" />
@@ -191,7 +191,7 @@ export function ParentChildName({
 
   return (
     <ConvoStage step={0 /* pink-coral */}>
-      <BackChevron onBack={onBack} />
+      {onBack && <BackChevron onBack={onBack} />}
       <BugsyStage mood="happy" tint={tint} size={170} animationKey="p-childname" />
       <div style={{ marginTop: 10 }} />
       <SpeechBubble text={line} onDone={() => setDone(true)} tail="up" />
@@ -240,7 +240,7 @@ export function ParentChildAge({
 
   return (
     <ConvoStage step={1 /* sun */}>
-      <BackChevron onBack={onBack} />
+      {onBack && <BackChevron onBack={onBack} />}
       <BugsyStage mood="cheer" tint={tint} size={170} animationKey="p-childage" />
       <div style={{ marginTop: 10 }} />
       <SpeechBubble text={line} onDone={() => setDone(true)} tail="up" />
@@ -319,7 +319,7 @@ export function ParentClan({
   if (substep === "pick") {
     return (
       <ConvoStage step={3 /* mint */}>
-        <BackChevron onBack={onBack} />
+        {onBack && <BackChevron onBack={onBack} />}
         <BugsyStage mood="thinking" tint={tint} size={170} animationKey="p-clanpick" />
         <div style={{ marginTop: 10 }} />
         <SpeechBubble text={line} onDone={() => setDone(true)} tail="up" />
@@ -348,9 +348,9 @@ export function ParentClan({
             onClick={() => setSubstep("invite")}
           />
           <ParentOption
-            emoji="🧭"
-            title="Let my child pick"
-            sub="They'll choose during their onboarding."
+            emoji="⏭️"
+            title="Skip for now"
+            sub="You can set up a clan later from your profile."
             onClick={() => {
               setIntent({ kind: "let-child-explore" });
               onNext();
@@ -550,7 +550,7 @@ export function ParentDone({
 
   return (
     <ConvoStage step={4 /* rainbow finale */}>
-      <BackChevron onBack={onBack} />
+      {onBack && <BackChevron onBack={onBack} />}
       <BugsyStage mood="cheer" tint={tint} size={210} animationKey="p-done" />
       <div style={{ marginTop: 10 }} />
       <SpeechBubble text={line} onDone={() => setDone(true)} tail="up" />
@@ -569,15 +569,15 @@ const inputStyle: React.CSSProperties = {
   height: 64,
   boxSizing: "border-box",
   padding: "0 22px",
-  borderRadius: 22,
-  border: "none",
-  background: "rgba(255,255,255,0.95)",
-  fontFamily: "var(--font-inter), system-ui",
+  borderRadius: 16,
+  border: "2px solid var(--border)",
+  background: "var(--surface)",
+  fontFamily: "var(--font-nunito), system-ui",
   fontSize: 20,
-  fontWeight: 600,
+  fontWeight: 700,
   color: "var(--ink)",
   outline: "none",
-  boxShadow: "0 8px 22px rgba(0,0,0,0.12)",
+  boxShadow: "0 2px 0 var(--border)",
   textAlign: "center",
   letterSpacing: -0.2,
 };
