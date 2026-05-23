@@ -20,7 +20,6 @@ export function WhoAreYou({
       <SpeechBubble
         text="Hi there. Are you a parent or a child?"
         onDone={() => setBubbleDone(true)}
-        tail="up"
       />
 
       <div style={{ flex: 1 }} />

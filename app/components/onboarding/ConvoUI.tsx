@@ -193,14 +193,14 @@ export function VoiceToggle() {
 
 // The speech bubble — sized to its text (no minHeight), text centered,
 // and triggers voice synthesis when the text changes if voice is on.
+// Borderless: just the surface fill + soft drop shadow + an
+// up-pointing tail toward Bugsy.
 export function SpeechBubble({
   text,
   onDone,
-  tail = "up",
 }: {
   text: string;
   onDone?: () => void;
-  tail?: "up" | "down" | "none";
 }) {
   const { speak, enabled, stop } = useVoice();
 
@@ -226,8 +226,7 @@ export function SpeechBubble({
         padding: "14px 22px",
         borderRadius: 20,
         background: "var(--surface)",
-        border: "2px solid var(--border)",
-        boxShadow: "0 2px 0 var(--border)",
+        border: "1px solid var(--border-strong)",
         color: "var(--ink)",
         animation: "bubble-pop 0.35s cubic-bezier(0.22, 1.5, 0.36, 1)",
         fontFamily: "var(--font-nunito), system-ui",
@@ -239,38 +238,24 @@ export function SpeechBubble({
       }}
     >
       <Typewriter text={text} onDone={onDone} />
-      {tail !== "none" && (
-        <>
-          {/* border tail (behind) */}
-          <span
-            aria-hidden
-            style={{
-              position: "absolute",
-              ...(tail === "up"
-                ? { top: -12, left: "50%", transform: "translateX(-50%) rotate(45deg)" }
-                : { bottom: -12, left: "50%", transform: "translateX(-50%) rotate(45deg)" }),
-              width: 18,
-              height: 18,
-              background: "var(--border)",
-              borderRadius: 3,
-            }}
-          />
-          {/* fill tail (in front) */}
-          <span
-            aria-hidden
-            style={{
-              position: "absolute",
-              ...(tail === "up"
-                ? { top: -8, left: "50%", transform: "translateX(-50%) rotate(45deg)" }
-                : { bottom: -8, left: "50%", transform: "translateX(-50%) rotate(45deg)" }),
-              width: 14,
-              height: 14,
-              background: "var(--surface)",
-              borderRadius: 2,
-            }}
-          />
-        </>
-      )}
+      {/* tail — rotated square with matching hairline border on
+          two sides so the outline runs continuously from the
+          bubble around the tail */}
+      <span
+        aria-hidden
+        style={{
+          position: "absolute",
+          top: -8,
+          left: "50%",
+          transform: "translateX(-50%) rotate(45deg)",
+          width: 14,
+          height: 14,
+          background: "var(--surface)",
+          borderTop: "1px solid var(--border-strong)",
+          borderLeft: "1px solid var(--border-strong)",
+          borderRadius: 2,
+        }}
+      />
     </div>
   );
 }

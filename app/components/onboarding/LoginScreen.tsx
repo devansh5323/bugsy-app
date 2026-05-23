@@ -36,7 +36,7 @@ export function LoginScreen({
       {onBack && <BackChevron onBack={onBack} />}
       <BugsyStage mood={mood} tint={tint} size={140} animationKey="login" />
       <div style={{ marginTop: 8 }} />
-      <SpeechBubble text={bubbleText} onDone={() => setDone(true)} tail="up" />
+      <SpeechBubble text={bubbleText} onDone={() => setDone(true)} />
 
       <div
         style={{

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 286.9 286.9" viewBox="0 0 286.9 286.9" id="message">
+  <g id="Icons">
+    <g>
+      <path fill="#7eb3ff" d="M143.4,0C64.2,0,0,64.2,0,143.4c0,29.6,9,57.1,24.3,79.9L8,284.2l63.1-16.9c21.2,12.4,46,19.6,72.4,19.6
+			c79.2,0,143.4-64.2,143.4-143.4C286.9,64.2,222.7,0,143.4,0z"></path>
+      <g>
+        <circle cx="86.8" cy="143.4" r="16.4" fill="#fff" transform="rotate(-80.781 86.798 143.442)"></circle>
+        <circle cx="145.6" cy="143.4" r="16.4" fill="#fff" transform="rotate(-80.781 145.586 143.441)"></circle>
+        <circle cx="204.4" cy="143.4" r="16.4" fill="#fff" transform="rotate(-80.781 204.374 143.44)"></circle>
+      </g>
+    </g>
+  </g>
+</svg>

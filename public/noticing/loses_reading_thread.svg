@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" id="open-book">
+  <g>
+    <rect width="64" height="46" y="10" fill="#00bebd" rx="3"></rect>
+    <path fill="#f3f3f3" d="M32 10.41C32 55.33 31.9 52.9 32 53a6.84 6.84 0 0 0-4.83-2H4V7H28.59A3.41 3.41 0 0 1 32 10.41zM32 10.41c0 44.92.1 42.49 0 42.59a6.84 6.84 0 0 1 4.83-2H60V7H35.41A3.41 3.41 0 0 0 32 10.41z"></path>
+    <rect width="20" height="12" x="36" y="12" fill="#d9d9d9"></rect>
+    <rect width="12" height="18" x="8" y="12" fill="#d9d9d9"></rect>
+    <rect width="16" height="2" x="36" y="26" fill="#d9d9d9"></rect>
+    <rect width="20" height="2" x="36" y="30" fill="#d9d9d9"></rect>
+    <rect width="20" height="2" x="36" y="34" fill="#d9d9d9"></rect>
+    <rect width="20" height="2" x="36" y="38" fill="#d9d9d9"></rect>
+    <rect width="20" height="2" x="36" y="42" fill="#d9d9d9"></rect>
+    <rect width="20" height="2" x="36" y="46" fill="#d9d9d9"></rect>
+    <rect width="6" height="2" x="22" y="12" fill="#d9d9d9"></rect>
+    <rect width="6" height="2" x="22" y="16" fill="#d9d9d9"></rect>
+    <rect width="6" height="2" x="22" y="20" fill="#d9d9d9"></rect>
+    <rect width="6" height="2" x="22" y="24" fill="#d9d9d9"></rect>
+    <rect width="6" height="2" x="22" y="28" fill="#d9d9d9"></rect>
+    <rect width="18" height="2" x="10" y="32" fill="#d9d9d9"></rect>
+    <rect width="18" height="2" x="10" y="36" fill="#d9d9d9"></rect>
+    <rect width="18" height="2" x="10" y="40" fill="#d9d9d9"></rect>
+    <rect width="18" height="2" x="10" y="44" fill="#d9d9d9"></rect>
+    <path fill="#ffac00" d="M11,7V54L9,52,7,54V7a2,2,0,0,1,4,0Z"></path>
+    <polygon fill="#ffac00" points="53 59 51 50 60 52 53 59"></polygon>
+    <rect width="2.83" height="7.07" x="55.09" y="51.96" fill="#ffac00" transform="rotate(-45 56.501 55.506)"></rect>
+  </g>
+</svg>

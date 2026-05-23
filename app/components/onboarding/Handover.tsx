@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { BugsyStage, ChunkyButton, ConvoStage, SpeechBubble } from "./ConvoUI";
-import { HATS, PROJECTS, type Project } from "../../lib/data";
+import { HATS, PROJECTS, type Project, type Relationship } from "../../lib/data";
 
 type Common = { tint: number };
 
@@ -32,7 +32,6 @@ export function HandoverPrompt({
       <SpeechBubble
         text={`Quick — hand the phone to ${friend}.`}
         onDone={() => setDone(true)}
-        tail="up"
       />
 
       <div
@@ -71,21 +70,37 @@ export function HandoverPrompt({
 // ── Step 1 (parent-handover only): "Wait — is that you?!" ─────
 // First time Bugsy ever "meets" the child. Bugsy already knows
 // their name because the parent set it up. Lean into that magic.
+// Reference the parent by relationship — Mom/Dad — except for
+// "guardian" where there's no universal noun, so we use their
+// first name directly (no "Your" prefix — that read awkwardly).
 export function ChildHelloKnown({
   tint,
   childName,
   parentName,
+  relationship,
   onNext,
-}: Common & { childName: string; parentName: string; onNext: () => void }) {
+}: Common & {
+  childName: string;
+  parentName: string;
+  relationship: Relationship | null;
+  onNext: () => void;
+}) {
   const [done, setDone] = useState(false);
-  const namePart = parentName ? `Your ${parentName} ` : "Someone ";
-  const line = `Wait… is that ${childName}?! ${namePart}told me ALL about you. I've been waiting. Like, refreshing-my-screen waiting.`;
+  const namePart =
+    relationship === "mom"
+      ? "Mom"
+      : relationship === "dad"
+      ? "Dad"
+      : parentName.trim()
+      ? parentName.trim()
+      : "Someone";
+  const line = `Wait… is that ${childName}?! ${namePart} told me ALL about you. I've been waiting. Like, refreshing-my-screen waiting.`;
 
   return (
     <ConvoStage step={4 /* rainbow */}>
       <BugsyStage mood="cheer" tint={tint} size={220} animationKey="hk" />
       <div style={{ marginTop: 10 }} />
-      <SpeechBubble text={line} onDone={() => setDone(true)} tail="up" />
+      <SpeechBubble text={line} onDone={() => setDone(true)} />
       <div style={{ flex: 1 }} />
       <ChunkyButton onClick={onNext} disabled={!done}>
         Hi Bugsy! 👋
@@ -107,7 +122,7 @@ export function PinkyPromise({
     <ConvoStage step={0 /* pink-coral */}>
       <BugsyStage mood="happy" tint={tint} size={200} animationKey="pinky" lean={!done} />
       <div style={{ marginTop: 10 }} />
-      <SpeechBubble text={line} onDone={() => setDone(true)} tail="up" />
+      <SpeechBubble text={line} onDone={() => setDone(true)} />
       <div style={{ flex: 1 }} />
       <ChunkyButton onClick={onNext} disabled={!done}>
         Pinky promise 🤝
@@ -134,7 +149,7 @@ export function DailyMap({
     <ConvoStage step={3 /* mint */}>
       <BugsyStage mood="thinking" tint={tint} size={150} animationKey="map" />
       <div style={{ marginTop: 10 }} />
-      <SpeechBubble text={line} onDone={() => setDone(true)} tail="up" />
+      <SpeechBubble text={line} onDone={() => setDone(true)} />
 
       <div
         style={{
@@ -217,7 +232,9 @@ export function DailyMap({
 
 // ── Step 3: First action — pick a quick game right now ────────
 // Closes the loop once during onboarding. Child completes a real
-// project before they hit the open app.
+// project before they hit the open app. Options are stacked in a
+// single bordered container with dividers (Duolingo-style); the
+// kid taps one to select, then "Continue" to start it.
 export function FirstAction({
   tint,
   childName,
@@ -225,6 +242,7 @@ export function FirstAction({
   onSkip,
 }: Common & { childName: string; onOpenProject: (id: string) => void; onSkip: () => void }) {
   const [done, setDone] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const line = `Right ${childName}, pick the first one. Just ONE. Then we're officially a team.`;
 
   // Pick 3 fastest games (lowest mins, kind: "game")
@@ -235,109 +253,136 @@ export function FirstAction({
 
   return (
     <ConvoStage step={1 /* sun */}>
-      <BugsyStage mood="cheer" tint={tint} size={150} animationKey="first" />
+      <BugsyStage mood="cheer" tint={tint} size={140} animationKey="first" />
       <div style={{ marginTop: 10 }} />
-      <SpeechBubble text={line} onDone={() => setDone(true)} tail="up" />
+      <SpeechBubble text={line} onDone={() => setDone(true)} />
 
       <div
         style={{
-          marginTop: 16,
-          display: "flex",
-          flexDirection: "column",
-          gap: 10,
+          marginTop: 18,
+          borderRadius: 18,
+          border: "1px solid var(--border)",
+          background: "var(--surface)",
+          overflow: "hidden",
           opacity: done ? 1 : 0,
           transition: "opacity 0.4s ease",
           pointerEvents: done ? "auto" : "none",
         }}
       >
-        {choices.map((p, i) => (
-          <button
-            key={p.id}
-            onClick={() => onOpenProject(p.id)}
-            style={{
-              textAlign: "left",
-              padding: "14px 16px",
-              borderRadius: 22,
-              cursor: "pointer",
-              background: "rgba(255,255,255,0.96)",
-              color: "var(--ink)",
-              border: "none",
-              display: "flex",
-              gap: 14,
-              alignItems: "center",
-              boxShadow: "0 6px 0 rgba(0,0,0,0.14)",
-              animation: `bugsy-pop 0.45s cubic-bezier(0.22, 1.5, 0.36, 1) ${0.1 + i * 0.08}s backwards`,
-            }}
-          >
-            <div
+        {choices.map((p, i) => {
+          const active = selectedId === p.id;
+          return (
+            <button
+              key={p.id}
+              onClick={() => setSelectedId(p.id)}
               style={{
-                width: 48,
-                height: 48,
-                borderRadius: 14,
-                background: "oklch(94% 0.04 80)",
+                width: "100%",
+                textAlign: "left",
+                padding: "14px 16px",
+                cursor: "pointer",
+                background: active ? "var(--accent-soft)" : "var(--surface)",
+                border: "none",
+                borderTop: i === 0 ? "none" : "1px solid var(--border)",
                 display: "flex",
+                gap: 14,
                 alignItems: "center",
-                justifyContent: "center",
-                fontSize: 26,
-                flexShrink: 0,
+                transition: "background 0.15s ease",
               }}
             >
-              {p.emoji}
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
               <div
                 style={{
-                  fontFamily: "var(--font-inter), system-ui",
-                  fontSize: 15.5,
-                  fontWeight: 700,
-                  color: "var(--ink)",
-                  letterSpacing: -0.15,
+                  width: 38,
+                  height: 38,
+                  borderRadius: 10,
+                  background: "var(--surface-1)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 20,
+                  flexShrink: 0,
                 }}
               >
-                {p.title}
+                {p.emoji}
               </div>
-              <div
-                style={{
-                  fontFamily: "var(--font-inter), system-ui",
-                  fontSize: 12,
-                  color: "var(--ink-60)",
-                  marginTop: 2,
-                }}
-              >
-                {p.mins} min · +{p.points} pts
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    fontFamily: "var(--font-nunito), system-ui",
+                    fontSize: 15.5,
+                    fontWeight: 800,
+                    color: active ? "var(--primary)" : "var(--ink)",
+                    letterSpacing: -0.15,
+                  }}
+                >
+                  {p.title}
+                </div>
+                <div
+                  style={{
+                    fontFamily: "var(--font-nunito), system-ui",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: "var(--ink-muted)",
+                    marginTop: 2,
+                  }}
+                >
+                  {p.mins} min · +{p.points} pts
+                </div>
               </div>
-            </div>
-            <span
-              style={{
-                fontFamily: "var(--font-inter), system-ui",
-                fontSize: 12,
-                fontWeight: 700,
-                color: "var(--accent)",
-                background: "var(--accent-soft)",
-                padding: "5px 10px",
-                borderRadius: 999,
-                letterSpacing: 0.3,
-              }}
-            >
-              GO →
-            </span>
-          </button>
-        ))}
+              {active && (
+                <div
+                  style={{
+                    width: 22,
+                    height: 22,
+                    borderRadius: 999,
+                    background: "var(--primary)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                    boxShadow: "0 2px 0 var(--primary-shadow)",
+                  }}
+                  aria-hidden
+                >
+                  <svg width="12" height="12" viewBox="0 0 12 12">
+                    <path
+                      d="M2 6l3 3 5-6"
+                      stroke="#fff"
+                      strokeWidth="2.5"
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+              )}
+            </button>
+          );
+        })}
       </div>
 
-      <div style={{ flex: 1 }} />
+      <div style={{ flex: 1, minHeight: 8 }} />
+
+      <ChunkyButton
+        onClick={() => {
+          if (selectedId) onOpenProject(selectedId);
+        }}
+        disabled={!done || !selectedId}
+      >
+        Continue
+      </ChunkyButton>
 
       <button
         onClick={onSkip}
         style={{
           background: "transparent",
           border: "none",
-          color: "rgba(255,255,255,0.92)",
-          fontFamily: "var(--font-inter), system-ui",
+          color: "var(--ink-muted)",
+          fontFamily: "var(--font-nunito), system-ui",
           fontSize: 14,
-          fontWeight: 600,
+          fontWeight: 700,
           cursor: "pointer",
           padding: "10px 0",
+          marginTop: 4,
           textDecoration: "underline",
           textUnderlineOffset: 4,
         }}

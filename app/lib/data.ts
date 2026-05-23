@@ -13,6 +13,13 @@ export type Mood =
   | "hungry";  // wants attention / food
 export type Tab = "home" | "projects" | "leaderboard" | "me";
 export type UserType = "parent" | "child";
+export type Relationship = "mom" | "dad" | "guardian";
+
+export const RELATIONSHIP_OPTIONS: { key: Relationship; label: string; icon: string }[] = [
+  { key: "mom", label: "Mom", icon: "/relationships/mom.svg" },
+  { key: "dad", label: "Dad", icon: "/relationships/dad.svg" },
+  { key: "guardian", label: "Guardian", icon: "/relationships/guardian.svg" },
+];
 
 export type ClanIntent =
   | { kind: "create"; name: string; emoji: string }
@@ -69,12 +76,12 @@ export type NoticingOption = {
   sub: string;
 };
 export const NOTICING_OPTIONS: NoticingOption[] = [
-  { key: "focus",      icon: "🧠", title: "Loses focus",        sub: "drifts off mid-task" },
-  { key: "interrupt",  icon: "💬", title: "Talks over others",  sub: "hard to wait turn" },
-  { key: "reading",    icon: "📖", title: "Loses reading thread", sub: "re-reads pages" },
-  { key: "screens",    icon: "📱", title: "Glued to screens",   sub: '"5 more minutes"' },
-  { key: "newthings",  icon: "🛡️", title: "Avoids new things",  sub: "sticks to safe" },
-  { key: "giveup",     icon: "🎢", title: "Gives up fast",      sub: "stops when hard" },
+  { key: "focus",      icon: "/noticing/loses_focus.svg",          title: "Loses focus",         sub: "drifts off mid-task" },
+  { key: "interrupt",  icon: "/noticing/talks_over_others.svg",    title: "Talks over others",   sub: "hard to wait turn" },
+  { key: "reading",    icon: "/noticing/loses_reading_thread.svg", title: "Loses reading thread",sub: "re-reads pages" },
+  { key: "screens",    icon: "/noticing/glued_to_screen.svg",      title: "Glued to screens",    sub: '"5 more minutes"' },
+  { key: "newthings",  icon: "/noticing/avoid.svg",                title: "Avoids new things",   sub: "sticks to safe" },
+  { key: "giveup",     icon: "/noticing/gives_up.svg",             title: "Gives up fast",       sub: "stops when hard" },
 ];
 
 // Number of completed projects before the Clan tab unlocks.

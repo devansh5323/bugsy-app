@@ -8,18 +8,19 @@ import {
   PROJECTS,
   TINT,
   type ClanIntent,
+  type Relationship,
   type Tab,
   type UserType,
 } from "./lib/data";
 import {
   PARENT_STEPS,
+  ParentAchieve,
   ParentBondAbsence,
   ParentBondGrowth,
   ParentBondLoop,
   ParentBondTasks,
   ParentChildSetup,
   ParentDone,
-  ParentIntro,
   ParentIntro2,
   ParentLogin,
   ParentName,
@@ -30,8 +31,11 @@ import {
   ChildAdultLogin,
   ChildAge,
   ChildAlmostDone,
+  ChildDailyGoal,
   ChildIntro,
   ChildLevelUp,
+  ChildName,
+  ChildParentDetails,
   ChildPromise,
   ChildSendoff,
   ChildTeamUp,
@@ -92,10 +96,12 @@ export default function Home() {
   // Onboarding state
   const [userType, setUserType] = useState<UserType | null>(null);
   const [parentName, setParentName] = useState("");
+  const [relationship, setRelationship] = useState<Relationship | null>(null);
   const [childName, setChildName] = useState("");
   const [childAge, setChildAge] = useState<number | null>(null);
   const [clanIntent, setClanIntent] = useState<ClanIntent | null>(null);
   const [noticing, setNoticing] = useState<string[]>([]);
+  const [dailyGoal, setDailyGoal] = useState<number | null>(null);
 
   // App state
   const [completedIds, setCompletedIds] = useState<string[]>([]);
@@ -120,9 +126,18 @@ export default function Home() {
         if (data.stage?.kind) setStage(data.stage);
         if (typeof data.userType === "string" || data.userType === null) setUserType(data.userType);
         if (typeof data.parentName === "string") setParentName(data.parentName);
+        if (
+          data.relationship === "mom" ||
+          data.relationship === "dad" ||
+          data.relationship === "guardian" ||
+          data.relationship === null
+        ) {
+          setRelationship(data.relationship);
+        }
         if (typeof data.childName === "string") setChildName(data.childName);
         if (typeof data.childAge === "number" || data.childAge === null) setChildAge(data.childAge);
         if (Array.isArray(data.noticing)) setNoticing(data.noticing);
+        if (typeof data.dailyGoal === "number" || data.dailyGoal === null) setDailyGoal(data.dailyGoal);
         if (data.clanIntent !== undefined) setClanIntent(data.clanIntent);
         if (Array.isArray(data.completedIds)) setCompletedIds(data.completedIds);
         if (typeof data.totalPoints === "number") setTotalPoints(data.totalPoints);
@@ -148,9 +163,11 @@ export default function Home() {
         stage,
         userType,
         parentName,
+        relationship,
         childName,
         childAge,
         noticing,
+        dailyGoal,
         clanIntent,
         completedIds,
         totalPoints,
@@ -166,9 +183,11 @@ export default function Home() {
     stage,
     userType,
     parentName,
+    relationship,
     childName,
     childAge,
     noticing,
+    dailyGoal,
     clanIntent,
     completedIds,
     totalPoints,
@@ -190,10 +209,12 @@ export default function Home() {
   const restart = () => {
     setUserType(null);
     setParentName("");
+    setRelationship(null);
     setChildName("");
     setChildAge(null);
     setClanIntent(null);
     setNoticing([]);
+    setDailyGoal(null);
     setCompletedIds([]);
     setTotalPoints(0);
     setEquippedHat(null);
@@ -358,31 +379,32 @@ export default function Home() {
     if (stage.kind === "parent") {
       const back = stage.step === 0 ? () => setStage({ kind: "who" }) : backParent;
       switch (stage.step) {
+        // ── Meet Bugsy + bond loop first — explain the mascot's
+        // role before asking the parent for anything ──
         case 0:
+          return <ParentIntro2 tint={TINT} onNext={advanceParent} onBack={back} />;
+        case 1:
+          return <ParentBondGrowth tint={TINT} onNext={advanceParent} onBack={back} />;
+        case 2:
+          return <ParentBondAbsence tint={TINT} onNext={advanceParent} onBack={back} />;
+        case 3:
+          return <ParentBondTasks tint={TINT} onNext={advanceParent} onBack={back} />;
+        case 4:
+          return <ParentBondLoop tint={TINT} onNext={advanceParent} onBack={back} />;
+        // ── Now collect info: parent identity, child, what they're noticing ──
+        case 5:
           return (
             <ParentName
               tint={TINT}
               parentName={parentName}
               setParentName={setParentName}
+              relationship={relationship}
+              setRelationship={setRelationship}
               onNext={advanceParent}
               onBack={back}
             />
           );
-        case 1:
-          return <ParentIntro tint={TINT} onNext={advanceParent} onBack={back} />;
-        case 2:
-          return <ParentIntro2 tint={TINT} onNext={advanceParent} onBack={back} />;
-        // ── Bond loop explainer (4 screens, the emotional core) ──
-        case 3:
-          return <ParentBondGrowth tint={TINT} onNext={advanceParent} onBack={back} />;
-        case 4:
-          return <ParentBondAbsence tint={TINT} onNext={advanceParent} onBack={back} />;
-        case 5:
-          return <ParentBondTasks tint={TINT} onNext={advanceParent} onBack={back} />;
         case 6:
-          return <ParentBondLoop tint={TINT} onNext={advanceParent} onBack={back} />;
-        // ── Setup ──
-        case 7:
           return (
             <ParentChildSetup
               tint={TINT}
@@ -394,7 +416,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 8:
+        case 7:
           return (
             <ParentNoticing
               tint={TINT}
@@ -405,6 +427,9 @@ export default function Home() {
               onBack={back}
             />
           );
+        // ── Bugsy's answer — what your child will achieve ──
+        case 8:
+          return <ParentAchieve tint={TINT} onNext={advanceParent} onBack={back} />;
         case 9:
           return (
             <ParentLogin
@@ -431,16 +456,24 @@ export default function Home() {
     if (stage.kind === "child") {
       const friend = childName.trim() || "friend";
       switch (stage.step) {
+        // ── Meet Bugsy + bond beats first ──
         case 0:
+          return <ChildIntro tint={TINT} onNext={advanceChild} />;
+        case 1:
+          return <ChildTeamUp tint={TINT} onNext={advanceChild} />;
+        case 2:
+          return <ChildLevelUp tint={TINT} onNext={advanceChild} />;
+        // ── Now collect: name, age, daily goal ──
+        case 3:
           return (
-            <ChildIntro
+            <ChildName
               tint={TINT}
               childName={childName}
               setChildName={setChildName}
               onNext={advanceChild}
             />
           );
-        case 1:
+        case 4:
           return (
             <ChildAge
               tint={TINT}
@@ -450,13 +483,19 @@ export default function Home() {
               onNext={advanceChild}
             />
           );
-        case 2:
-          return <ChildTeamUp tint={TINT} onNext={advanceChild} />;
-        case 3:
-          return <ChildLevelUp tint={TINT} onNext={advanceChild} />;
-        case 4:
-          return <ChildPromise tint={TINT} onNext={advanceChild} />;
         case 5:
+          return (
+            <ChildDailyGoal
+              tint={TINT}
+              goal={dailyGoal}
+              setGoal={setDailyGoal}
+              onNext={advanceChild}
+            />
+          );
+        // ── Promise, sendoff, grown-up handoff ──
+        case 6:
+          return <ChildPromise tint={TINT} onNext={advanceChild} />;
+        case 7:
           return (
             <ChildSendoff
               tint={TINT}
@@ -465,7 +504,7 @@ export default function Home() {
               onEnter={advanceChild}
             />
           );
-        case 6:
+        case 8:
           return (
             <ChildAlmostDone
               tint={TINT}
@@ -473,7 +512,7 @@ export default function Home() {
               onNext={advanceChild}
             />
           );
-        case 7:
+        case 9:
           return (
             <ChildAdultLogin
               tint={TINT}
@@ -481,6 +520,32 @@ export default function Home() {
               onNext={advanceChild}
             />
           );
+        case 10:
+          return (
+            <ChildParentDetails
+              tint={TINT}
+              childName={friend}
+              parentName={parentName}
+              setParentName={setParentName}
+              relationship={relationship}
+              setRelationship={setRelationship}
+              onNext={advanceChild}
+            />
+          );
+        // ── Grown-up shares what they're noticing, then sees
+        // Bugsy's response (same beats as the parent flow) ──
+        case 11:
+          return (
+            <ParentNoticing
+              tint={TINT}
+              childName={childName}
+              noticing={noticing}
+              setNoticing={setNoticing}
+              onNext={advanceChild}
+            />
+          );
+        case 12:
+          return <ParentAchieve tint={TINT} onNext={advanceChild} />;
       }
       return null;
     }
@@ -502,6 +567,7 @@ export default function Home() {
               tint={TINT}
               childName={friend}
               parentName={parentName}
+              relationship={relationship}
               onNext={advanceHandover}
             />
           );

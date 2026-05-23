@@ -2,33 +2,46 @@
 
 import { useEffect, useState } from "react";
 import { BackChevron, BugsyStage, ChunkyButton, ConvoStage, SpeechBubble } from "./ConvoUI";
+import { BoboHead } from "../Mascot";
 import { LoginScreen } from "./LoginScreen";
 import {
   AGE_MAX,
   AGE_MIN,
   NOTICING_OPTIONS,
   OPEN_CLANS,
+  RELATIONSHIP_OPTIONS,
   type Clan,
   type ClanIntent,
+  type Relationship,
 } from "../../lib/data";
 
 // 11 screens after the shared "Who are you?" branch.
-// (Clan/team setup intentionally deferred — bond first.)
-// A login guardrail sits just before the Meet-Bugsy handover.
+// Storyline: meet you → meet Bugsy → bond loop → meet your child
+// → what you're noticing → what they'll achieve → login → handover.
+// "Achieve" sits *after* "Noticing" so it lands as Bugsy's answer
+// to what the parent just shared, not a generic preview up front.
 export const PARENT_STEPS = 11;
 
 type Common = { tint: number; onBack?: () => void };
 
-// ── P0: parent name (ask → react) ─────────────────────────────
-// Phase 1: "Great. What's your name?"
+// ── P0: parent name + relationship (ask → react) ──────────────
+// Phase 1: "Great. Tell me about you." (name input + Mom/Dad/Guardian chips)
 // Phase 2: "Lovely to meet you, [Name]." (auto-advances)
 export function ParentName({
   tint,
   parentName,
   setParentName,
+  relationship,
+  setRelationship,
   onNext,
   onBack,
-}: Common & { parentName: string; setParentName: (s: string) => void; onNext: () => void }) {
+}: Common & {
+  parentName: string;
+  setParentName: (s: string) => void;
+  relationship: Relationship | null;
+  setRelationship: (r: Relationship) => void;
+  onNext: () => void;
+}) {
   const [phase, setPhase] = useState<"ask" | "react">("ask");
   const [bubbleDone, setBubbleDone] = useState(false);
 
@@ -42,7 +55,7 @@ export function ParentName({
 
   const text =
     phase === "ask"
-      ? "Great. What's your name?"
+      ? "Great. Tell me about you."
       : `Lovely to meet you, ${parentName.trim()}.`;
 
   return (
@@ -51,7 +64,7 @@ export function ParentName({
       <BugsyStage
         mood={phase === "react" ? "cheer" : "happy"}
         tint={tint}
-        size={150}
+        size={140}
         animationKey={phase}
       />
       <div style={{ marginTop: 8 }} />
@@ -59,7 +72,6 @@ export function ParentName({
         key={phase}
         text={text}
         onDone={() => setBubbleDone(true)}
-        tail="up"
       />
 
       {phase === "ask" && (
@@ -78,13 +90,16 @@ export function ParentName({
             placeholder="Your name"
             style={inputStyle}
           />
-          <div style={{ height: 12 }} />
+          <div style={{ height: 14 }} />
+          <FieldLabel>I'm their…</FieldLabel>
+          <RelationshipChips value={relationship} onChange={setRelationship} />
+          <div style={{ height: 14 }} />
           <ChunkyButton
             onClick={() => {
               setBubbleDone(false);
               setPhase("react");
             }}
-            disabled={!bubbleDone || !parentName.trim()}
+            disabled={!bubbleDone || !parentName.trim() || relationship === null}
           >
             Continue
           </ChunkyButton>
@@ -96,49 +111,85 @@ export function ParentName({
   );
 }
 
-// ── P1: intro 1 ───────────────────────────────────────────────
-// Bubble: "Your child is going to love this."
-// Small text under bubble + "Tell me more"
-export function ParentIntro({
-  tint,
-  onNext,
-  onBack,
-}: Common & { onNext: () => void }) {
-  const [done, setDone] = useState(false);
+function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <ConvoStage step={6 /* azure wash */}>
-      {onBack && <BackChevron onBack={onBack} />}
-      <BugsyStage mood="happy" tint={tint} size={150} animationKey="p-intro" />
-      <div style={{ marginTop: 8 }} />
-      <SpeechBubble
-        text="Your child is going to love this."
-        onDone={() => setDone(true)}
-        tail="up"
-      />
-      <p
-        style={{
-          margin: "12px 4px 0",
-          fontFamily: "var(--font-nunito), system-ui",
-          fontSize: 13.5,
-          fontWeight: 700,
-          color: "var(--ink-muted)",
-          textAlign: "center",
-          lineHeight: 1.45,
-          opacity: done ? 1 : 0,
-          transition: "opacity 0.4s ease",
-        }}
-      >
-        Daily creative challenges that build real skills.
-      </p>
-      <div style={{ flex: 1 }} />
-      <ChunkyButton onClick={onNext} disabled={!done}>
-        Tell me more
-      </ChunkyButton>
-    </ConvoStage>
+    <div
+      style={{
+        fontFamily: "var(--font-nunito), system-ui",
+        fontSize: 11,
+        fontWeight: 800,
+        color: "var(--ink-muted)",
+        textTransform: "uppercase",
+        letterSpacing: 1,
+        marginBottom: 8,
+        textAlign: "center",
+      }}
+    >
+      {children}
+    </div>
   );
 }
 
-// ── P2: intro 2 ───────────────────────────────────────────────
+export function RelationshipChips({
+  value,
+  onChange,
+}: {
+  value: Relationship | null;
+  onChange: (r: Relationship) => void;
+}) {
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+      {RELATIONSHIP_OPTIONS.map((opt) => {
+        const active = value === opt.key;
+        return (
+          <button
+            key={opt.key}
+            onClick={() => onChange(opt.key)}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
+              padding: "12px 6px 10px",
+              borderRadius: 16,
+              cursor: "pointer",
+              background: active ? "var(--accent-soft)" : "var(--surface)",
+              border: active ? "3px solid var(--primary)" : "2px solid var(--border)",
+              boxShadow: active
+                ? "0 3px 0 var(--primary-shadow)"
+                : "0 3px 0 var(--border)",
+              transform: active ? "translateY(-2px)" : "none",
+              transition: "transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease",
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={opt.icon}
+              alt=""
+              width={52}
+              height={52}
+              style={{ display: "block" }}
+            />
+            <div
+              style={{
+                fontFamily: "var(--font-nunito), system-ui",
+                fontSize: 14,
+                fontWeight: 800,
+                color: active ? "var(--primary)" : "var(--ink)",
+                letterSpacing: -0.1,
+              }}
+            >
+              {opt.label}
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── P1: intro ─────────────────────────────────────────────────
 // Bubble: "They'll join a team, earn rewards, and grow."
 export function ParentIntro2({
   tint,
@@ -152,9 +203,8 @@ export function ParentIntro2({
       <BugsyStage mood="cheer" tint={tint} size={150} animationKey="p-intro2" />
       <div style={{ marginTop: 8 }} />
       <SpeechBubble
-        text="They'll get a buddy who grows with them every day."
+        text="Your kid will get a buddy who grows with them every day."
         onDone={() => setDone(true)}
-        tail="up"
       />
       <div style={{ flex: 1 }} />
       <ChunkyButton onClick={onNext} disabled={!done}>
@@ -164,7 +214,160 @@ export function ParentIntro2({
   );
 }
 
-// ── P3 (NEW): Bond — daily visits make Bugsy grow ─────────────
+// ── P8: Achievements — Bugsy's answer to "What are you noticing?"
+// Sits right after ParentNoticing so it reads as a response, not
+// a generic preview: parent shares concerns → Bugsy responds with
+// three concrete things their child will get out of this.
+export function ParentAchieve({
+  tint,
+  onNext,
+  onBack,
+}: Common & { onNext: () => void }) {
+  const [done, setDone] = useState(false);
+  return (
+    <ConvoStage step={3 /* purple wash */}>
+      {onBack && <BackChevron onBack={onBack} />}
+      <BugsyStage mood="cheer" tint={tint} size={140} animationKey="p-achieve" />
+      <div style={{ marginTop: 8 }} />
+      <SpeechBubble
+        text="Got it. Here's what they'll achieve with me."
+        onDone={() => setDone(true)}
+      />
+
+      <div
+        style={{
+          marginTop: 24,
+          display: "flex",
+          flexDirection: "column",
+          opacity: done ? 1 : 0,
+          transition: "opacity 0.4s ease",
+        }}
+      >
+        <AchievementRow
+          icon={
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src="/achievements/assignment.svg"
+              alt=""
+              width={32}
+              height={32}
+              style={{ display: "block" }}
+            />
+          }
+          tint="rgba(206, 130, 255, 0.18)"
+          title="Build creative confidence"
+          sub="Real skills through hands-on challenges"
+        />
+        <AchievementDivider />
+        <AchievementRow
+          icon={
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src="/achievements/win.svg"
+              alt=""
+              width={32}
+              height={32}
+              style={{ display: "block" }}
+            />
+          }
+          tint="rgba(255, 200, 0, 0.22)"
+          title="Stay curious every day"
+          sub="Small wins that turn into a habit"
+        />
+        <AchievementDivider />
+        <AchievementRow
+          icon={<BoboHead mood="cheer" tint={tint} size={40} />}
+          tint="rgba(255, 92, 138, 0.18)"
+          title="Grow alongside Bugsy"
+          sub="A buddy who needs them, too"
+        />
+      </div>
+
+      <div style={{ flex: 1 }} />
+      <ChunkyButton onClick={onNext} disabled={!done}>
+        Continue
+      </ChunkyButton>
+    </ConvoStage>
+  );
+}
+
+function AchievementRow({
+  icon,
+  tint,
+  title,
+  sub,
+}: {
+  icon: React.ReactNode;
+  tint: string;
+  title: string;
+  sub: string;
+}) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        gap: 14,
+        alignItems: "center",
+        padding: "14px 4px",
+      }}
+    >
+      <div
+        style={{
+          width: 46,
+          height: 46,
+          borderRadius: 13,
+          background: tint,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+          overflow: "hidden",
+        }}
+      >
+        {icon}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div
+          style={{
+            fontFamily: "var(--font-nunito), system-ui",
+            fontSize: 15.5,
+            fontWeight: 800,
+            color: "var(--ink)",
+            letterSpacing: -0.15,
+          }}
+        >
+          {title}
+        </div>
+        <div
+          style={{
+            fontFamily: "var(--font-nunito), system-ui",
+            fontSize: 12.5,
+            fontWeight: 700,
+            color: "var(--ink-muted)",
+            marginTop: 2,
+            lineHeight: 1.4,
+          }}
+        >
+          {sub}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AchievementDivider() {
+  return (
+    <div
+      style={{
+        height: 1,
+        background: "var(--border)",
+        margin: "0 4px",
+      }}
+    />
+  );
+}
+
+// ── P4 (NEW): Bond — daily visits make Bugsy grow ─────────────
 export function ParentBondGrowth({
   tint,
   onNext,
@@ -179,7 +382,6 @@ export function ParentBondGrowth({
       <SpeechBubble
         text="Every visit, I grow a little stronger."
         onDone={() => setDone(true)}
-        tail="up"
       />
       <p
         style={{
@@ -246,7 +448,6 @@ export function ParentBondAbsence({
         key={phase}
         text={text}
         onDone={() => setBubbleDone(true)}
-        tail="up"
       />
       <div style={{ flex: 1 }} />
       <ChunkyButton onClick={onNext} disabled={phase !== "sad" || !bubbleDone}>
@@ -296,7 +497,6 @@ export function ParentBondTasks({
         key={phase}
         text={text}
         onDone={() => setBubbleDone(true)}
-        tail="up"
       />
       <div style={{ flex: 1 }} />
       <ChunkyButton onClick={onNext} disabled={phase !== "half" || !bubbleDone}>
@@ -321,7 +521,6 @@ export function ParentBondLoop({
       <SpeechBubble
         text="Visit daily. Finish what you start. We grow."
         onDone={() => setDone(true)}
-        tail="up"
       />
       <p
         style={{
@@ -387,7 +586,6 @@ export function ParentChildSetup({
         key={phase}
         text={text}
         onDone={() => setBubbleDone(true)}
-        tail="up"
       />
 
       {phase === "name" ? (
@@ -501,7 +699,6 @@ export function ParentClan({
         <SpeechBubble
           text="Would you like to set up their team now?"
           onDone={() => setDone(true)}
-          tail="up"
         />
 
         <div
@@ -538,7 +735,7 @@ export function ParentClan({
       <ConvoStage step={0}>
         {onBack && <BackChevron onBack={() => setSubstep("pick")} />}
         <BugsyStage mood="cheer" tint={tint} size={130} animationKey="p-clan-create" />
-        <SpeechBubble text="Pick a crest and a name." tail="up" />
+        <SpeechBubble text="Pick a crest and a name." />
         <div style={{ marginTop: 14 }}>
           <div
             style={{
@@ -607,7 +804,7 @@ export function ParentClan({
     <ConvoStage step={0}>
       {onBack && <BackChevron onBack={() => setSubstep("pick")} />}
       <BugsyStage mood="thinking" tint={tint} size={130} animationKey="p-clan-invite" />
-      <SpeechBubble text="Pop in the invite code." tail="up" />
+      <SpeechBubble text="Pop in the invite code." />
       <div style={{ marginTop: 14 }}>
         <input
           autoFocus
@@ -733,7 +930,6 @@ export function ParentNoticing({
       <SpeechBubble
         text={`What are you noticing about ${friend}?`}
         onDone={() => setDone(true)}
-        tail="up"
       />
 
       <div
@@ -771,18 +967,26 @@ export function ParentNoticing({
             >
               <div
                 style={{
-                  width: 38,
-                  height: 38,
-                  borderRadius: 11,
+                  width: 44,
+                  height: 44,
+                  borderRadius: 12,
                   background: "var(--surface-1)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: 20,
                   flexShrink: 0,
+                  padding: 6,
+                  boxSizing: "border-box",
                 }}
               >
-                {opt.icon}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={opt.icon}
+                  alt=""
+                  width={32}
+                  height={32}
+                  style={{ display: "block" }}
+                />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div
@@ -928,7 +1132,6 @@ export function ParentDone({
         key={phase}
         text={text}
         onDone={() => setBubbleDone(true)}
-        tail="up"
       />
       <div style={{ flex: 1 }} />
       <ChunkyButton
