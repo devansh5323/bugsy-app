@@ -328,7 +328,7 @@ export function FirstAction({
                   {p.mins} min · +{p.points} pts
                 </div>
               </div>
-              {active && (
+              {active ? (
                 <div
                   style={{
                     width: 22,
@@ -354,6 +354,23 @@ export function FirstAction({
                     />
                   </svg>
                 </div>
+              ) : (
+                <span
+                  style={{
+                    fontFamily: "var(--font-nunito), system-ui",
+                    fontSize: 10.5,
+                    fontWeight: 800,
+                    color: "var(--primary)",
+                    background: "var(--accent-soft)",
+                    padding: "4px 10px",
+                    borderRadius: 999,
+                    letterSpacing: 0.8,
+                    textTransform: "uppercase",
+                    flexShrink: 0,
+                  }}
+                >
+                  Pick
+                </span>
               )}
             </button>
           );
