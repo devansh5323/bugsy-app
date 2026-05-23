@@ -22,11 +22,14 @@ import {
 type ClanInfo = { name: string; emoji: string };
 
 // ── Home ──────────────────────────────────────────────────────
+// Bond-first home: Bugsy is the hero, no clan UI. Tap Bugsy to
+// cycle through personality lines / moods. The mood card at the
+// bottom previews where the care mechanic will live. The guided
+// tour now lives at page-level (TourOverlay), so this screen no
+// longer renders a tour modal — it just shows underneath.
 export function ScreenHome({
   tint,
   name,
-  clan,
-  clanRank,
   completedProjects,
   totalPoints,
   streak,
@@ -35,11 +38,10 @@ export function ScreenHome({
   setTab,
   onOpenProject,
   onSeeAllProjects,
+  lockedTabs,
 }: {
   tint: number;
   name: string;
-  clan: ClanInfo;
-  clanRank: number;
   completedProjects: number;
   totalPoints: number;
   streak: number;
@@ -48,12 +50,12 @@ export function ScreenHome({
   setTab: (t: Tab) => void;
   onOpenProject: (id: string) => void;
   onSeeAllProjects: () => void;
+  lockedTabs?: Tab[];
 }) {
+  void completedProjects;
+  void totalPoints;
   const lines = bugsyLines({
     name: name || "friend",
-    clanName: clan.name,
-    clanRank,
-    totalClans: 1240,
     completedToday: 0,
     streak,
   });
@@ -88,6 +90,7 @@ export function ScreenHome({
       tab={tab}
       setTab={setTab}
       tint={tint}
+      lockedTabs={lockedTabs}
     >
       {/* Bugsy hero */}
       <div
@@ -322,65 +325,291 @@ export function ScreenHome({
         </div>
       </button>
 
-      {/* Clan footer */}
-      <button
-        onClick={() => setTab("leaderboard")}
+      {/* Bugsy mood card — care mechanic preview.
+          Mood derives from streak; eventually it'll derive from
+          last-seen timestamp + projects completed. */}
+      <BugsyMoodCard tint={tint} streak={streak} equippedHat={equippedHat} />
+    </AppShell>
+  );
+}
+
+function BugsyMoodCard({
+  tint,
+  streak,
+  equippedHat,
+}: {
+  tint: number;
+  streak: number;
+  equippedHat: string | null;
+}) {
+  // Demo mood derivation. When time-tracking lands, mood will come
+  // from hours-since-last-seen instead.
+  const state: { mood: import("../lib/data").Mood; label: string; text: string } =
+    streak >= 3
+      ? { mood: "excited", label: "loved", text: "Bugsy feels loved. Keep coming back!" }
+      : streak >= 1
+      ? { mood: "happy", label: "happy", text: "Bugsy is happy to see you today." }
+      : { mood: "sleepy", label: "sleepy", text: "Bugsy is dozing. A quick visit will wake them up." };
+
+  return (
+    <div
+      style={{
+        marginTop: 18,
+        padding: "12px 14px",
+        borderRadius: 18,
+        background: "var(--surface)",
+        border: "2px solid var(--border)",
+        boxShadow: "0 2px 0 var(--border)",
+        display: "flex",
+        gap: 12,
+        alignItems: "center",
+      }}
+    >
+      <div
         style={{
-          width: "100%",
-          padding: "10px 14px",
-          borderRadius: 14,
-          background: "var(--surface)",
-          border: "1px solid var(--ink-08)",
-          cursor: "pointer",
+          width: 56,
+          height: 56,
+          borderRadius: 16,
+          background: "var(--accent-soft)",
           display: "flex",
-          gap: 10,
           alignItems: "center",
-          textAlign: "left",
+          justifyContent: "center",
+          flexShrink: 0,
+          overflow: "hidden",
         }}
       >
+        <Bobo mood={state.mood} tint={tint} size={64} animate={false} hat={equippedHat ?? undefined} />
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
         <div
           style={{
-            width: 32,
-            height: 32,
-            borderRadius: 10,
-            background: "oklch(94% 0.04 70)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 18,
-            flexShrink: 0,
+            fontFamily: "var(--font-nunito), system-ui",
+            fontSize: 11,
+            fontWeight: 800,
+            color: "var(--primary)",
+            textTransform: "uppercase",
+            letterSpacing: 0.8,
           }}
         >
-          {clan.emoji}
+          Bugsy is feeling {state.label}
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div
-            style={{
-              fontFamily: "var(--font-inter), system-ui",
-              fontSize: 13,
-              fontWeight: 600,
-              color: "var(--ink)",
-              letterSpacing: -0.1,
-            }}
-          >
-            {clan.name}
-          </div>
-          <div
-            style={{
-              fontFamily: "var(--font-inter), system-ui",
-              fontSize: 11,
-              color: "var(--ink-50)",
-              marginTop: 1,
-            }}
-          >
-            #{clanRank} of 1,240 · {totalPoints.toLocaleString()} pts contributed
-          </div>
+        <div
+          style={{
+            fontFamily: "var(--font-nunito), system-ui",
+            fontSize: 13,
+            fontWeight: 700,
+            color: "var(--ink)",
+            marginTop: 2,
+            letterSpacing: -0.1,
+          }}
+        >
+          {state.text}
         </div>
-        <svg width="6" height="10" viewBox="0 0 6 10">
-          <path d="M1 1l4 4-4 4" stroke="var(--ink-40)" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-        </svg>
-      </button>
-    </AppShell>
+      </div>
+    </div>
+  );
+}
+
+// ── HomeTour ──────────────────────────────────────────────────
+// Modal overlay that runs once, on the first home visit after the
+// child's first project completion. 4-bubble walkthrough: where
+// we are → what Bugsy does → what's locked → habit cue.
+function HomeTour({
+  tint,
+  name,
+  unlockThreshold,
+  completedProjects,
+  onDismiss,
+}: {
+  tint: number;
+  name: string;
+  unlockThreshold: number;
+  completedProjects: number;
+  onDismiss: () => void;
+}) {
+  const friend = name?.trim() || "friend";
+  const remaining = Math.max(0, unlockThreshold - completedProjects);
+  const bubbles = [
+    `Welcome home, ${friend}!`,
+    "Tap me here anytime — I love hanging out.",
+    remaining > 0
+      ? `See the Clan lock? It opens after ${unlockThreshold} projects.`
+      : "Almost there — one more project unlocks the Clan!",
+    "Come back tomorrow. Bring me one more project.",
+  ];
+
+  const [phase, setPhase] = useState(0);
+  const [bubbleDone, setBubbleDone] = useState(false);
+
+  // useEffect-style re-key the bubble when phase changes — the
+  // Typewriter re-runs because text changes.
+
+  const advance = () => {
+    if (phase + 1 >= bubbles.length) {
+      onDismiss();
+      return;
+    }
+    setBubbleDone(false);
+    setPhase((p) => p + 1);
+  };
+
+  const moodFor = (idx: number): import("../lib/data").Mood => {
+    if (idx === 0) return "excited";
+    if (idx === 1) return "waving";
+    if (idx === 2) return remaining > 0 ? "thinking" : "cheer";
+    return "happy";
+  };
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 50,
+        background: "rgba(20, 16, 30, 0.45)",
+        backdropFilter: "blur(2px)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "flex-end",
+        padding: 20,
+        paddingBottom: 100,
+      }}
+      role="dialog"
+      aria-label="Bugsy's home tour"
+    >
+      <div
+        style={{
+          position: "relative",
+          width: "100%",
+          maxWidth: 440,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        <div style={{ animation: "bobo-enter 0.5s cubic-bezier(0.22, 1, 0.36, 1)" }}>
+          <Bobo mood={moodFor(phase)} tint={tint} size={150} />
+        </div>
+
+        {/* Speech bubble */}
+        <div
+          key={phase}
+          style={{
+            position: "relative",
+            marginTop: -4,
+            padding: "16px 20px",
+            background: "var(--surface)",
+            border: "2px solid var(--border)",
+            boxShadow: "0 4px 0 var(--border)",
+            borderRadius: 22,
+            color: "var(--ink)",
+            fontFamily: "var(--font-nunito), system-ui",
+            fontSize: 17,
+            fontWeight: 700,
+            letterSpacing: -0.1,
+            textAlign: "center",
+            maxWidth: 360,
+            animation: "bubble-pop 0.35s cubic-bezier(0.22, 1.5, 0.36, 1)",
+          }}
+        >
+          <span
+            aria-hidden
+            style={{
+              position: "absolute",
+              top: -10,
+              left: "50%",
+              transform: "translateX(-50%) rotate(45deg)",
+              width: 16,
+              height: 16,
+              background: "var(--surface)",
+              borderLeft: "2px solid var(--border)",
+              borderTop: "2px solid var(--border)",
+            }}
+          />
+          <HomeTourTypewriter text={bubbles[phase]} onDone={() => setBubbleDone(true)} />
+        </div>
+
+        {/* Dots indicating progress through tour */}
+        <div style={{ display: "flex", gap: 6, marginTop: 14, marginBottom: 14 }}>
+          {bubbles.map((_, i) => (
+            <span
+              key={i}
+              style={{
+                width: i === phase ? 18 : 8,
+                height: 8,
+                borderRadius: 999,
+                background: i === phase ? "var(--primary)" : "var(--border)",
+                transition: "width 0.2s ease, background 0.2s ease",
+              }}
+            />
+          ))}
+        </div>
+
+        {/* CTA */}
+        <button
+          onClick={advance}
+          disabled={!bubbleDone}
+          className="btn-3d"
+          style={{ width: "100%", maxWidth: 360 }}
+        >
+          {phase + 1 < bubbles.length ? "Next" : "Let's go!"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Local typewriter (mirrors the Onboarding one) — char-by-char
+// reveal with longer pauses on punctuation. Click to skip.
+function HomeTourTypewriter({
+  text,
+  onDone,
+}: {
+  text: string;
+  onDone: () => void;
+}) {
+  const [shown, setShown] = useState("");
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setShown("");
+    setDone(false);
+    let i = 0;
+    let timer: ReturnType<typeof setTimeout>;
+
+    const tick = () => {
+      if (cancelled) return;
+      if (i >= text.length) {
+        setDone(true);
+        onDone();
+        return;
+      }
+      i += 1;
+      setShown(text.slice(0, i));
+      const ch = text.charAt(i - 1);
+      const delay = ch === "." || ch === "!" || ch === "?" ? 280 : ch === "," ? 160 : 26;
+      timer = setTimeout(tick, delay);
+    };
+    timer = setTimeout(tick, 220);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [text, onDone]);
+
+  return (
+    <span
+      onClick={() => {
+        setShown(text);
+        setDone(true);
+        onDone();
+      }}
+      style={{ cursor: done ? "default" : "pointer" }}
+    >
+      {shown}
+    </span>
   );
 }
 
@@ -534,6 +763,7 @@ export function ScreenProjects({
   completedIds,
   equippedHat,
   onOpenProject,
+  lockedTabs,
 }: {
   tint: number;
   tab: Tab;
@@ -541,6 +771,7 @@ export function ScreenProjects({
   completedIds: string[];
   equippedHat: string | null;
   onOpenProject: (id: string) => void;
+  lockedTabs?: Tab[];
 }) {
   return (
     <AppShell
@@ -552,6 +783,7 @@ export function ScreenProjects({
       bugzyMood="thinking"
       bugzySize={50}
       bugzyHat={equippedHat}
+      lockedTabs={lockedTabs}
     >
       {CATEGORIES.map((cat) => {
         const items = PROJECTS.filter((p) => p.category === cat.key);
@@ -1324,6 +1556,9 @@ export function ScreenLeaderboard({
   totalPoints,
   completedProjects,
   equippedHat,
+  unlocked,
+  unlockThreshold,
+  lockedTabs,
 }: {
   tint: number;
   tab: Tab;
@@ -1335,8 +1570,25 @@ export function ScreenLeaderboard({
   totalPoints: number;
   completedProjects: number;
   equippedHat: string | null;
+  unlocked: boolean;
+  unlockThreshold: number;
+  lockedTabs?: Tab[];
 }) {
   const [view, setView] = useState<"individual" | "clan">("individual");
+
+  if (!unlocked) {
+    return (
+      <ClanLockedScreen
+        tint={tint}
+        tab={tab}
+        setTab={setTab}
+        completedProjects={completedProjects}
+        unlockThreshold={unlockThreshold}
+        equippedHat={equippedHat}
+        lockedTabs={lockedTabs}
+      />
+    );
+  }
 
   return (
     <AppShell
@@ -1348,6 +1600,7 @@ export function ScreenLeaderboard({
       bugzyMood="happy"
       bugzySize={50}
       bugzyHat={equippedHat}
+      lockedTabs={lockedTabs}
     >
       {/* Clan vs Clan battle card — anchors the page */}
       {hasClan && (
@@ -1438,6 +1691,223 @@ export function ScreenLeaderboard({
           </div>
         </>
       )}
+    </AppShell>
+  );
+}
+
+// ── Locked Clan screen ───────────────────────────────────────
+// Shows when the user opens the Clan tab before crossing the
+// CLAN_UNLOCK_THRESHOLD. Bugsy explains; a progress meter shows
+// how close they are. Mirrors Duolingo's leaderboard gate.
+function ClanLockedScreen({
+  tint,
+  tab,
+  setTab,
+  completedProjects,
+  unlockThreshold,
+  equippedHat,
+  lockedTabs,
+}: {
+  tint: number;
+  tab: Tab;
+  setTab: (t: Tab) => void;
+  completedProjects: number;
+  unlockThreshold: number;
+  equippedHat: string | null;
+  lockedTabs?: Tab[];
+}) {
+  const remaining = Math.max(0, unlockThreshold - completedProjects);
+  const pct = Math.min(1, completedProjects / unlockThreshold);
+
+  return (
+    <AppShell
+      title="Clan"
+      subtitle="Locked"
+      tab={tab}
+      setTab={setTab}
+      tint={tint}
+      lockedTabs={lockedTabs}
+    >
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          textAlign: "center",
+          padding: "8px 4px 0",
+        }}
+      >
+        {/* Big lock */}
+        <div
+          style={{
+            width: 88,
+            height: 88,
+            borderRadius: 28,
+            background: "var(--surface)",
+            border: "2px solid var(--border)",
+            boxShadow: "0 4px 0 var(--border)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 44,
+            marginTop: 8,
+            marginBottom: 16,
+          }}
+          aria-hidden
+        >
+          🔒
+        </div>
+        <h2
+          style={{
+            fontFamily: "var(--font-nunito), system-ui",
+            fontSize: 22,
+            fontWeight: 900,
+            color: "var(--ink)",
+            letterSpacing: -0.4,
+            margin: "0 0 6px",
+          }}
+        >
+          Clan unlocks soon
+        </h2>
+        <p
+          style={{
+            fontFamily: "var(--font-nunito), system-ui",
+            fontSize: 14,
+            fontWeight: 700,
+            color: "var(--ink-muted)",
+            letterSpacing: -0.1,
+            margin: "0 12px 20px",
+            lineHeight: 1.45,
+            maxWidth: 320,
+          }}
+        >
+          Finish {unlockThreshold} projects with me first. The bond
+          comes before the competition.
+        </p>
+
+        {/* Progress meter */}
+        <div
+          style={{
+            width: "100%",
+            maxWidth: 320,
+            padding: "14px 16px",
+            borderRadius: 18,
+            background: "var(--surface)",
+            border: "2px solid var(--border)",
+            boxShadow: "0 2px 0 var(--border)",
+            marginBottom: 18,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "baseline",
+              marginBottom: 8,
+            }}
+          >
+            <div
+              style={{
+                fontFamily: "var(--font-nunito), system-ui",
+                fontSize: 12,
+                fontWeight: 800,
+                color: "var(--ink-muted)",
+                textTransform: "uppercase",
+                letterSpacing: 0.6,
+              }}
+            >
+              Progress
+            </div>
+            <div
+              style={{
+                fontFamily: "var(--font-nunito), system-ui",
+                fontSize: 14,
+                fontWeight: 900,
+                color: "var(--primary)",
+              }}
+            >
+              {completedProjects} / {unlockThreshold}
+            </div>
+          </div>
+          <div
+            style={{
+              height: 10,
+              borderRadius: 6,
+              background: "var(--surface-2)",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                width: `${pct * 100}%`,
+                height: "100%",
+                background: "var(--primary)",
+                borderRadius: 6,
+                transition: "width 0.6s cubic-bezier(0.22, 1, 0.36, 1)",
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Bugsy with bubble */}
+        <div style={{ marginTop: 4 }}>
+          <Bobo
+            mood={completedProjects > 0 ? "thinking" : "sleepy"}
+            tint={tint}
+            size={120}
+            hat={equippedHat ?? undefined}
+          />
+        </div>
+        <div
+          style={{
+            position: "relative",
+            marginTop: -4,
+            padding: "12px 16px",
+            background: "var(--surface)",
+            border: "2px solid var(--border)",
+            boxShadow: "0 2px 0 var(--border)",
+            borderRadius: 18,
+            maxWidth: 320,
+            color: "var(--ink)",
+            fontFamily: "var(--font-nunito), system-ui",
+            fontSize: 14,
+            fontWeight: 700,
+            letterSpacing: -0.1,
+            textAlign: "center",
+          }}
+        >
+          {/* tail */}
+          <span
+            aria-hidden
+            style={{
+              position: "absolute",
+              top: -10,
+              left: "50%",
+              transform: "translateX(-50%) rotate(45deg)",
+              width: 16,
+              height: 16,
+              background: "var(--surface)",
+              borderLeft: "2px solid var(--border)",
+              borderTop: "2px solid var(--border)",
+            }}
+          />
+          {remaining === 0
+            ? "You did it! Clan opens any second now…"
+            : remaining === 1
+            ? "One more project and we're in!"
+            : `${remaining} more projects and we're in!`}
+        </div>
+
+        {/* CTA back to projects */}
+        <div style={{ width: "100%", maxWidth: 320, marginTop: 24 }}>
+          <button
+            onClick={() => setTab("projects")}
+            className="btn-3d"
+          >
+            Pick a project
+          </button>
+        </div>
+      </div>
     </AppShell>
   );
 }
@@ -1928,6 +2398,7 @@ export function ScreenProfile({
   tab,
   setTab,
   onLogout,
+  lockedTabs,
 }: {
   tint: number;
   name: string;
@@ -1941,9 +2412,10 @@ export function ScreenProfile({
   tab: Tab;
   setTab: (t: Tab) => void;
   onLogout: () => void;
+  lockedTabs?: Tab[];
 }) {
   return (
-    <AppShell title={name || "You"} subtitle="Profile" tab={tab} setTab={setTab} tint={tint}>
+    <AppShell title={name || "You"} subtitle="Profile" tab={tab} setTab={setTab} tint={tint} lockedTabs={lockedTabs}>
       {/* Bugsy avatar */}
       <div
         style={{

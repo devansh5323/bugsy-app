@@ -7,9 +7,13 @@ import type { Mood, Tab } from "../lib/data";
 export function TabBar({
   tab,
   setTab,
+  lockedTabs = [],
 }: {
   tab: Tab;
   setTab: (t: Tab) => void;
+  // Tabs that are visible but show a lock badge. Tap still routes
+  // there — the destination renders a "locked / progress" state.
+  lockedTabs?: Tab[];
 }) {
   const icons = {
     home: (
@@ -40,7 +44,7 @@ export function TabBar({
   const tabs: { key: Tab; label: string; icon: keyof typeof icons }[] = [
     { key: "home", label: "Home", icon: "home" },
     { key: "projects", label: "Projects", icon: "projects" },
-    { key: "leaderboard", label: "Ranks", icon: "board" },
+    { key: "leaderboard", label: "Clan", icon: "board" },
     { key: "me", label: "Me", icon: "me" },
   ];
 
@@ -59,12 +63,14 @@ export function TabBar({
     >
       {tabs.map((t) => {
         const active = tab === t.key;
+        const locked = lockedTabs.includes(t.key);
         return (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
             style={{
               flex: 1,
+              position: "relative",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
@@ -73,14 +79,43 @@ export function TabBar({
               background: "none",
               border: "none",
               cursor: "pointer",
-              color: active ? "var(--accent)" : "var(--ink-50)",
+              color: locked
+                ? "var(--ink-muted)"
+                : active
+                ? "var(--accent)"
+                : "var(--ink-50)",
               fontFamily: "var(--font-inter), system-ui",
               fontSize: 10.5,
               fontWeight: 600,
               letterSpacing: 0.2,
+              opacity: locked ? 0.7 : 1,
             }}
           >
-            {icons[t.icon]}
+            <div style={{ position: "relative" }}>
+              {icons[t.icon]}
+              {locked && (
+                <div
+                  aria-hidden
+                  style={{
+                    position: "absolute",
+                    top: -6,
+                    right: -8,
+                    width: 14,
+                    height: 14,
+                    borderRadius: 999,
+                    background: "var(--ink)",
+                    color: "var(--canvas)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 9,
+                    boxShadow: "0 1px 0 var(--border)",
+                  }}
+                >
+                  🔒
+                </div>
+              )}
+            </div>
             <span>{t.label}</span>
           </button>
         );
@@ -99,6 +134,7 @@ export function AppShell({
   bugzyMood,
   bugzySize = 44,
   bugzyHat,
+  lockedTabs,
 }: {
   children: ReactNode;
   tab: Tab;
@@ -109,6 +145,7 @@ export function AppShell({
   bugzyMood?: Mood;
   bugzySize?: number;
   bugzyHat?: string | null;
+  lockedTabs?: Tab[];
 }) {
   return (
     <div
@@ -156,7 +193,7 @@ export function AppShell({
         </div>
         <div style={{ padding: "0 24px 24px" }}>{children}</div>
       </div>
-      <TabBar tab={tab} setTab={setTab} />
+      <TabBar tab={tab} setTab={setTab} lockedTabs={lockedTabs} />
     </div>
   );
 }

@@ -1,4 +1,16 @@
-export type Mood = "happy" | "waving" | "thinking" | "cheer" | "sleep" | "blink";
+export type Mood =
+  | "happy"
+  | "waving"
+  | "thinking"
+  | "cheer"
+  | "sleep"
+  | "blink"
+  // ── emotional / care states ──
+  | "sad"      // hasn't seen the kid in a while
+  | "sleepy"   // half-asleep, waiting
+  | "excited"  // big payoff moments
+  | "worried"  // mildly anxious
+  | "hungry";  // wants attention / food
 export type Tab = "home" | "projects" | "leaderboard" | "me";
 export type UserType = "parent" | "child";
 
@@ -46,6 +58,29 @@ export type Hat = {
   name: string;
   unlockAt: number; // # projects completed to unlock
 };
+
+// ── Parent screening: behavioural concerns ──────────────────
+// Short list of patterns parents commonly notice. Multi-select.
+// Drives which projects we'll lean toward later.
+export type NoticingOption = {
+  key: string;
+  icon: string;
+  title: string;
+  sub: string;
+};
+export const NOTICING_OPTIONS: NoticingOption[] = [
+  { key: "focus",      icon: "🧠", title: "Loses focus",        sub: "drifts off mid-task" },
+  { key: "interrupt",  icon: "💬", title: "Talks over others",  sub: "hard to wait turn" },
+  { key: "reading",    icon: "📖", title: "Loses reading thread", sub: "re-reads pages" },
+  { key: "screens",    icon: "📱", title: "Glued to screens",   sub: '"5 more minutes"' },
+  { key: "newthings",  icon: "🛡️", title: "Avoids new things",  sub: "sticks to safe" },
+  { key: "giveup",     icon: "🎢", title: "Gives up fast",      sub: "stops when hard" },
+];
+
+// Number of completed projects before the Clan tab unlocks.
+// Mirrors Duolingo's leaderboard gate — the habit loop must
+// land first; clan competition is a reward, not a starting point.
+export const CLAN_UNLOCK_THRESHOLD = 3;
 
 export const TINT = 220; // sky-blue cat
 export const ACCENT_HUE = 295; // violet
@@ -113,60 +148,54 @@ export const CLAN_BOARD: { rank: number; clan: Clan; trend: "up" | "down" | "fla
 ];
 
 // ── Bugsy personality ─────────────────────────────────────────
+// Bond-first messaging. No clan/team references — Bugsy as the
+// child's pet, not a team-mate. Each line carries a mood so the
+// mascot's face matches the words.
 export type BugsyLine = { mood: Mood; text: string };
 
 export function bugsyLines(opts: {
   name: string;
-  clanName: string;
-  clanRank: number;
-  totalClans: number;
   completedToday: number;
   streak: number;
 }): BugsyLine[] {
-  const { name, clanName, clanRank, totalClans, completedToday, streak } = opts;
+  const { name, completedToday, streak } = opts;
   const friend = name?.trim() || "friend";
 
   const hour = typeof window !== "undefined" ? new Date().getHours() : 10;
-  const tod = hour < 12 ? "morning" : hour < 17 ? "afternoon" : hour < 21 ? "evening" : "night";
-  const greet = tod === "morning" ? "Morning" : tod === "night" ? "Up late" : "Hey";
+  const tod =
+    hour < 12 ? "morning" : hour < 17 ? "afternoon" : hour < 21 ? "evening" : "night";
+  const greet =
+    tod === "morning" ? "Morning" : tod === "night" ? "Up late" : "Hey";
 
   const lines: BugsyLine[] = [];
 
   // Opening line — personalised
   lines.push({
-    mood: "waving",
+    mood: "excited",
     text:
       completedToday > 0
         ? `${greet}, ${friend}! Proud of you today.`
-        : `${greet}, ${friend}! Let's earn some points.`,
+        : `${greet}, ${friend}! I missed you.`,
   });
 
   // Streak / consistency
   lines.push(
     streak >= 7
-      ? { mood: "cheer", text: `${streak} days in a row! You're on fire 🔥` }
+      ? { mood: "cheer", text: `${streak} days in a row! On fire 🔥` }
       : streak >= 3
       ? { mood: "happy", text: `${streak}-day streak. Don't break the chain.` }
-      : { mood: "happy", text: `Pssst — daily streaks unlock bonus points.` }
+      : { mood: "happy", text: "Just you and me. That's all I need." }
   );
 
-  // Clan context
-  lines.push(
-    clanRank <= 3
-      ? { mood: "cheer", text: `${clanName} is at #${clanRank}! Let's hold the lead.` }
-      : clanRank <= 10
-      ? { mood: "thinking", text: `${clanName} is #${clanRank}/${totalClans}. One push and we climb.` }
-      : { mood: "thinking", text: `We're falling behind. One project from you helps the whole clan.` }
-  );
-
-  // Encouragement / pet vibe
+  // Pet-vibe lines
   lines.push({ mood: "happy", text: "Tap me anytime — I love hanging out." });
-  lines.push({ mood: "cheer", text: "Watch me grow — each project gives me a new look." });
+  lines.push({ mood: "cheer", text: "I grow a little every day with you." });
+  lines.push({ mood: "thinking", text: `What should we do today, ${friend}?` });
   lines.push(
     tod === "morning"
-      ? { mood: "happy", text: "Easy way to start the day: pick a quick game." }
+      ? { mood: "happy", text: "Easy start: pick a quick game." }
       : tod === "night"
-      ? { mood: "sleep", text: "Almost bedtime. One game and we rest." }
+      ? { mood: "sleepy", text: "Almost bedtime. One game and we rest." }
       : { mood: "happy", text: "Got 5 minutes? Quick game?" }
   );
 

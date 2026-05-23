@@ -6,7 +6,69 @@ import { HATS, PROJECTS, type Project } from "../../lib/data";
 
 type Common = { tint: number };
 
-// ── Step 0 (parent-handover only): "Wait — is that you?!" ─────
+// ── Step 0 (NEW): explicit "pass the phone" prompt ────────────
+// The previous "Hand the phone to {child}" button left it unclear
+// whether the parent should literally hand over the device. This
+// screen makes it explicit, and the button is phrased from the
+// CHILD's perspective ("I'm Jamie!") — they have to physically
+// take the phone and tap it themselves to proceed.
+export function HandoverPrompt({
+  tint,
+  childName,
+  onNext,
+}: Common & { childName: string; onNext: () => void }) {
+  const friend = childName.trim() || "your child";
+  const [done, setDone] = useState(false);
+
+  return (
+    <ConvoStage step={4 /* rainbow finale wash */}>
+      <BugsyStage
+        mood="excited"
+        tint={tint}
+        size={170}
+        animationKey="hp-prompt"
+      />
+      <div style={{ marginTop: 8 }} />
+      <SpeechBubble
+        text={`Quick — hand the phone to ${friend}.`}
+        onDone={() => setDone(true)}
+        tail="up"
+      />
+
+      <div
+        style={{
+          marginTop: 16,
+          padding: "14px 16px",
+          borderRadius: 16,
+          border: "2px dashed var(--border)",
+          background: "var(--surface)",
+          textAlign: "center",
+          opacity: done ? 1 : 0,
+          transition: "opacity 0.4s ease",
+        }}
+      >
+        <div
+          style={{
+            fontFamily: "var(--font-nunito), system-ui",
+            fontSize: 13,
+            fontWeight: 700,
+            color: "var(--ink-muted)",
+            lineHeight: 1.4,
+          }}
+        >
+          {friend}, tap below once you&apos;re holding the phone.
+        </div>
+      </div>
+
+      <div style={{ flex: 1 }} />
+      <ChunkyButton onClick={onNext} disabled={!done}>
+        I&apos;m {friend}!
+      </ChunkyButton>
+    </ConvoStage>
+  );
+}
+
+// ── Step 1 (parent-handover only): "Wait — is that you?!" ─────
 // First time Bugsy ever "meets" the child. Bugsy already knows
 // their name because the parent set it up. Lean into that magic.
 export function ChildHelloKnown({
