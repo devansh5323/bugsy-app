@@ -562,38 +562,33 @@ export function ChildPlantQuest({
   onPlay: (projectId: string) => void;
   onSkip: () => void;
 }) {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [bubbleDone, setBubbleDone] = useState(false);
   const [idleNudge, setIdleNudge] = useState(false);
 
-  // After ~7 seconds without picking, Bugsy droops — storytelling
-  // beat: "if you don't tap I get sad" → tap rescues him.
+  // After ~7 seconds without tapping, Bugsy droops — same storytelling
+  // beat as before, just for one task instead of a list.
   useEffect(() => {
-    if (selectedId) return;
     const t = window.setTimeout(() => setIdleNudge(true), 7000);
     return () => window.clearTimeout(t);
-  }, [selectedId]);
+  }, []);
 
-  // Three fastest games — same selection rule the handover's
-  // FirstAction picker uses, so the experience stays consistent.
-  const choices: Project[] = PROJECTS
-    .filter((p) => p.kind === "game")
-    .sort((a, b) => a.mins - b.mins)
-    .slice(0, 3);
+  // Hard-coded single-task featured quest. Falls back to the
+  // fastest available game if Bird Spike ever gets removed
+  // from PROJECTS so onboarding never lands on an empty card.
+  const task: Project | null =
+    PROJECTS.find((p) => p.id === "p9") ??
+    PROJECTS.filter((p) => p.kind === "game").sort((a, b) => a.mins - b.mins)[0] ??
+    null;
 
   const friend = childName.trim() || "friend";
-  const picked = selectedId ? choices.find((c) => c.id === selectedId) ?? null : null;
-
-  const mood: Mood = picked ? "cheer" : idleNudge ? "sad" : "thinking";
-  const line = picked
-    ? `YES! ${picked.title} — let's gooo. I can already feel it.`
-    : idleNudge
-    ? `…${friend}? Pick something. I wanna see you in action.`
-    : "Okay — pick a quest. Every one you finish powers me up for real.";
+  const mood: Mood = idleNudge ? "sad" : "thinking";
+  const line = idleNudge
+    ? `…come on, ${friend}. Tap Play. I'm ready.`
+    : "Okay — here's your first quest. Tap Play and let's go!";
 
   return (
     <ConvoStage step={3 /* mint */}>
-      <BugsyStage mood={mood} tint={tint} size={140} animationKey={`pq-${mood}`} />
+      <BugsyStage mood={mood} tint={tint} size={130} animationKey={`pq-${mood}`} />
       <div style={{ marginTop: 8 }} />
       <SpeechBubble
         key={`pq-line-${mood}`}
@@ -601,132 +596,158 @@ export function ChildPlantQuest({
         onDone={() => setBubbleDone(true)}
       />
 
-      <div
-        style={{
-          marginTop: 18,
-          borderRadius: 18,
-          border: "1px solid var(--border)",
-          background: "var(--surface)",
-          overflow: "hidden",
-          opacity: bubbleDone ? 1 : 0,
-          transition: "opacity 0.4s ease",
-          pointerEvents: bubbleDone ? "auto" : "none",
-        }}
-      >
-        {choices.map((p, i) => {
-          const active = selectedId === p.id;
-          return (
-            <button
-              key={p.id}
-              onClick={() => setSelectedId(p.id)}
+      {/* Featured task card — dark, hero-styled. One quest, not a
+          picker, so the kid never stalls choosing. Coral primary
+          accents pop against the dark surface, matching the rest
+          of the Bugsy palette without feeling clinical. */}
+      {task && (
+        <div
+          style={{
+            marginTop: 18,
+            position: "relative",
+            borderRadius: 22,
+            background:
+              "linear-gradient(140deg, #2a1028 0%, #1a1420 100%)",
+            color: "#fff",
+            padding: "20px 22px",
+            overflow: "hidden",
+            boxShadow:
+              "0 16px 32px rgba(42, 16, 40, 0.32), 0 4px 0 #0e0a12",
+            opacity: bubbleDone ? 1 : 0,
+            transform: bubbleDone ? "translateY(0)" : "translateY(6px)",
+            transition: "opacity 0.4s ease, transform 0.4s ease",
+          }}
+        >
+          {/* Soft coral halo in the upper-right corner — pulls the
+              eye to the brand color and adds depth to the card. */}
+          <div
+            aria-hidden
+            style={{
+              position: "absolute",
+              top: -40,
+              right: -40,
+              width: 160,
+              height: 160,
+              borderRadius: "50%",
+              background:
+                "radial-gradient(circle, rgba(255, 92, 138, 0.55) 0%, rgba(255, 92, 138, 0) 70%)",
+              pointerEvents: "none",
+            }}
+          />
+          <div
+            style={{
+              display: "flex",
+              gap: 14,
+              alignItems: "center",
+              marginBottom: 12,
+              position: "relative",
+            }}
+          >
+            <div
               style={{
-                width: "100%",
-                textAlign: "left",
-                padding: "14px 16px",
-                cursor: "pointer",
-                background: active ? "var(--accent-soft)" : "var(--surface)",
-                border: "none",
-                borderTop: i === 0 ? "none" : "1px solid var(--border)",
+                width: 56,
+                height: 56,
+                borderRadius: 16,
+                background: "rgba(255, 92, 138, 0.18)",
                 display: "flex",
-                gap: 14,
                 alignItems: "center",
-                transition: "background 0.15s ease",
+                justifyContent: "center",
+                fontSize: 30,
+                flexShrink: 0,
+                boxShadow: "inset 0 0 0 1px rgba(255, 92, 138, 0.4)",
               }}
             >
+              {task.emoji}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
               <div
                 style={{
-                  width: 38,
-                  height: 38,
-                  borderRadius: 10,
-                  background: "var(--surface-1)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 20,
-                  flexShrink: 0,
+                  fontFamily: "var(--font-nunito), system-ui",
+                  fontSize: 10.5,
+                  fontWeight: 900,
+                  letterSpacing: 1.5,
+                  textTransform: "uppercase",
+                  color: "#FF5C8A",
+                  marginBottom: 4,
                 }}
               >
-                {p.emoji}
+                Your first quest
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div
-                  style={{
-                    fontFamily: "var(--font-nunito), system-ui",
-                    fontSize: 15.5,
-                    fontWeight: 800,
-                    color: active ? "var(--primary)" : "var(--ink)",
-                    letterSpacing: -0.15,
-                  }}
-                >
-                  {p.title}
-                </div>
-                <div
-                  style={{
-                    fontFamily: "var(--font-nunito), system-ui",
-                    fontSize: 12,
-                    fontWeight: 700,
-                    color: "var(--ink-muted)",
-                    marginTop: 2,
-                  }}
-                >
-                  {p.mins} min · +{p.points} pts
-                </div>
+              <div
+                style={{
+                  fontFamily: "var(--font-nunito), system-ui",
+                  fontSize: 22,
+                  fontWeight: 900,
+                  color: "#fff",
+                  letterSpacing: -0.4,
+                  lineHeight: 1.1,
+                }}
+              >
+                {task.title}
               </div>
-              {active ? (
-                <div
-                  style={{
-                    width: 22,
-                    height: 22,
-                    borderRadius: 999,
-                    background: "var(--primary)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                    boxShadow: "0 2px 0 var(--primary-shadow)",
-                  }}
-                  aria-hidden
-                >
-                  <svg width="12" height="12" viewBox="0 0 12 12">
-                    <path
-                      d="M2 6l3 3 5-6"
-                      stroke="#fff"
-                      strokeWidth="2.5"
-                      fill="none"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-              ) : (
-                <span
-                  style={{
-                    fontFamily: "var(--font-nunito), system-ui",
-                    fontSize: 10.5,
-                    fontWeight: 800,
-                    color: "var(--primary)",
-                    background: "var(--accent-soft)",
-                    padding: "4px 10px",
-                    borderRadius: 999,
-                    letterSpacing: 0.8,
-                    textTransform: "uppercase",
-                    flexShrink: 0,
-                  }}
-                >
-                  Pick
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+            </div>
+          </div>
+
+          <div
+            style={{
+              fontFamily: "var(--font-nunito), system-ui",
+              fontSize: 13.5,
+              fontWeight: 600,
+              lineHeight: 1.5,
+              color: "rgba(255, 255, 255, 0.78)",
+              marginBottom: 14,
+              position: "relative",
+            }}
+          >
+            {task.blurb}
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              gap: 8,
+              flexWrap: "wrap",
+              position: "relative",
+            }}
+          >
+            <span
+              style={{
+                padding: "6px 12px",
+                borderRadius: 999,
+                background: "rgba(255, 255, 255, 0.10)",
+                fontFamily: "var(--font-nunito), system-ui",
+                fontSize: 12,
+                fontWeight: 800,
+                color: "#fff",
+                letterSpacing: 0.3,
+              }}
+            >
+              ⏱ {task.mins} min
+            </span>
+            <span
+              style={{
+                padding: "6px 12px",
+                borderRadius: 999,
+                background: "rgba(255, 92, 138, 0.20)",
+                fontFamily: "var(--font-nunito), system-ui",
+                fontSize: 12,
+                fontWeight: 800,
+                color: "#FF5C8A",
+                letterSpacing: 0.3,
+              }}
+            >
+              +{task.points} Bugsy power
+            </span>
+          </div>
+        </div>
+      )}
 
       <div style={{ flex: 1, minHeight: 8 }} />
       <ChunkyButton
-        onClick={() => selectedId && onPlay(selectedId)}
-        disabled={!selectedId}
+        onClick={() => task && onPlay(task.id)}
+        disabled={!task}
       >
-        {picked ? "Play this quest →" : "Pick a quest first"}
+        Play this quest →
       </ChunkyButton>
       <button
         onClick={onSkip}
