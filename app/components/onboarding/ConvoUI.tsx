@@ -300,6 +300,7 @@ export function BugsyStage({
   animationKey,
   size = 220,
   lean,
+  angerLevel,
 }: {
   mood: Mood;
   tint: number;
@@ -307,6 +308,7 @@ export function BugsyStage({
   animationKey?: string | number;
   size?: number;
   lean?: boolean;
+  angerLevel?: number;
 }) {
   return (
     <div
@@ -319,7 +321,7 @@ export function BugsyStage({
           : "bugsy-pop 0.6s cubic-bezier(0.22, 1.5, 0.36, 1)",
       }}
     >
-      <Bobo mood={mood} tint={tint} size={size} hat={hat} />
+      <Bobo mood={mood} tint={tint} size={size} hat={hat} angerLevel={angerLevel} />
     </div>
   );
 }

@@ -14,11 +14,16 @@ export function Typewriter({
   onDone,
   className,
   style,
+  speedMultiplier = 1,
 }: {
   text: string;
   onDone?: () => void;
   className?: string;
   style?: React.CSSProperties;
+  // Slow (>1) or speed up (<1) the typewriter without affecting
+  // the global default — handy for moments that need extra dwell
+  // time so a kid can actually read along (e.g. game tutorials).
+  speedMultiplier?: number;
 }) {
   const [shown, setShown] = useState("");
   const [done, setDone] = useState(false);
@@ -31,6 +36,7 @@ export function Typewriter({
     setShown("");
     setDone(false);
 
+    const mult = Math.max(0.1, speedMultiplier);
     let i = 0;
     const tick = () => {
       if (cancelled) return;
@@ -42,15 +48,15 @@ export function Typewriter({
       i += 1;
       setShown(text.slice(0, i));
       const prev = text.charAt(i - 1);
-      timer = setTimeout(tick, charDelay(prev));
+      timer = setTimeout(tick, charDelay(prev) * mult);
     };
 
-    timer = setTimeout(tick, 220); // small lead-in pause
+    timer = setTimeout(tick, 220 * mult); // small lead-in pause
     return () => {
       cancelled = true;
       if (timer) clearTimeout(timer);
     };
-  }, [text]);
+  }, [text, speedMultiplier]);
 
   const skip = () => {
     setShown(text);

@@ -9,6 +9,13 @@ type BoboProps = {
   size?: number;
   animate?: boolean;
   hat?: string | null;
+  // Continuous anger 0..1. When provided, drives the red body
+  // tint, V-brows, steam, messy fur, and tremble amplitude
+  // smoothly — independent of mood. Lets callers (the soothe
+  // screen, etc.) interpolate the "cool-down" rather than
+  // popping between discrete moods. Falls back to 1 when
+  // mood === "angry" and angerLevel is omitted (back-compat).
+  angerLevel?: number;
 };
 
 // Hats sit above the ears — y centred around -120
@@ -78,11 +85,25 @@ function Hat({ kind }: { kind: string }) {
   }
 }
 
-export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, hat }: BoboProps) {
-  const h = tint;
-  const bodyTop = `oklch(88% 0.10 ${h})`;
-  const bodyMid = `oklch(76% 0.15 ${h})`;
-  const bodyBottom = `oklch(58% 0.17 ${h})`;
+export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, hat, angerLevel }: BoboProps) {
+  // Continuous anger 0..1. mood="angry" implies 1 when angerLevel
+  // is omitted, so older callers still get the full angry look.
+  const safeAnger = Math.max(
+    0,
+    Math.min(1, angerLevel ?? (mood === "angry" ? 1 : 0)),
+  );
+  // Lerp hue along the shortest path around the color wheel.
+  // For tint=220 (sky-blue) → 25 (angry red) the short path runs
+  // through magenta/pink (~290), so the cool-down "fades" through
+  // a warm pink instead of an ugly yellow-green detour.
+  const calmH = tint;
+  const angryH = 25;
+  const deltaH = ((angryH - calmH + 540) % 360) - 180;
+  const h = (((calmH + deltaH * safeAnger) % 360) + 360) % 360;
+  const lerp = (a: number, b: number) => a + (b - a) * safeAnger;
+  const bodyTop = `oklch(${lerp(88, 82)}% ${lerp(0.10, 0.13)} ${h})`;
+  const bodyMid = `oklch(${lerp(76, 68)}% ${lerp(0.15, 0.21)} ${h})`;
+  const bodyBottom = `oklch(${lerp(58, 50)}% ${lerp(0.17, 0.22)} ${h})`;
   const earInner = `oklch(78% 0.14 ${(h + 20) % 360})`;
   const cheek = `oklch(72% 0.17 ${(h + 12) % 360})`;
   const highlight = `oklch(97% 0.03 ${h})`;
@@ -115,6 +136,7 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
     excited:  { lx: -18, rx: 18, y: -2, r: 8, bigShine: true },
     worried:  { lx: -18, rx: 18, y: -2, r: 5, worried: true },
     hungry:   { lx: -18, rx: 18, y: 0,  r: 5, pupilDown: true },
+    angry:    { lx: -18, rx: 18, y: -2, r: 5 },
   };
   const eyes = eyesMap[mood] ?? eyesMap.happy;
 
@@ -135,6 +157,17 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
         <ellipse cx="0" cy="25" rx="3" ry="1.5" fill={nose}/>
       </>
     ),
+    // Jagged snarl — bared teeth zigzag
+    angry: (
+      <path
+        d="M -14 18 L -10 22 L -6 18 L -2 22 L 2 18 L 6 22 L 10 18 L 14 22"
+        stroke="#2a1028"
+        strokeWidth="2.6"
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    ),
   };
 
   return (
@@ -147,6 +180,19 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
         animation: animate ? "bobo-float 4.2s ease-in-out infinite" : "none",
       }}
     >
+      <div
+        style={
+          {
+            width: "100%",
+            height: "100%",
+            animation:
+              animate && safeAnger > 0.02
+                ? "bobo-tremble 0.18s ease-in-out infinite"
+                : "none",
+            "--anger": safeAnger,
+          } as React.CSSProperties
+        }
+      >
       <svg viewBox="-120 -140 240 260" width={size} height={size} style={{ overflow: "visible" }}>
         <defs>
           <radialGradient id={`${id}-body`} cx="0.35" cy="0.25" r="0.9">
@@ -170,6 +216,28 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
         </defs>
 
         <ellipse cx="0" cy="96" rx="72" ry="10" fill={shadow}/>
+
+        {/* Feet — rendered outside the squish group so they stay
+            anchored to the ground while the body bobs above them.
+            Duolingo-style: two rounded ovals with three toe-beans
+            each. Use bodyMid for the foot surface and bodyBottom
+            for the soft pad shadows. */}
+        <g>
+          <ellipse cx="-26" cy="86" rx="22" ry="11" fill={bodyMid}/>
+          <ellipse cx="-26" cy="89" rx="9" ry="3" fill={bodyBottom} opacity="0.40"/>
+          <circle cx="-38" cy="80" r="2.6" fill={bodyBottom} opacity="0.55"/>
+          <circle cx="-26" cy="77" r="2.6" fill={bodyBottom} opacity="0.55"/>
+          <circle cx="-14" cy="80" r="2.6" fill={bodyBottom} opacity="0.55"/>
+          {/* Soft highlight stroke on top of the foot */}
+          <path d="M -42 83 Q -26 76 -10 83" stroke={highlight} strokeWidth="2" fill="none" opacity="0.45" strokeLinecap="round"/>
+
+          <ellipse cx="26" cy="86" rx="22" ry="11" fill={bodyMid}/>
+          <ellipse cx="26" cy="89" rx="9" ry="3" fill={bodyBottom} opacity="0.40"/>
+          <circle cx="14" cy="80" r="2.6" fill={bodyBottom} opacity="0.55"/>
+          <circle cx="26" cy="77" r="2.6" fill={bodyBottom} opacity="0.55"/>
+          <circle cx="38" cy="80" r="2.6" fill={bodyBottom} opacity="0.55"/>
+          <path d="M 10 83 Q 26 76 42 83" stroke={highlight} strokeWidth="2" fill="none" opacity="0.45" strokeLinecap="round"/>
+        </g>
 
         <g
           style={{
@@ -202,6 +270,71 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
                C -94 -52 -56 -88 0 -88 Z"
             fill={`url(#${id}-body)`}
           />
+
+          {/* Arms / paws — Duolingo-style, sticking out at chest
+              level, slightly outside the body silhouette. Inside
+              the squish group so they bob with the body. Left arm
+              is always rendered; right arm is suppressed during
+              `waving` mood since the wave animation already draws
+              a raised right arm. */}
+          <g>
+            <ellipse
+              cx="-82"
+              cy="48"
+              rx="13"
+              ry="20"
+              fill={bodyMid}
+              transform="rotate(-12 -82 48)"
+            />
+            {/* paw pad — soft darker patch on the front of the paw */}
+            <ellipse
+              cx="-86"
+              cy="62"
+              rx="6"
+              ry="4"
+              fill={bodyBottom}
+              opacity="0.45"
+              transform="rotate(-12 -86 62)"
+            />
+            {/* highlight stroke down the outside of the arm */}
+            <path
+              d="M -92 32 Q -96 48 -90 64"
+              stroke={highlight}
+              strokeWidth="2.5"
+              fill="none"
+              opacity="0.5"
+              strokeLinecap="round"
+            />
+          </g>
+          {mood !== "waving" && (
+            <g>
+              <ellipse
+                cx="82"
+                cy="48"
+                rx="13"
+                ry="20"
+                fill={bodyMid}
+                transform="rotate(12 82 48)"
+              />
+              <ellipse
+                cx="86"
+                cy="62"
+                rx="6"
+                ry="4"
+                fill={bodyBottom}
+                opacity="0.45"
+                transform="rotate(12 86 62)"
+              />
+              <path
+                d="M 92 32 Q 96 48 90 64"
+                stroke={highlight}
+                strokeWidth="2.5"
+                fill="none"
+                opacity="0.5"
+                strokeLinecap="round"
+              />
+            </g>
+          )}
 
           <ellipse cx="0" cy="56" rx="42" ry="26" fill={tummy} opacity="0.55"/>
 
@@ -282,7 +415,13 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
 
           <path d="M 0 8 L -6 14 Q 0 18 6 14 Z" fill={nose} stroke="#2a1028" strokeWidth="1.2" strokeLinejoin="round"/>
           <path d="M 0 15 L 0 17" stroke="#2a1028" strokeWidth="2" strokeLinecap="round"/>
-          {mouthMap[mood]}
+          {/* Mood mouth — fades out as anger rises so we can crossfade
+              the snarl in below without double-rendering. */}
+          <g style={{ opacity: 1 - safeAnger }}>{mouthMap[mood]}</g>
+          {/* Snarl crossfades in with anger so the cool-down isn't a snap. */}
+          {safeAnger > 0.01 && mood !== "angry" && (
+            <g style={{ opacity: safeAnger }}>{mouthMap.angry}</g>
+          )}
 
           {!eyes.closed && (
             <g stroke="#2a1028" strokeWidth="1.6" strokeLinecap="round" opacity="0.7" fill="none">
@@ -294,7 +433,11 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
           )}
 
           {mood === "cheer" && (
-            <path d="M -5 20 Q 0 28 5 20 Q 5 24 0 26 Q -5 24 -5 20 Z" fill={nose}/>
+            <path
+              d="M -5 20 Q 0 28 5 20 Q 5 24 0 26 Q -5 24 -5 20 Z"
+              fill={nose}
+              style={{ opacity: 1 - safeAnger }}
+            />
           )}
 
           {mood === "waving" && (
@@ -375,9 +518,61 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
             />
           )}
 
+          {/* Angry — V-brows, messy fur tufts, steam puffs above head.
+              Opacity is driven by safeAnger so the whole rig fades
+              smoothly with each soothing tap. */}
+          {safeAnger > 0.01 && (
+            <g style={{ opacity: safeAnger }}>
+              {/* Sharp V-brows pulled in toward the nose */}
+              <path
+                d="M -28 -16 L -8 -8"
+                stroke="#2a1028"
+                strokeWidth="4"
+                strokeLinecap="round"
+              />
+              <path
+                d="M 28 -16 L 8 -8"
+                stroke="#2a1028"
+                strokeWidth="4"
+                strokeLinecap="round"
+              />
+              {/* Messy fur tufts sticking up off the head silhouette */}
+              <g fill={bodyBottom} stroke={bodyBottom} strokeWidth="1" strokeLinejoin="round">
+                <path d="M -56 -78 L -50 -92 L -42 -78 Z"/>
+                <path d="M -28 -90 L -22 -106 L -14 -90 Z"/>
+                <path d="M 6 -90 L 12 -108 L 18 -90 Z"/>
+                <path d="M 36 -82 L 42 -98 L 48 -82 Z"/>
+                <path d="M -68 -52 L -78 -62 L -64 -58 Z"/>
+                <path d="M 68 -52 L 80 -64 L 64 -58 Z"/>
+              </g>
+              {/* Steam puffs above the head, animated */}
+              <g
+                style={{
+                  animation: animate ? "steam-puff 1.3s ease-in-out infinite" : "none",
+                  transformOrigin: "center",
+                }}
+              >
+                <ellipse cx="-30" cy="-120" rx="8" ry="5" fill="#cccccc" opacity="0.85"/>
+                <ellipse cx="-22" cy="-130" rx="6" ry="4" fill="#cccccc" opacity="0.65"/>
+                <ellipse cx="-14" cy="-140" rx="4" ry="3" fill="#cccccc" opacity="0.45"/>
+              </g>
+              <g
+                style={{
+                  animation: animate ? "steam-puff 1.6s ease-in-out 0.4s infinite" : "none",
+                  transformOrigin: "center",
+                }}
+              >
+                <ellipse cx="30" cy="-120" rx="8" ry="5" fill="#cccccc" opacity="0.85"/>
+                <ellipse cx="22" cy="-132" rx="6" ry="4" fill="#cccccc" opacity="0.65"/>
+                <ellipse cx="14" cy="-142" rx="4" ry="3" fill="#cccccc" opacity="0.45"/>
+              </g>
+            </g>
+          )}
+
           {hat && <Hat kind={hat} />}
         </g>
       </svg>
+      </div>
     </div>
   );
 }

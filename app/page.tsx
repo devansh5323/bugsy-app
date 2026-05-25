@@ -32,13 +32,15 @@ import {
   ChildAge,
   ChildAlmostDone,
   ChildDailyGoal,
+  ChildFeedBugsy,
   ChildIntro,
-  ChildLevelUp,
   ChildName,
   ChildParentDetails,
+  ChildPlantQuest,
+  ChildPowerSecret,
   ChildPromise,
   ChildSendoff,
-  ChildTeamUp,
+  ChildSootheBugsy,
 } from "./components/onboarding/ChildFlow";
 import { LoginScreen } from "./components/onboarding/LoginScreen";
 import { WhoAreYou } from "./components/onboarding/WhoAreYou";
@@ -50,6 +52,7 @@ import {
   HandoverPrompt,
   PinkyPromise,
 } from "./components/onboarding/Handover";
+import { BirdSpikeGame } from "./components/BirdSpikeGame";
 import { TourOverlay, type TourStep } from "./components/TourOverlay";
 import { ProgressContext } from "./components/onboarding/ConvoUI";
 import { VoiceProvider } from "./lib/voice";
@@ -92,6 +95,12 @@ const TOUR_STEPS: TourStep[] = [
 export default function Home() {
   const [stage, setStage] = useState<Stage>({ kind: "welcome" });
   const [prevStep, setPrevStep] = useState(0);
+
+  // When the child plays a real quest mid-onboarding (step 3
+  // picker), this records which child step to drop them back on
+  // after the reward screen. null = no resume pending (so the
+  // reward routes to app home as normal).
+  const [onboardingResumeStep, setOnboardingResumeStep] = useState<number | null>(null);
 
   // Onboarding state
   const [userType, setUserType] = useState<UserType | null>(null);
@@ -145,6 +154,9 @@ export default function Home() {
           setEquippedHat(data.equippedHat);
         }
         if (typeof data.seenHomeTour === "boolean") setSeenHomeTour(data.seenHomeTour);
+        if (typeof data.onboardingResumeStep === "number" || data.onboardingResumeStep === null) {
+          setOnboardingResumeStep(data.onboardingResumeStep);
+        }
       }
     } catch {
       // ignore corrupt state — fall back to defaults
@@ -173,6 +185,7 @@ export default function Home() {
         totalPoints,
         equippedHat,
         seenHomeTour,
+        onboardingResumeStep,
       };
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     } catch {
@@ -193,6 +206,7 @@ export default function Home() {
     totalPoints,
     equippedHat,
     seenHomeTour,
+    onboardingResumeStep,
   ]);
 
   const clan = (() => {
@@ -219,6 +233,7 @@ export default function Home() {
     setTotalPoints(0);
     setEquippedHat(null);
     setSeenHomeTour(false);
+    setOnboardingResumeStep(null);
     setPrevStep(0);
     setStage({ kind: "welcome" });
     if (typeof window !== "undefined") {
@@ -456,15 +471,36 @@ export default function Home() {
     if (stage.kind === "child") {
       const friend = childName.trim() || "friend";
       switch (stage.step) {
-        // ── Meet Bugsy + bond beats first ──
+        // ── Meet Bugsy + gesture bond beats first ──
         case 0:
           return <ChildIntro tint={TINT} onNext={advanceChild} />;
         case 1:
-          return <ChildTeamUp tint={TINT} onNext={advanceChild} />;
+          return <ChildSootheBugsy tint={TINT} onNext={advanceChild} />;
         case 2:
-          return <ChildLevelUp tint={TINT} onNext={advanceChild} />;
-        // ── Now collect: name, age, daily goal ──
+          return <ChildFeedBugsy tint={TINT} onNext={advanceChild} />;
+        // ── The narrative bridge: real-world tasks power Bugsy
+        // up more than snacks. Sets up *why* the next screen
+        // (quest picker) matters. ──
         case 3:
+          return <ChildPowerSecret tint={TINT} onNext={advanceChild} />;
+        // ── Teach the core loop: pick a real quest and play it.
+        // The kid taps "Play this quest" → ScreenProjectDetail →
+        // ScreenReward (with points flying into the clan rank) →
+        // and lands back here on the next child step. ──
+        case 4:
+          return (
+            <ChildPlantQuest
+              tint={TINT}
+              childName={friend}
+              onPlay={(id) => {
+                setOnboardingResumeStep(stage.step + 1);
+                setStage({ kind: "project", projectId: id });
+              }}
+              onSkip={advanceChild}
+            />
+          );
+        // ── Now collect: name, age, daily goal ──
+        case 5:
           return (
             <ChildName
               tint={TINT}
@@ -473,7 +509,7 @@ export default function Home() {
               onNext={advanceChild}
             />
           );
-        case 4:
+        case 6:
           return (
             <ChildAge
               tint={TINT}
@@ -483,7 +519,7 @@ export default function Home() {
               onNext={advanceChild}
             />
           );
-        case 5:
+        case 7:
           return (
             <ChildDailyGoal
               tint={TINT}
@@ -493,9 +529,9 @@ export default function Home() {
             />
           );
         // ── Promise, sendoff, grown-up handoff ──
-        case 6:
+        case 8:
           return <ChildPromise tint={TINT} onNext={advanceChild} />;
-        case 7:
+        case 9:
           return (
             <ChildSendoff
               tint={TINT}
@@ -504,7 +540,7 @@ export default function Home() {
               onEnter={advanceChild}
             />
           );
-        case 8:
+        case 10:
           return (
             <ChildAlmostDone
               tint={TINT}
@@ -512,7 +548,7 @@ export default function Home() {
               onNext={advanceChild}
             />
           );
-        case 9:
+        case 11:
           return (
             <ChildAdultLogin
               tint={TINT}
@@ -520,7 +556,7 @@ export default function Home() {
               onNext={advanceChild}
             />
           );
-        case 10:
+        case 12:
           return (
             <ChildParentDetails
               tint={TINT}
@@ -534,7 +570,7 @@ export default function Home() {
           );
         // ── Grown-up shares what they're noticing, then sees
         // Bugsy's response (same beats as the parent flow) ──
-        case 11:
+        case 13:
           return (
             <ParentNoticing
               tint={TINT}
@@ -544,7 +580,7 @@ export default function Home() {
               onNext={advanceChild}
             />
           );
-        case 12:
+        case 14:
           return <ParentAchieve tint={TINT} onNext={advanceChild} />;
       }
       return null;
@@ -594,6 +630,16 @@ export default function Home() {
         setStage({ kind: "app", tab: "projects" });
         return null;
       }
+      // Bird Spike has its own canvas game UI — exit "completes"
+      // the project and flows into the standard reward screen.
+      if (project.id === "p9") {
+        return (
+          <BirdSpikeGame
+            tint={TINT}
+            onExit={() => completeProject(project.id)}
+          />
+        );
+      }
       return (
         <ScreenProjectDetail
           tint={TINT}
@@ -635,7 +681,18 @@ export default function Home() {
           clanBefore={CLAN_BASE + previousPoints}
           clanAfter={CLAN_BASE + totalPoints}
           clanName={hasClan ? clan.name : null}
-          onContinue={() => setStage({ kind: "app", tab: "home" })}
+          onContinue={() => {
+            // If this completion came from the onboarding quest
+            // picker, drop the kid back into the rest of the
+            // onboarding flow instead of the app home.
+            if (onboardingResumeStep !== null) {
+              const resume = onboardingResumeStep;
+              setOnboardingResumeStep(null);
+              setStage({ kind: "child", step: resume });
+            } else {
+              setStage({ kind: "app", tab: "home" });
+            }
+          }}
         />
       );
     }

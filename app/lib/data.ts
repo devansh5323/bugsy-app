@@ -10,7 +10,8 @@ export type Mood =
   | "sleepy"   // half-asleep, waiting
   | "excited"  // big payoff moments
   | "worried"  // mildly anxious
-  | "hungry";  // wants attention / food
+  | "hungry"   // wants attention / food
+  | "angry";   // furious — messy fur, steam, red tint
 export type Tab = "home" | "projects" | "leaderboard" | "me";
 export type UserType = "parent" | "child";
 export type Relationship = "mom" | "dad" | "guardian";
@@ -106,6 +107,10 @@ export const AGE_MAX = 15;
 
 // ── Today's projects ──────────────────────────────────────────
 export const PROJECTS: Project[] = [
+  // Bird Spike — Bugsy-flavoured Flappy-style reaction game.
+  // Mins is intentionally 1 so it sorts to the very top of the
+  // "fastest games" picker the onboarding uses.
+  { id: "p9", title: "Bird Spike",      category: "educational", kind: "game",    blurb: "Tap to flap Bugsy through the spikes. We use your reactions to track focus.", points: 50, mins: 1,  emoji: "🐦", proof: "tap" },
   { id: "p1", title: "Tower of Cards",  category: "physical",    kind: "project", blurb: "Build the tallest tower you can from a deck of cards. Snap a photo when it stands tall.", points: 60, mins: 20, emoji: "🃏", proof: "photo" },
   { id: "p2", title: "Number Spark",    category: "educational", kind: "game",    blurb: "Beat the working-memory puzzle. 10 quick rounds.", points: 40, mins: 5,  emoji: "🔢", proof: "tap" },
   { id: "p3", title: "Doodle a Beast",  category: "creative",    kind: "project", blurb: "Sketch a creature that doesn't exist. Anything goes.", points: 50, mins: 15, emoji: "🐲", proof: "photo" },

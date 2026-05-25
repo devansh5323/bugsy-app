@@ -1145,7 +1145,11 @@ export function ScreenReward({
         ))}
       </svg>
 
-      {/* Header — Bugsy + title (always visible) */}
+      {/* Header — Bugsy reacting to the kid's win, in his own voice.
+          The speech bubble is the load-bearing emotional beat: it
+          explicitly names the cause/effect ("you did this →
+          I'm stronger"), so the rest of the reward stats below
+          read as evidence rather than abstract numbers. */}
       <div style={{ textAlign: "center" }}>
         <div style={{ animation: "pop-in 0.6s cubic-bezier(0.22, 1.5, 0.36, 1)" }}>
           <Bobo
@@ -1153,6 +1157,47 @@ export function ScreenReward({
             tint={tint}
             size={130}
             hat={unlockedHat ? unlockedHat.key : equippedHat ?? undefined}
+          />
+        </div>
+        {/* Bugsy speech bubble — first-person reaction, with a
+            down-pointing tail tying it back to the mascot above.
+            Inlined here (not imported from ConvoUI) so the reward
+            screen stays self-contained from the onboarding flow. */}
+        <div
+          style={{
+            position: "relative",
+            display: "inline-block",
+            margin: "10px auto 0",
+            padding: "12px 18px",
+            maxWidth: 300,
+            borderRadius: 20,
+            background: "var(--surface)",
+            border: "1px solid var(--border-strong)",
+            color: "var(--ink)",
+            fontFamily: "var(--font-nunito), system-ui",
+            fontSize: 15,
+            fontWeight: 800,
+            lineHeight: 1.4,
+            textAlign: "center",
+            boxShadow: "0 4px 14px rgba(0,0,0,0.10)",
+            animation: "bubble-pop 0.45s cubic-bezier(0.22, 1.5, 0.36, 1) 0.15s backwards",
+          }}
+        >
+          {`YESSS${childName ? `, ${childName}` : ""}! I felt that — you just powered me up!`}
+          <span
+            aria-hidden
+            style={{
+              position: "absolute",
+              top: -8,
+              left: "50%",
+              transform: "translateX(-50%) rotate(45deg)",
+              width: 14,
+              height: 14,
+              background: "var(--surface)",
+              borderTop: "1px solid var(--border-strong)",
+              borderLeft: "1px solid var(--border-strong)",
+              borderRadius: 2,
+            }}
           />
         </div>
         <div
@@ -1163,33 +1208,21 @@ export function ScreenReward({
             color: "var(--accent)",
             textTransform: "uppercase",
             letterSpacing: 1.2,
-            marginTop: 4,
+            marginTop: 14,
           }}
         >
-          Project complete
+          Bugsy leveled up
         </div>
-        <h1
-          style={{
-            fontFamily: "var(--font-fraunces), serif",
-            fontSize: 28,
-            fontWeight: 500,
-            color: "var(--ink)",
-            margin: "4px 0 4px",
-            letterSpacing: -0.6,
-            fontVariationSettings: "'SOFT' 100, 'WONK' 1",
-          }}
-        >
-          Nice work{childName ? `, ${childName}` : ""}!
-        </h1>
         <div
           style={{
             fontFamily: "var(--font-inter), system-ui",
             fontSize: 13.5,
             color: "var(--ink-60)",
             letterSpacing: -0.1,
+            marginTop: 4,
           }}
         >
-          You finished <b style={{ color: "var(--ink)" }}>{project.title}</b>.
+          Because you finished <b style={{ color: "var(--ink)" }}>{project.title}</b>.
         </div>
       </div>
 
@@ -1350,7 +1383,7 @@ export function ScreenReward({
                 letterSpacing: -0.05,
               }}
             >
-              <b style={{ color: "var(--ink)" }}>See you tomorrow?</b> One project a day keeps the streak alive.
+              <b style={{ color: "var(--ink)" }}>Come back tomorrow?</b> Every quest you finish powers me up more.
             </div>
           </div>
           <PrimaryButton onClick={onContinue}>Continue</PrimaryButton>
@@ -1438,7 +1471,7 @@ function BigPoints({ points }: { points: number }) {
           marginTop: 2,
         }}
       >
-        Points
+        Bugsy power
       </div>
     </div>
   );

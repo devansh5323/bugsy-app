@@ -1,30 +1,43 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BugsyStage, ChunkyButton, ConvoStage, SpeechBubble } from "./ConvoUI";
 import { LoginScreen } from "./LoginScreen";
 import {
   AGE_MAX,
   AGE_MIN,
   OPEN_CLANS,
+  PROJECTS,
   RELATIONSHIP_OPTIONS,
   type ClanIntent,
+  type Mood,
+  type Project,
   type Relationship,
 } from "../../lib/data";
 
-// 13 screens after the shared "Who are you?" branch.
-// Storyline: Bugsy says hi → bond explainer → name/age/goal →
-// promise + sendoff → grown-up takes over (login + their details)
-// → grown-up shares what they're noticing → Bugsy responds with
-// what the child will achieve → home. Same achieve beat lands here
-// as it does in the parent flow, just on the grown-up's screen.
-export const CHILD_STEPS = 13;
+// 15 screens after the shared "Who are you?" branch.
+// Storyline (chapter by chapter):
+//   1. Meet Bugsy — he's been waiting, he had a rough day
+//   2. Soothe him — taps build the bond
+//   3. Feed him — caring grows him (visible hat unlocks)
+//   4. The secret — real-world tasks power him up FOR REAL
+//   5. Pick a quest — play one together to see the loop close
+//   6-8. Identity — name, age, daily goal commitment
+//   9-10. Pinky promise + sendoff
+//   11-14. Hand the phone to a grown-up for sign-in + details +
+//          what they're noticing + Bugsy's response
+// The order is the load-bearing piece: every beat sets up the
+// next, so no screen lands as a sudden product feature.
+export const CHILD_STEPS = 15;
 
 type Common = { tint: number };
 
 // ── C0: Bugsy says hi (no name ask) ──────────────────────────
-// Pure intro — Bugsy makes a big entrance. Name collection
-// happens later, after the team-up and level-up bond beats.
+// Story opener — Bugsy makes a big entrance and seeds emotional
+// stakes: he's been waiting, and today's been rough. That sets
+// up the soothe gesture (next screen) so it doesn't feel like a
+// sudden mood swing. Name collection happens later, after the
+// bond beats have landed.
 export function ChildIntro({
   tint,
   onNext,
@@ -35,7 +48,7 @@ export function ChildIntro({
       <BugsyStage mood="cheer" tint={tint} size={200} animationKey="c-intro" />
       <div style={{ marginTop: 8 }} />
       <SpeechBubble
-        text="Oh. My. Goodness. You're here! I'm Bugsy."
+        text="Oh. My. Goodness. You're HERE. I'm Bugsy — I've been waiting forever. Phew, I really needed you today…"
         onDone={() => setDone(true)}
       />
       <div style={{ flex: 1 }} />
@@ -162,79 +175,296 @@ export function ChildAge({
   );
 }
 
-// ── C2: real talk — team-up ───────────────────────────────────
-// Bubble: "Okay. Real talk. You and me? We're a team now."
-export function ChildTeamUp({
+// ── C2 (gesture): cool down an angry Bugsy ───────────────────
+// Replaces the old passive "team-up" beat. Bugsy starts furious
+// (messy fur, red tint, steam). Each tap calms him a step. The
+// child can see and feel that their touch matters to Bugsy —
+// the bond is built through interaction, not assertion.
+//
+// Anger drains through a continuous angerLevel that's smoothly
+// animated between tap states, so the body tint, brows, steam,
+// and tremble all cool down over ~700ms after each tap rather
+// than snapping at threshold mood changes.
+const SOOTHE_TAPS_TO_CALM = 6;
+// Storytelling beat. First line names the *cause* explicitly —
+// Bugsy is grumpy because no challenge has powered him up — so
+// the kid understands the rule before they ever do a quest.
+// Last line names the *bond*: "every tap, we're connected", which
+// is the mechanic the rest of the flow keeps amplifying.
+const SOOTHE_LINES = [
+  "Ugh — too long without a challenge to power me up. That's why I'm like THIS. Tap to cool me down?",
+  "ugh… still grumpy.",
+  "okay… a little better.",
+  "phew… that's helping.",
+  "almost there…",
+  "much better. seriously, thanks.",
+  "you're the best. I felt that — every tap. We're connected now.",
+];
+type Ripple = { id: number; x: number; y: number };
+
+// Tween a numeric value smoothly toward each new target over `durationMs`.
+// Used to animate angerLevel between tap-state snapshots so the color and
+// overlays cool down rather than popping. ease-out cubic feels best for
+// this kind of decay — early motion is dramatic, settles softly.
+function useSmoothValue(target: number, durationMs: number) {
+  const [value, setValue] = useState(target);
+  const valueRef = useRef(target);
+  valueRef.current = value;
+  useEffect(() => {
+    if (value === target) return;
+    let raf = 0;
+    const start = valueRef.current;
+    const startTime = performance.now();
+    const tick = (t: number) => {
+      const p = Math.min(1, (t - startTime) / durationMs);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setValue(start + (target - start) * eased);
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+    // value is captured via ref; intentionally not a dep
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [target, durationMs]);
+  return value;
+}
+
+export function ChildSootheBugsy({
   tint,
   onNext,
 }: Common & { onNext: () => void }) {
-  const [done, setDone] = useState(false);
+  const [taps, setTaps] = useState(0);
+  const [ripples, setRipples] = useState<Ripple[]>([]);
+  const calmed = taps >= SOOTHE_TAPS_TO_CALM;
+
+  // Mood stays "happy" the whole time and only flips to "cheer"
+  // when fully calm — angerLevel does the heavy visual lifting so
+  // there are no mid-flow snaps between mood overlays.
+  const mood: Mood = calmed ? "cheer" : "happy";
+  const targetAnger = calmed ? 0 : Math.max(0, 1 - taps / SOOTHE_TAPS_TO_CALM);
+  const smoothAnger = useSmoothValue(targetAnger, 700);
+
+  const line = SOOTHE_LINES[Math.min(taps, SOOTHE_LINES.length - 1)];
+
+  const handleTap = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (calmed) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const id = Date.now() + Math.random();
+    setRipples((prev) => [...prev, { id, x, y }]);
+    setTaps((t) => t + 1);
+    // Clean up ripple after its animation finishes
+    window.setTimeout(() => {
+      setRipples((prev) => prev.filter((r) => r.id !== id));
+    }, 700);
+  };
+
   return (
     <ConvoStage step={0 /* coral wash */}>
-      <BugsyStage mood="thinking" tint={tint} size={190} animationKey="c-team" lean={!done} />
+      <div
+        onPointerDown={handleTap}
+        style={{
+          position: "relative",
+          cursor: calmed ? "default" : "pointer",
+          userSelect: "none",
+          touchAction: "manipulation",
+        }}
+        role="button"
+        aria-label={calmed ? "Bugsy is calm" : "Tap Bugsy to soothe him"}
+      >
+        <BugsyStage
+          mood={mood}
+          tint={tint}
+          size={200}
+          animationKey="soothe"
+          angerLevel={smoothAnger}
+        />
+        {ripples.map((r) => (
+          <span
+            key={r.id}
+            aria-hidden
+            style={{
+              position: "absolute",
+              left: r.x,
+              top: r.y,
+              width: 120,
+              height: 120,
+              borderRadius: 9999,
+              background: "rgba(255, 92, 138, 0.35)",
+              animation: "tap-ripple 0.65s ease-out forwards",
+              pointerEvents: "none",
+            }}
+          />
+        ))}
+      </div>
+
       <div style={{ marginTop: 8 }} />
-      <SpeechBubble
-        text="Okay. Real talk. You and me? We're a team now."
-        onDone={() => setDone(true)}
-      />
+      <SpeechBubble key={`soothe-line-${taps}`} text={line} />
+
+      {/* Rule chip — names the cause/effect outright so the kid
+          isn't left guessing why Bugsy is angry. Fades out once
+          they've fully calmed Bugsy down (the lesson has landed). */}
+      <div
+        aria-hidden
+        style={{
+          margin: "12px auto 0",
+          padding: "7px 14px",
+          borderRadius: 9999,
+          background: "rgba(255, 200, 0, 0.20)",
+          color: "var(--ink-muted)",
+          fontFamily: "var(--font-nunito), system-ui",
+          fontSize: 11.5,
+          fontWeight: 800,
+          textAlign: "center",
+          letterSpacing: 0.5,
+          textTransform: "uppercase",
+          opacity: calmed ? 0 : 1,
+          transition: "opacity 0.5s ease",
+        }}
+      >
+        💡 No challenges = grumpy Bugsy
+      </div>
+
+      {/* Progress dots — show the kid how many more taps to go */}
+      <div
+        aria-hidden
+        style={{
+          marginTop: 18,
+          display: "flex",
+          gap: 8,
+          justifyContent: "center",
+        }}
+      >
+        {Array.from({ length: SOOTHE_TAPS_TO_CALM }).map((_, i) => (
+          <span
+            key={i}
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: 9999,
+              background:
+                i < taps
+                  ? "var(--primary)"
+                  : "var(--surface-2)",
+              transition: "background 0.2s ease",
+            }}
+          />
+        ))}
+      </div>
+
       <div style={{ flex: 1 }} />
-      <ChunkyButton onClick={onNext} disabled={!done}>
-        Tell me more
+      <ChunkyButton onClick={onNext} disabled={!calmed}>
+        {calmed ? "Whoa — that worked" : `Tap Bugsy ${SOOTHE_TAPS_TO_CALM - taps} more`}
       </ChunkyButton>
     </ConvoStage>
   );
 }
 
-// ── C3: level up + hat demo ───────────────────────────────────
-// Bubble 1: "Every challenge you do… I level up."
-// (hat pops on)
-// Bubble 2: "Pretty cool, right?"
-export function ChildLevelUp({
+// ── C3 (gesture): feed Bugsy snacks ──────────────────────────
+// Replaces the old "level up + hat" beat. After cooling Bugsy
+// down, he's now hungry. Each tap drops a berry from above into
+// his mouth. Around the 5th feed, a hat pops on — visualising
+// the "you take care of me → I level up" loop as one fluid beat
+// that ties food (care) to growth (hats).
+const FEED_TAPS_TO_FULL = 5;
+// Picks up from "we're connected now" — the bond is established,
+// now we show that *care* (feeding) makes Bugsy grow. The final
+// line foreshadows the ChildPowerSecret beat: snacks are nice,
+// but there's something even bigger powering Bugsy up.
+const FEED_LINES = [
+  "Whew, thanks. Funny thing — now I'm STARVING. Snacks make me grow. Tap?",
+  "mmm 🍓",
+  "more please…",
+  "wow, you're really good at this!",
+  "I'm SO full now.",
+  "look — I LEVELED UP! ✨ Whoa, hold up — I gotta tell you something bigger…",
+];
+const BERRIES = ["🍓", "🫐", "🍒", "🍇", "🥝"];
+type Berry = { id: number; emoji: string; xOffset: number };
+export function ChildFeedBugsy({
   tint,
   onNext,
 }: Common & { onNext: () => void }) {
-  const [phase, setPhase] = useState<"intro" | "react">("intro");
-  const [phaseDone, setPhaseDone] = useState(false);
+  const [taps, setTaps] = useState(0);
+  const [berries, setBerries] = useState<Berry[]>([]);
+  const full = taps >= FEED_TAPS_TO_FULL;
 
-  // Trigger phase swap a little after the first bubble finishes
-  useEffect(() => {
-    if (phase === "intro" && phaseDone) {
-      const t = setTimeout(() => {
-        setPhaseDone(false);
-        setPhase("react");
-      }, 900);
-      return () => clearTimeout(t);
-    }
-  }, [phase, phaseDone]);
+  // Mood ladder: hungry → happy at tap 3 → cheer at full
+  const mood: Mood = taps === 0 ? "hungry" : taps < 3 ? "hungry" : taps < FEED_TAPS_TO_FULL ? "happy" : "cheer";
+  // Hat pops on at the final tap — the "level up" moment
+  const hat = full ? "crown" : undefined;
 
-  const text =
-    phase === "intro"
-      ? "Every challenge you do… I level up."
-      : "Pretty cool, right?";
+  const line = FEED_LINES[Math.min(taps, FEED_LINES.length - 1)];
+
+  const handleTap = () => {
+    if (full) return;
+    const id = Date.now() + Math.random();
+    const emoji = BERRIES[Math.floor(Math.random() * BERRIES.length)];
+    // Slight horizontal jitter so successive berries don't stack
+    const xOffset = (Math.random() - 0.5) * 36;
+    setBerries((prev) => [...prev, { id, emoji, xOffset }]);
+    setTaps((t) => t + 1);
+    window.setTimeout(() => {
+      setBerries((prev) => prev.filter((b) => b.id !== id));
+    }, 900);
+  };
 
   return (
     <ConvoStage step={4 /* rainbow */}>
-      <div style={{ position: "relative" }}>
+      <div
+        onPointerDown={handleTap}
+        style={{
+          position: "relative",
+          cursor: full ? "default" : "pointer",
+          userSelect: "none",
+          touchAction: "manipulation",
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
+        }}
+        role="button"
+        aria-label={full ? "Bugsy is full" : "Tap to feed Bugsy a berry"}
+      >
         <BugsyStage
-          mood={phase === "react" ? "cheer" : "happy"}
+          mood={mood}
           tint={tint}
-          hat={phase === "react" ? "crown" : undefined}
-          animationKey={phase}
+          hat={hat}
           size={200}
+          animationKey={`feed-${mood}-${hat ?? "x"}`}
         />
-        {phase === "react" && (
+        {/* Falling berries — positioned at center, animated downward */}
+        {berries.map((b) => (
+          <span
+            key={b.id}
+            aria-hidden
+            style={{
+              position: "absolute",
+              left: `calc(50% + ${b.xOffset}px)`,
+              top: 0,
+              fontSize: 28,
+              animation: "berry-drop 0.85s ease-in forwards",
+              pointerEvents: "none",
+              filter: "drop-shadow(0 2px 0 rgba(0,0,0,0.12))",
+            }}
+          >
+            {b.emoji}
+          </span>
+        ))}
+        {/* "+1 Crown" floats up the moment Bugsy gets full */}
+        {full && (
           <div
             aria-hidden
             style={{
               position: "absolute",
-              top: "26%",
+              top: "20%",
               left: "50%",
               transform: "translate(-50%, -50%)",
               fontFamily: "var(--font-nunito), sans-serif",
               fontSize: 18,
               fontWeight: 800,
               color: "var(--primary)",
-              animation: "float-up 1.1s ease-out forwards",
+              animation: "float-up 1.4s ease-out forwards",
               pointerEvents: "none",
               whiteSpace: "nowrap",
             }}
@@ -243,25 +473,284 @@ export function ChildLevelUp({
           </div>
         )}
       </div>
+
       <div style={{ marginTop: 8 }} />
-      <SpeechBubble
-        key={phase}
-        text={text}
-        onDone={() => setPhaseDone(true)}
-      />
+      <SpeechBubble key={`feed-line-${taps}`} text={line} />
+
+      <div
+        aria-hidden
+        style={{
+          marginTop: 18,
+          display: "flex",
+          gap: 8,
+          justifyContent: "center",
+        }}
+      >
+        {Array.from({ length: FEED_TAPS_TO_FULL }).map((_, i) => (
+          <span
+            key={i}
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: 9999,
+              background:
+                i < taps
+                  ? "var(--accent-yellow)"
+                  : "var(--surface-2)",
+              transition: "background 0.2s ease",
+            }}
+          />
+        ))}
+      </div>
 
       <div style={{ flex: 1 }} />
-      <ChunkyButton
-        onClick={onNext}
-        disabled={phase !== "react" || !phaseDone}
-      >
-        Whoa
+      <ChunkyButton onClick={onNext} disabled={!full}>
+        {full ? "Whoa, you leveled me up!" : `Feed me ${FEED_TAPS_TO_FULL - taps} more`}
       </ChunkyButton>
     </ConvoStage>
   );
 }
 
-// ── C4: clan choice ───────────────────────────────────────────
+// ── C4 (story): the secret of real power ─────────────────────
+// The crucial narrative bridge: snacks were nice, but Bugsy's
+// REAL power-up comes from the kid doing something brave in the
+// real world. This is the screen that makes "play a quest" feel
+// like part of the same emotional contract as the soothe + feed
+// gestures, rather than a sudden product feature.
+export function ChildPowerSecret({
+  tint,
+  onNext,
+}: Common & { onNext: () => void }) {
+  const [done, setDone] = useState(false);
+  return (
+    <ConvoStage step={4 /* rainbow */}>
+      <BugsyStage
+        mood="excited"
+        tint={tint}
+        hat="crown"
+        size={180}
+        animationKey="c-secret"
+      />
+      <div style={{ marginTop: 8 }} />
+      <SpeechBubble
+        text="Here's my SECRET: snacks help me grow a little. But when YOU do something brave out there — a real challenge — I level up for REAL. That's our deal."
+        onDone={() => setDone(true)}
+      />
+      <div style={{ flex: 1 }} />
+      <ChunkyButton onClick={onNext} disabled={!done}>
+        Show me how
+      </ChunkyButton>
+    </ConvoStage>
+  );
+}
+
+// ── C5 (story): pick the first real quest and play it ───────
+// Replaces the prior slide-to-plant demo. The kid sees three
+// real games (fastest to start, same picker as the handover's
+// FirstAction screen), Bugsy nudges them with a sad face if
+// they hesitate, and tapping "Play this quest" launches the
+// actual project flow. After completion the reward screen
+// shows the points landing in the clan, and they're routed
+// back here so the rest of onboarding continues.
+export function ChildPlantQuest({
+  tint,
+  childName,
+  onPlay,
+  onSkip,
+}: Common & {
+  childName: string;
+  onPlay: (projectId: string) => void;
+  onSkip: () => void;
+}) {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [bubbleDone, setBubbleDone] = useState(false);
+  const [idleNudge, setIdleNudge] = useState(false);
+
+  // After ~7 seconds without picking, Bugsy droops — storytelling
+  // beat: "if you don't tap I get sad" → tap rescues him.
+  useEffect(() => {
+    if (selectedId) return;
+    const t = window.setTimeout(() => setIdleNudge(true), 7000);
+    return () => window.clearTimeout(t);
+  }, [selectedId]);
+
+  // Three fastest games — same selection rule the handover's
+  // FirstAction picker uses, so the experience stays consistent.
+  const choices: Project[] = PROJECTS
+    .filter((p) => p.kind === "game")
+    .sort((a, b) => a.mins - b.mins)
+    .slice(0, 3);
+
+  const friend = childName.trim() || "friend";
+  const picked = selectedId ? choices.find((c) => c.id === selectedId) ?? null : null;
+
+  const mood: Mood = picked ? "cheer" : idleNudge ? "sad" : "thinking";
+  const line = picked
+    ? `YES! ${picked.title} — let's gooo. I can already feel it.`
+    : idleNudge
+    ? `…${friend}? Pick something. I wanna see you in action.`
+    : "Okay — pick a quest. Every one you finish powers me up for real.";
+
+  return (
+    <ConvoStage step={3 /* mint */}>
+      <BugsyStage mood={mood} tint={tint} size={140} animationKey={`pq-${mood}`} />
+      <div style={{ marginTop: 8 }} />
+      <SpeechBubble
+        key={`pq-line-${mood}`}
+        text={line}
+        onDone={() => setBubbleDone(true)}
+      />
+
+      <div
+        style={{
+          marginTop: 18,
+          borderRadius: 18,
+          border: "1px solid var(--border)",
+          background: "var(--surface)",
+          overflow: "hidden",
+          opacity: bubbleDone ? 1 : 0,
+          transition: "opacity 0.4s ease",
+          pointerEvents: bubbleDone ? "auto" : "none",
+        }}
+      >
+        {choices.map((p, i) => {
+          const active = selectedId === p.id;
+          return (
+            <button
+              key={p.id}
+              onClick={() => setSelectedId(p.id)}
+              style={{
+                width: "100%",
+                textAlign: "left",
+                padding: "14px 16px",
+                cursor: "pointer",
+                background: active ? "var(--accent-soft)" : "var(--surface)",
+                border: "none",
+                borderTop: i === 0 ? "none" : "1px solid var(--border)",
+                display: "flex",
+                gap: 14,
+                alignItems: "center",
+                transition: "background 0.15s ease",
+              }}
+            >
+              <div
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 10,
+                  background: "var(--surface-1)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 20,
+                  flexShrink: 0,
+                }}
+              >
+                {p.emoji}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    fontFamily: "var(--font-nunito), system-ui",
+                    fontSize: 15.5,
+                    fontWeight: 800,
+                    color: active ? "var(--primary)" : "var(--ink)",
+                    letterSpacing: -0.15,
+                  }}
+                >
+                  {p.title}
+                </div>
+                <div
+                  style={{
+                    fontFamily: "var(--font-nunito), system-ui",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: "var(--ink-muted)",
+                    marginTop: 2,
+                  }}
+                >
+                  {p.mins} min · +{p.points} pts
+                </div>
+              </div>
+              {active ? (
+                <div
+                  style={{
+                    width: 22,
+                    height: 22,
+                    borderRadius: 999,
+                    background: "var(--primary)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                    boxShadow: "0 2px 0 var(--primary-shadow)",
+                  }}
+                  aria-hidden
+                >
+                  <svg width="12" height="12" viewBox="0 0 12 12">
+                    <path
+                      d="M2 6l3 3 5-6"
+                      stroke="#fff"
+                      strokeWidth="2.5"
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+              ) : (
+                <span
+                  style={{
+                    fontFamily: "var(--font-nunito), system-ui",
+                    fontSize: 10.5,
+                    fontWeight: 800,
+                    color: "var(--primary)",
+                    background: "var(--accent-soft)",
+                    padding: "4px 10px",
+                    borderRadius: 999,
+                    letterSpacing: 0.8,
+                    textTransform: "uppercase",
+                    flexShrink: 0,
+                  }}
+                >
+                  Pick
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      <div style={{ flex: 1, minHeight: 8 }} />
+      <ChunkyButton
+        onClick={() => selectedId && onPlay(selectedId)}
+        disabled={!selectedId}
+      >
+        {picked ? "Play this quest →" : "Pick a quest first"}
+      </ChunkyButton>
+      <button
+        onClick={onSkip}
+        style={{
+          background: "transparent",
+          border: "none",
+          color: "var(--ink-muted)",
+          fontFamily: "var(--font-nunito), system-ui",
+          fontSize: 14,
+          fontWeight: 700,
+          cursor: "pointer",
+          padding: "10px 0",
+          marginTop: 4,
+          textDecoration: "underline",
+          textUnderlineOffset: 4,
+        }}
+      >
+        Maybe later
+      </button>
+    </ConvoStage>
+  );
+}
+
+// ── C5: clan choice ───────────────────────────────────────────
 // Bubble: "Are your friends already here?"
 export function ChildClan({
   tint,
@@ -713,7 +1202,10 @@ export function ChildPromise({
 }
 
 // ── C6: sendoff — big celebration ─────────────────────────────
-// Bubble: "Let's go, [Name]. The world won't know what hit it."
+// Beat: kid has named themselves, picked a goal, promised. Now
+// Bugsy hypes them up — but tells them upfront there's one tiny
+// grown-up step left, so the ChildAlmostDone screen doesn't feel
+// like a "psych!" reversal of the sendoff.
 export function ChildSendoff({
   tint,
   childName,
@@ -721,7 +1213,7 @@ export function ChildSendoff({
   onEnter,
 }: Common & { childName: string; equippedHat: string | null; onEnter: () => void }) {
   const [done, setDone] = useState(false);
-  const line = `Let's go, ${childName}. The world won't know what hit it.`;
+  const line = `Let's go, ${childName}! Almost ready — one tiny grown-up step and then we are UNSTOPPABLE.`;
 
   return (
     <ConvoStage step={4 /* rainbow */}>
@@ -758,7 +1250,7 @@ export function ChildAlmostDone({
       <BugsyStage mood="thinking" tint={tint} size={170} animationKey="c-almost" />
       <div style={{ marginTop: 8 }} />
       <SpeechBubble
-        text={`Wait — one tiny thing, ${friend}. Grab a grown-up.`}
+        text={`Okay ${friend} — here's the tiny grown-up step. Grab one for me?`}
         onDone={() => setDone(true)}
       />
       <p
@@ -774,7 +1266,7 @@ export function ChildAlmostDone({
           transition: "opacity 0.4s ease",
         }}
       >
-        They need to sign you in. Then we can really start.
+        They sign you in, then we&apos;re unstoppable. Promise.
       </p>
       <div style={{ flex: 1 }} />
       <ChunkyButton onClick={onNext} disabled={!done}>

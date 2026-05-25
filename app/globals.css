@@ -344,6 +344,76 @@ textarea {
   100% { opacity: 1; }
 }
 
+/* ── Onboarding gesture beats ─────────────────────────────── */
+
+/* Angry Bugsy trembles in place. Amplitude scales with the --anger
+   CSS variable so the soothe screen can fade tremble out smoothly. */
+@keyframes bobo-tremble {
+  0%, 100% { transform: translate(0, 0) rotate(0); }
+  25%      {
+    transform:
+      translate(calc(-2px * var(--anger, 1)), calc(1px * var(--anger, 1)))
+      rotate(calc(-1.2deg * var(--anger, 1)));
+  }
+  75%      {
+    transform:
+      translate(calc(2px * var(--anger, 1)), calc(-1px * var(--anger, 1)))
+      rotate(calc(1.2deg * var(--anger, 1)));
+  }
+}
+
+/* Steam puffs above an angry head — drift up and fade */
+@keyframes steam-puff {
+  0%   { opacity: 0; transform: translateY(8px) scale(0.7); }
+  40%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-22px) scale(1.15); }
+}
+
+/* Touch ripple — pulses out from the tap point */
+@keyframes tap-ripple {
+  0%   { opacity: 0.55; transform: translate(-50%, -50%) scale(0.4); }
+  100% { opacity: 0;    transform: translate(-50%, -50%) scale(2.4); }
+}
+
+/* Bird Spike — wings flap on tap. The squash/stretch lives on an
+   inner element so it doesn't fight the outer wrapper's RAF-set
+   position transform. */
+@keyframes wing-flap {
+  0%   { transform: scale(1.0, 0.92); }
+  40%  { transform: scale(1.06, 1.10); }
+  100% { transform: scale(1, 1); }
+}
+@keyframes wing-left {
+  0%   { transform: rotate(-80deg) scale(1.05); }
+  50%  { transform: rotate(-15deg) scale(1.02); }
+  100% { transform: rotate(-30deg) scale(1); }
+}
+@keyframes wing-right {
+  0%   { transform: rotate(80deg) scale(1.05); }
+  50%  { transform: rotate(15deg) scale(1.02); }
+  100% { transform: rotate(30deg) scale(1); }
+}
+/* Score number — quick scale-pulse each time it ticks up */
+@keyframes score-pop {
+  0%   { transform: scale(0.85); }
+  60%  { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+/* Pulsing "Tap to Start" / "Tap to Retry" badge */
+@keyframes tap-pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.06); }
+}
+
+/* Berry falls from above into Bugsy's mouth */
+@keyframes berry-drop {
+  0%   { opacity: 0; transform: translate(-50%, -120px) scale(0.6) rotate(-30deg); }
+  20%  { opacity: 1; }
+  85%  { opacity: 1; transform: translate(-50%, 60px) scale(1) rotate(20deg); }
+  100% { opacity: 0; transform: translate(-50%, 80px) scale(0.4) rotate(40deg); }
+}
+
+
 .screen-wrap > * {
   animation: screen-in 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
