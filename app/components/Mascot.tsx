@@ -1,7 +1,13 @@
 "use client";
 
-import { useId } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { Mood } from "../lib/data";
+
+// Reduced-motion guard. Wrapped so it works at module load (SSR) too.
+function prefersReducedMotion(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
 
 type BoboProps = {
   mood?: Mood;
@@ -113,6 +119,74 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
 
   const id = useId().replace(/:/g, "_");
 
+  // ── Aliveness: periodic blinks ───────────────────────────
+  // Every 3.5-6s, briefly close the eyes for ~130ms. Skipped
+  // when `animate` is false (static icon contexts) or the user
+  // has prefers-reduced-motion on.
+  const [blinking, setBlinking] = useState(false);
+  useEffect(() => {
+    if (!animate || prefersReducedMotion()) return;
+    let cancelled = false;
+    let timer: number | null = null;
+    const tick = () => {
+      if (cancelled) return;
+      const delay = 3500 + Math.random() * 2500;
+      timer = window.setTimeout(() => {
+        if (cancelled) return;
+        setBlinking(true);
+        window.setTimeout(() => {
+          if (!cancelled) setBlinking(false);
+        }, 130);
+        tick();
+      }, delay);
+    };
+    tick();
+    return () => {
+      cancelled = true;
+      if (timer !== null) clearTimeout(timer);
+    };
+  }, [animate]);
+
+  // ── Aliveness: eyes follow pointer ───────────────────────
+  // Tracks pointer position and offsets pupils slightly toward
+  // it (capped + RAF-throttled so we don't re-render per pixel).
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const [pupilOffset, setPupilOffset] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
+  useEffect(() => {
+    if (!animate || prefersReducedMotion()) return;
+    let rafId: number | null = null;
+    let lastEvent: { clientX: number; clientY: number } | null = null;
+    const apply = () => {
+      rafId = null;
+      if (!lastEvent || !svgRef.current) return;
+      const rect = svgRef.current.getBoundingClientRect();
+      // Eyes sit roughly 42% from the top of Bugsy's bounding box.
+      const ecx = rect.left + rect.width / 2;
+      const ecy = rect.top + rect.height * 0.42;
+      const dx = lastEvent.clientX - ecx;
+      const dy = lastEvent.clientY - ecy;
+      const dist = Math.hypot(dx, dy) || 1;
+      // Cap at ~2.8 user units in the SVG viewBox; ramp in over
+      // the first ~120 px of distance so close pointers don't
+      // make the eyes spasm.
+      const MAX = 2.8;
+      const factor = Math.min(MAX, dist / 120);
+      setPupilOffset({ x: (dx / dist) * factor, y: (dy / dist) * factor });
+    };
+    const onMove = (e: PointerEvent) => {
+      lastEvent = { clientX: e.clientX, clientY: e.clientY };
+      if (rafId === null) rafId = requestAnimationFrame(apply);
+    };
+    window.addEventListener("pointermove", onMove, { passive: true });
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      if (rafId !== null) cancelAnimationFrame(rafId);
+    };
+  }, [animate]);
+
   type EyeCfg = {
     lx: number; rx: number; y: number; r: number;
     curve?: boolean;
@@ -193,7 +267,7 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
           } as React.CSSProperties
         }
       >
-      <svg viewBox="-120 -140 240 260" width={size} height={size} style={{ overflow: "visible" }}>
+      <svg ref={svgRef} viewBox="-120 -140 240 260" width={size} height={size} style={{ overflow: "visible" }}>
         <defs>
           <radialGradient id={`${id}-body`} cx="0.35" cy="0.25" r="0.9">
             <stop offset="0%" stopColor={highlight}/>
@@ -219,24 +293,30 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
 
         {/* Feet — rendered outside the squish group so they stay
             anchored to the ground while the body bobs above them.
-            Duolingo-style: two rounded ovals with three toe-beans
-            each. Use bodyMid for the foot surface and bodyBottom
-            for the soft pad shadows. */}
+            Bigger and a touch more spread than v1 so they read as
+            actual feet from a glance, not pebbles. Highlight on
+            the upper rim plus a darker pad on the underside give
+            them the same 3D feel as the body. */}
         <g>
-          <ellipse cx="-26" cy="86" rx="22" ry="11" fill={bodyMid}/>
-          <ellipse cx="-26" cy="89" rx="9" ry="3" fill={bodyBottom} opacity="0.40"/>
-          <circle cx="-38" cy="80" r="2.6" fill={bodyBottom} opacity="0.55"/>
-          <circle cx="-26" cy="77" r="2.6" fill={bodyBottom} opacity="0.55"/>
-          <circle cx="-14" cy="80" r="2.6" fill={bodyBottom} opacity="0.55"/>
-          {/* Soft highlight stroke on top of the foot */}
-          <path d="M -42 83 Q -26 76 -10 83" stroke={highlight} strokeWidth="2" fill="none" opacity="0.45" strokeLinecap="round"/>
+          <ellipse cx="-28" cy="86" rx="26" ry="13" fill={bodyMid}/>
+          {/* darker underside */}
+          <ellipse cx="-28" cy="91" rx="14" ry="4" fill={bodyBottom} opacity="0.42"/>
+          {/* toe beans */}
+          <circle cx="-44" cy="79" r="3" fill={bodyBottom} opacity="0.55"/>
+          <circle cx="-28" cy="76" r="3" fill={bodyBottom} opacity="0.55"/>
+          <circle cx="-12" cy="79" r="3" fill={bodyBottom} opacity="0.55"/>
+          {/* upper-rim highlight */}
+          <path d="M -48 82 Q -28 73 -8 82" stroke={highlight} strokeWidth="2.5" fill="none" opacity="0.5" strokeLinecap="round"/>
+          {/* tiny specular shine, top-left */}
+          <ellipse cx="-38" cy="81" rx="5" ry="2" fill="#fff" opacity="0.35"/>
 
-          <ellipse cx="26" cy="86" rx="22" ry="11" fill={bodyMid}/>
-          <ellipse cx="26" cy="89" rx="9" ry="3" fill={bodyBottom} opacity="0.40"/>
-          <circle cx="14" cy="80" r="2.6" fill={bodyBottom} opacity="0.55"/>
-          <circle cx="26" cy="77" r="2.6" fill={bodyBottom} opacity="0.55"/>
-          <circle cx="38" cy="80" r="2.6" fill={bodyBottom} opacity="0.55"/>
-          <path d="M 10 83 Q 26 76 42 83" stroke={highlight} strokeWidth="2" fill="none" opacity="0.45" strokeLinecap="round"/>
+          <ellipse cx="28" cy="86" rx="26" ry="13" fill={bodyMid}/>
+          <ellipse cx="28" cy="91" rx="14" ry="4" fill={bodyBottom} opacity="0.42"/>
+          <circle cx="12" cy="79" r="3" fill={bodyBottom} opacity="0.55"/>
+          <circle cx="28" cy="76" r="3" fill={bodyBottom} opacity="0.55"/>
+          <circle cx="44" cy="79" r="3" fill={bodyBottom} opacity="0.55"/>
+          <path d="M 8 82 Q 28 73 48 82" stroke={highlight} strokeWidth="2.5" fill="none" opacity="0.5" strokeLinecap="round"/>
+          <ellipse cx="18" cy="81" rx="5" ry="2" fill="#fff" opacity="0.35"/>
         </g>
 
         <g
@@ -273,66 +353,35 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
 
           {/* Arms / paws — Duolingo-style, sticking out at chest
               level, slightly outside the body silhouette. Inside
-              the squish group so they bob with the body. Left arm
-              is always rendered; right arm is suppressed during
-              `waving` mood since the wave animation already draws
-              a raised right arm. */}
-          <g>
-            <ellipse
-              cx="-82"
-              cy="48"
-              rx="13"
-              ry="20"
-              fill={bodyMid}
-              transform="rotate(-12 -82 48)"
-            />
-            {/* paw pad — soft darker patch on the front of the paw */}
-            <ellipse
-              cx="-86"
-              cy="62"
-              rx="6"
-              ry="4"
-              fill={bodyBottom}
-              opacity="0.45"
-              transform="rotate(-12 -86 62)"
-            />
-            {/* highlight stroke down the outside of the arm */}
-            <path
-              d="M -92 32 Q -96 48 -90 64"
-              stroke={highlight}
-              strokeWidth="2.5"
-              fill="none"
-              opacity="0.5"
-              strokeLinecap="round"
-            />
+              the squish group so they bob with the body. Each arm
+              is wrapped in a single <g transform="rotate(…)"> so
+              every detail (oval body, paw pad, toe beans, highlight)
+              shares the same rotation pivot and stays geometrically
+              consistent. Left arm always renders; right arm is
+              suppressed during `waving` mood since the wave
+              animation already draws a raised right arm. */}
+          <g transform="rotate(-14 -82 48)">
+            <ellipse cx="-82" cy="48" rx="15" ry="22" fill={bodyMid}/>
+            {/* paw pad — soft darker patch */}
+            <ellipse cx="-82" cy="64" rx="7" ry="4.5" fill={bodyBottom} opacity="0.45"/>
+            {/* toe beans clustered above the pad */}
+            <circle cx="-88" cy="56" r="1.8" fill={bodyBottom} opacity="0.55"/>
+            <circle cx="-82" cy="54" r="1.8" fill={bodyBottom} opacity="0.55"/>
+            <circle cx="-76" cy="56" r="1.8" fill={bodyBottom} opacity="0.55"/>
+            {/* outer-edge highlight */}
+            <path d="M -94 32 Q -98 48 -92 66" stroke={highlight} strokeWidth="2.5" fill="none" opacity="0.5" strokeLinecap="round"/>
+            {/* tiny specular shine on the paw */}
+            <ellipse cx="-86" cy="36" rx="3.5" ry="2.5" fill="#fff" opacity="0.4"/>
           </g>
           {mood !== "waving" && (
-            <g>
-              <ellipse
-                cx="82"
-                cy="48"
-                rx="13"
-                ry="20"
-                fill={bodyMid}
-                transform="rotate(12 82 48)"
-              />
-              <ellipse
-                cx="86"
-                cy="62"
-                rx="6"
-                ry="4"
-                fill={bodyBottom}
-                opacity="0.45"
-                transform="rotate(12 86 62)"
-              />
-              <path
-                d="M 92 32 Q 96 48 90 64"
-                stroke={highlight}
-                strokeWidth="2.5"
-                fill="none"
-                opacity="0.5"
-                strokeLinecap="round"
-              />
+            <g transform="rotate(14 82 48)">
+              <ellipse cx="82" cy="48" rx="15" ry="22" fill={bodyMid}/>
+              <ellipse cx="82" cy="64" rx="7" ry="4.5" fill={bodyBottom} opacity="0.45"/>
+              <circle cx="76" cy="56" r="1.8" fill={bodyBottom} opacity="0.55"/>
+              <circle cx="82" cy="54" r="1.8" fill={bodyBottom} opacity="0.55"/>
+              <circle cx="88" cy="56" r="1.8" fill={bodyBottom} opacity="0.55"/>
+              <path d="M 94 32 Q 98 48 92 66" stroke={highlight} strokeWidth="2.5" fill="none" opacity="0.5" strokeLinecap="round"/>
+              <ellipse cx="78" cy="36" rx="3.5" ry="2.5" fill="#fff" opacity="0.4"/>
             </g>
           )}
 
@@ -344,7 +393,19 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
           <ellipse cx="-48" cy="14" rx="16" ry="10" fill={`url(#${id}-cheek)`}/>
           <ellipse cx="48" cy="14" rx="16" ry="10" fill={`url(#${id}-cheek)`}/>
 
-          {eyes.closed ? (
+          {/* Eye block — wrapped so pointer-tracking offset darts
+              the eyes as one unit, and blinks can briefly override
+              the mood's eye variant with the closed-eye shape.
+              Sleepy/half-closed moods skip the blink override since
+              they're already half-shut. */}
+          <g
+            style={{
+              transform: `translate(${pupilOffset.x}px, ${pupilOffset.y}px)`,
+              transition:
+                "transform 0.28s cubic-bezier(0.22, 1, 0.36, 1)",
+            }}
+          >
+          {(eyes.closed || (blinking && !eyes.halfClosed)) ? (
             <>
               <path d={`M ${eyes.lx - 9} ${eyes.y} Q ${eyes.lx} ${eyes.y + 5} ${eyes.lx + 9} ${eyes.y}`} stroke="#1a1420" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
               <path d={`M ${eyes.rx - 9} ${eyes.y} Q ${eyes.rx} ${eyes.y + 5} ${eyes.rx + 9} ${eyes.y}`} stroke="#1a1420" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
@@ -412,6 +473,7 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
               <circle cx={eyes.rx + 2} cy={eyes.y - 3} r="2" fill="#fff"/>
             </>
           )}
+          </g>
 
           <path d="M 0 8 L -6 14 Q 0 18 6 14 Z" fill={nose} stroke="#2a1028" strokeWidth="1.2" strokeLinejoin="round"/>
           <path d="M 0 15 L 0 17" stroke="#2a1028" strokeWidth="2" strokeLinecap="round"/>
@@ -447,11 +509,21 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
                 transformOrigin: "78px 0px",
               }}
             >
+              {/* Arm — slightly tapered: thicker at the shoulder,
+                  thinner at the wrist, drawn as two stacked strokes */}
               <path d="M 78 14 Q 102 -12 108 -42" stroke={bodyMid} strokeWidth="22" fill="none" strokeLinecap="round"/>
+              <path d="M 82 8 Q 98 -10 106 -32" stroke={highlight} strokeWidth="3" fill="none" opacity="0.45" strokeLinecap="round"/>
+              {/* Paw — solid disc with proper paw-pad detail */}
               <circle cx="108" cy="-44" r="16" fill={bodyMid}/>
-              <circle cx="103" cy="-50" r="2.5" fill={nose}/>
-              <circle cx="113" cy="-50" r="2.5" fill={nose}/>
-              <circle cx="108" cy="-36" r="3" fill={nose}/>
+              {/* Central pad — soft darker oval, low on the paw */}
+              <ellipse cx="108" cy="-38" rx="6.5" ry="4.5" fill={bodyBottom} opacity="0.5"/>
+              {/* Three toe beans clustered above the pad, in body-
+                  tint instead of coral so they read as paw, not face */}
+              <circle cx="100" cy="-48" r="2.2" fill={bodyBottom} opacity="0.55"/>
+              <circle cx="108" cy="-51" r="2.2" fill={bodyBottom} opacity="0.55"/>
+              <circle cx="116" cy="-48" r="2.2" fill={bodyBottom} opacity="0.55"/>
+              {/* Highlight on the top-left of the paw */}
+              <ellipse cx="102" cy="-49" rx="4.5" ry="2.5" fill="#fff" opacity="0.45"/>
             </g>
           )}
 
