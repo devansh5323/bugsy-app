@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { BugsyStage, ChunkyButton, ConvoStage, SpeechBubble } from "./ConvoUI";
+import { BackChevron, BugsyStage, ChunkyButton, ConvoStage, SpeechBubble } from "./ConvoUI";
 import { LoginScreen } from "./LoginScreen";
 import {
   AGE_MAX,
@@ -45,10 +45,12 @@ type Common = { tint: number };
 export function ChildIntro({
   tint,
   onNext,
-}: Common & { onNext: () => void }) {
+  onBack,
+}: Common & { onNext: () => void; onBack?: () => void }) {
   const [done, setDone] = useState(false);
   return (
     <ConvoStage step={1}>
+      {onBack && <BackChevron onBack={onBack} />}
       <BugsyStage mood="cheer" tint={tint} size={200} animationKey="c-intro" />
       <div style={{ marginTop: 8 }} />
       <SpeechBubble
@@ -72,10 +74,17 @@ export function ChildName({
   childName,
   setChildName,
   onNext,
-}: Common & { childName: string; setChildName: (s: string) => void; onNext: () => void }) {
+  onBack,
+}: Common & {
+  childName: string;
+  setChildName: (s: string) => void;
+  onNext: () => void;
+  onBack?: () => void;
+}) {
   const [done, setDone] = useState(false);
   return (
     <ConvoStage step={5 /* soft coral wash */}>
+      {onBack && <BackChevron onBack={onBack} />}
       <BugsyStage mood="happy" tint={tint} size={170} animationKey="c-name" />
       <div style={{ marginTop: 8 }} />
       <SpeechBubble
@@ -117,11 +126,13 @@ export function ChildAge({
   childAge,
   setChildAge,
   onNext,
+  onBack,
 }: Common & {
   childName: string;
   childAge: number | null;
   setChildAge: (n: number) => void;
   onNext: () => void;
+  onBack?: () => void;
 }) {
   const ages = Array.from({ length: AGE_MAX - AGE_MIN + 1 }, (_, i) => AGE_MIN + i);
   const [done, setDone] = useState(false);
@@ -129,6 +140,7 @@ export function ChildAge({
 
   return (
     <ConvoStage step={3 /* mint */}>
+      {onBack && <BackChevron onBack={onBack} />}
       <BugsyStage mood="cheer" tint={tint} size={180} animationKey="c-age" />
       <div style={{ marginTop: 8 }} />
       <SpeechBubble text={line} onDone={() => setDone(true)} />
@@ -236,7 +248,8 @@ function useSmoothValue(target: number, durationMs: number) {
 export function ChildSootheBugsy({
   tint,
   onNext,
-}: Common & { onNext: () => void }) {
+  onBack,
+}: Common & { onNext: () => void; onBack?: () => void }) {
   const [taps, setTaps] = useState(0);
   const [ripples, setRipples] = useState<Ripple[]>([]);
   const calmed = taps >= SOOTHE_TAPS_TO_CALM;
@@ -266,6 +279,7 @@ export function ChildSootheBugsy({
 
   return (
     <ConvoStage step={0 /* coral wash */}>
+      {onBack && <BackChevron onBack={onBack} />}
       <div
         onPointerDown={handleTap}
         style={{
@@ -389,7 +403,8 @@ type Berry = { id: number; emoji: string; xOffset: number };
 export function ChildFeedBugsy({
   tint,
   onNext,
-}: Common & { onNext: () => void }) {
+  onBack,
+}: Common & { onNext: () => void; onBack?: () => void }) {
   const [taps, setTaps] = useState(0);
   const [berries, setBerries] = useState<Berry[]>([]);
   const full = taps >= FEED_TAPS_TO_FULL;
@@ -416,6 +431,7 @@ export function ChildFeedBugsy({
 
   return (
     <ConvoStage step={4 /* rainbow */}>
+      {onBack && <BackChevron onBack={onBack} />}
       <div
         onPointerDown={handleTap}
         style={{
@@ -524,10 +540,12 @@ export function ChildFeedBugsy({
 export function ChildPowerSecret({
   tint,
   onNext,
-}: Common & { onNext: () => void }) {
+  onBack,
+}: Common & { onNext: () => void; onBack?: () => void }) {
   const [done, setDone] = useState(false);
   return (
     <ConvoStage step={4 /* rainbow */}>
+      {onBack && <BackChevron onBack={onBack} />}
       <BugsyStage
         mood="excited"
         tint={tint}
@@ -561,10 +579,12 @@ export function ChildPlantQuest({
   childName,
   onPlay,
   onSkip,
+  onBack,
 }: Common & {
   childName: string;
   onPlay: (projectId: string) => void;
   onSkip: () => void;
+  onBack?: () => void;
 }) {
   const [bubbleDone, setBubbleDone] = useState(false);
   const [idleNudge, setIdleNudge] = useState(false);
@@ -597,6 +617,7 @@ export function ChildPlantQuest({
 
   return (
     <ConvoStage step={3 /* mint */}>
+      {onBack && <BackChevron onBack={onBack} />}
       <BugsyStage mood={mood} tint={tint} size={130} animationKey={`pq-${mood}`} />
       <div style={{ marginTop: 8 }} />
       <SpeechBubble
@@ -1227,10 +1248,12 @@ export function ChildDailyGoal({
   goal,
   setGoal,
   onNext,
+  onBack,
 }: Common & {
   goal: number | null;
   setGoal: (n: number) => void;
   onNext: () => void;
+  onBack?: () => void;
 }) {
   const [bubbleDone, setBubbleDone] = useState(false);
 
@@ -1241,6 +1264,7 @@ export function ChildDailyGoal({
 
   return (
     <ConvoStage step={2 /* yellow wash — sunny commitment */}>
+      {onBack && <BackChevron onBack={onBack} />}
       <BugsyStage
         mood={goal === null ? "thinking" : "cheer"}
         tint={tint}
@@ -1374,10 +1398,12 @@ const DAILY_GOAL_LINES: Record<number, string> = {
 export function ChildPromise({
   tint,
   onNext,
-}: Common & { onNext: () => void }) {
+  onBack,
+}: Common & { onNext: () => void; onBack?: () => void }) {
   const [done, setDone] = useState(false);
   return (
     <ConvoStage step={5 /* lavender wash */}>
+      {onBack && <BackChevron onBack={onBack} />}
       <BugsyStage mood="thinking" tint={tint} size={190} animationKey="c-promise" />
       <div style={{ marginTop: 8 }} />
       <SpeechBubble
@@ -1402,12 +1428,19 @@ export function ChildSendoff({
   childName,
   equippedHat,
   onEnter,
-}: Common & { childName: string; equippedHat: string | null; onEnter: () => void }) {
+  onBack,
+}: Common & {
+  childName: string;
+  equippedHat: string | null;
+  onEnter: () => void;
+  onBack?: () => void;
+}) {
   const [done, setDone] = useState(false);
   const line = `Let's go, ${childName}! Almost ready — one tiny grown-up step and then we are UNSTOPPABLE.`;
 
   return (
     <ConvoStage step={4 /* rainbow */}>
+      {onBack && <BackChevron onBack={onBack} />}
       <BugsyStage
         mood="cheer"
         tint={tint}
@@ -1433,11 +1466,17 @@ export function ChildAlmostDone({
   tint,
   childName,
   onNext,
-}: Common & { childName: string; onNext: () => void }) {
+  onBack,
+}: Common & {
+  childName: string;
+  onNext: () => void;
+  onBack?: () => void;
+}) {
   const friend = childName.trim() || "friend";
   const [done, setDone] = useState(false);
   return (
     <ConvoStage step={5 /* soft coral wash */}>
+      {onBack && <BackChevron onBack={onBack} />}
       <BugsyStage mood="thinking" tint={tint} size={170} animationKey="c-almost" />
       <div style={{ marginTop: 8 }} />
       <SpeechBubble
@@ -1472,7 +1511,12 @@ export function ChildAdultLogin({
   tint,
   childName,
   onNext,
-}: Common & { childName: string; onNext: () => void }) {
+  onBack,
+}: Common & {
+  childName: string;
+  onNext: () => void;
+  onBack?: () => void;
+}) {
   const friend = childName.trim() || "your kiddo";
   return (
     <LoginScreen
@@ -1482,6 +1526,7 @@ export function ChildAdultLogin({
       bubbleText={`Grown-up — sign in to keep ${friend}'s progress safe.`}
       ctaLabel="Grown-up sign in"
       onContinue={() => onNext()}
+      onBack={onBack}
     />
   );
 }
@@ -1499,6 +1544,7 @@ export function ChildParentDetails({
   relationship,
   setRelationship,
   onNext,
+  onBack,
 }: Common & {
   childName: string;
   parentName: string;
@@ -1506,6 +1552,7 @@ export function ChildParentDetails({
   relationship: Relationship | null;
   setRelationship: (r: Relationship) => void;
   onNext: () => void;
+  onBack?: () => void;
 }) {
   const friend = childName.trim() || "your kiddo";
   const [bubbleDone, setBubbleDone] = useState(false);
@@ -1513,6 +1560,7 @@ export function ChildParentDetails({
 
   return (
     <ConvoStage step={1 /* lavender — same wash as adult login */}>
+      {onBack && <BackChevron onBack={onBack} />}
       <BugsyStage mood="happy" tint={tint} size={140} animationKey="c-parent-details" />
       <div style={{ marginTop: 8 }} />
       <SpeechBubble

@@ -337,6 +337,13 @@ export default function Home() {
       setStage({ kind: "child", step: next });
     }
   };
+  const backChild = () => {
+    if (stage.kind !== "child") return;
+    setPrevStep(stage.step);
+    const prev = stage.step - 1;
+    if (prev < 0) setStage({ kind: "who" });
+    else setStage({ kind: "child", step: prev });
+  };
 
   const advanceHandover = () => {
     if (stage.kind !== "handover") return;
@@ -489,7 +496,7 @@ export default function Home() {
         // mood shift to angry Bugsy (soothe) then lands as a
         // mid-chat reveal instead of a topic-out-of-nowhere.
         case 0:
-          return <ChildIntro tint={TINT} onNext={advanceChild} />;
+          return <ChildIntro tint={TINT} onNext={advanceChild} onBack={backChild} />;
         case 1:
           return (
             <ChildName
@@ -497,6 +504,7 @@ export default function Home() {
               childName={childName}
               setChildName={setChildName}
               onNext={advanceChild}
+              onBack={backChild}
             />
           );
         case 2:
@@ -507,16 +515,17 @@ export default function Home() {
               childAge={childAge}
               setChildAge={setChildAge}
               onNext={advanceChild}
+              onBack={backChild}
             />
           );
         // ── Bond beats: now Bugsy reveals he's been struggling
         // and walks the kid through the rules of their bond. ──
         case 3:
-          return <ChildSootheBugsy tint={TINT} onNext={advanceChild} />;
+          return <ChildSootheBugsy tint={TINT} onNext={advanceChild} onBack={backChild} />;
         case 4:
-          return <ChildFeedBugsy tint={TINT} onNext={advanceChild} />;
+          return <ChildFeedBugsy tint={TINT} onNext={advanceChild} onBack={backChild} />;
         case 5:
-          return <ChildPowerSecret tint={TINT} onNext={advanceChild} />;
+          return <ChildPowerSecret tint={TINT} onNext={advanceChild} onBack={backChild} />;
         // ── Teach the core loop: pick a real quest and play it.
         // The kid taps "Play this quest" → ScreenProjectDetail →
         // ScreenReward (with points flying into the clan rank) →
@@ -534,6 +543,7 @@ export default function Home() {
                 setStage({ kind: "project", projectId: id });
               }}
               onSkip={advanceChild}
+              onBack={backChild}
             />
           );
         // ── Daily goal commitment ──
@@ -544,11 +554,12 @@ export default function Home() {
               goal={dailyGoal}
               setGoal={setDailyGoal}
               onNext={advanceChild}
+              onBack={backChild}
             />
           );
         // ── Promise, sendoff, grown-up handoff ──
         case 8:
-          return <ChildPromise tint={TINT} onNext={advanceChild} />;
+          return <ChildPromise tint={TINT} onNext={advanceChild} onBack={backChild} />;
         case 9:
           return (
             <ChildSendoff
@@ -556,6 +567,7 @@ export default function Home() {
               childName={friend}
               equippedHat={equippedHat}
               onEnter={advanceChild}
+              onBack={backChild}
             />
           );
         case 10:
@@ -564,6 +576,7 @@ export default function Home() {
               tint={TINT}
               childName={friend}
               onNext={advanceChild}
+              onBack={backChild}
             />
           );
         case 11:
@@ -572,6 +585,7 @@ export default function Home() {
               tint={TINT}
               childName={friend}
               onNext={advanceChild}
+              onBack={backChild}
             />
           );
         case 12:
@@ -584,6 +598,7 @@ export default function Home() {
               relationship={relationship}
               setRelationship={setRelationship}
               onNext={advanceChild}
+              onBack={backChild}
             />
           );
         // ── Grown-up shares what they're noticing, then sees
@@ -596,10 +611,11 @@ export default function Home() {
               noticing={noticing}
               setNoticing={setNoticing}
               onNext={advanceChild}
+              onBack={backChild}
             />
           );
         case 14:
-          return <ParentAchieve tint={TINT} onNext={advanceChild} />;
+          return <ParentAchieve tint={TINT} onNext={advanceChild} onBack={backChild} />;
       }
       return null;
     }
