@@ -404,6 +404,15 @@ textarea {
   0%, 100% { transform: scale(1); }
   50%      { transform: scale(1.06); }
 }
+/* Slow diagonal light sweep across the quest card — slight pause at
+   each end so it doesn't feel like a constant strobe. */
+@keyframes card-shimmer {
+  0%       { transform: translateX(0); opacity: 0; }
+  20%      { opacity: 1; }
+  60%      { opacity: 1; }
+  80%      { opacity: 0; }
+  100%     { transform: translateX(450%); opacity: 0; }
+}
 
 /* Berry falls from above into Bugsy's mouth */
 @keyframes berry-drop {

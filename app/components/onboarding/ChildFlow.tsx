@@ -18,13 +18,17 @@ import {
 // 15 screens after the shared "Who are you?" branch.
 // Storyline (chapter by chapter):
 //   1. Meet Bugsy — he's been waiting, he had a rough day
-//   2. Soothe him — taps build the bond
-//   3. Feed him — caring grows him (visible hat unlocks)
-//   4. The secret — real-world tasks power him up FOR REAL
-//   5. Pick a quest — play one together to see the loop close
-//   6-8. Identity — name, age, daily goal commitment
+//   2. Name ask — Bugsy asks who the kid is (continues the
+//      conversation, not a separate "form")
+//   3. Age ask — Bugsy reacts to name + asks age
+//   4. Soothe him — taps build the bond (now the angry mood
+//      lands as a mid-chat reveal, after the kid is invested)
+//   5. Feed him — caring grows him (visible hat unlocks)
+//   6. The secret — real-world tasks power him up FOR REAL
+//   7. Pick a quest — play one together to see the loop close
+//   8. Daily goal commitment
 //   9-10. Pinky promise + sendoff
-//   11-14. Hand the phone to a grown-up for sign-in + details +
+//   11-15. Hand the phone to a grown-up for sign-in + details +
 //          what they're noticing + Bugsy's response
 // The order is the load-bearing piece: every beat sets up the
 // next, so no screen lands as a sudden product feature.
@@ -48,7 +52,7 @@ export function ChildIntro({
       <BugsyStage mood="cheer" tint={tint} size={200} animationKey="c-intro" />
       <div style={{ marginTop: 8 }} />
       <SpeechBubble
-        text="Oh. My. Goodness. You're HERE. I'm Bugsy — I've been waiting forever. Phew, I really needed you today…"
+        text="Oh. My. Goodness. You're HERE. I'm Bugsy — I've been waiting forever…"
         onDone={() => setDone(true)}
       />
       <div style={{ flex: 1 }} />
@@ -75,7 +79,7 @@ export function ChildName({
       <BugsyStage mood="happy" tint={tint} size={170} animationKey="c-name" />
       <div style={{ marginTop: 8 }} />
       <SpeechBubble
-        text="So… who are you?"
+        text="Hold up — what should I even call you?"
         onDone={() => setDone(true)}
       />
 
@@ -192,13 +196,13 @@ const SOOTHE_TAPS_TO_CALM = 6;
 // Last line names the *bond*: "every tap, we're connected", which
 // is the mechanic the rest of the flow keeps amplifying.
 const SOOTHE_LINES = [
-  "Ugh — too long without a challenge to power me up. That's why I'm like THIS. Tap to cool me down?",
+  "Ugh — too long without a challenge. That's why I'm like THIS. Tap to cool me down?",
   "ugh… still grumpy.",
   "okay… a little better.",
   "phew… that's helping.",
   "almost there…",
   "much better. seriously, thanks.",
-  "you're the best. I felt that — every tap. We're connected now.",
+  "you're the best. But honestly? Touches like this only hold me for a bit. I need more.",
 ];
 type Ripple = { id: number; x: number; y: number };
 
@@ -378,7 +382,7 @@ const FEED_LINES = [
   "more please…",
   "wow, you're really good at this!",
   "I'm SO full now.",
-  "look — I LEVELED UP! ✨ Whoa, hold up — I gotta tell you something bigger…",
+  "I LEVELED UP! ✨ …but snacks wear off, and the sad creeps back. Listen — there's a real fix.",
 ];
 const BERRIES = ["🍓", "🫐", "🍒", "🍇", "🥝"];
 type Berry = { id: number; emoji: string; xOffset: number };
@@ -533,7 +537,7 @@ export function ChildPowerSecret({
       />
       <div style={{ marginTop: 8 }} />
       <SpeechBubble
-        text="Here's my SECRET: snacks help me grow a little. But when YOU do something brave out there — a real challenge — I level up for REAL. That's our deal."
+        text="Real talk: snacks fade. Touches fade. The ONE thing that keeps me from sliding back into sad? You doing real quests with me. That's our deal."
         onDone={() => setDone(true)}
       />
       <div style={{ flex: 1 }} />
@@ -565,8 +569,10 @@ export function ChildPlantQuest({
   const [bubbleDone, setBubbleDone] = useState(false);
   const [idleNudge, setIdleNudge] = useState(false);
 
-  // After ~7 seconds without tapping, Bugsy droops — same storytelling
-  // beat as before, just for one task instead of a list.
+  // After ~7 seconds without tapping, Bugsy droops further — the
+  // bubble already opens with a vulnerable plea, but if the kid
+  // stalls Bugsy slips toward "really sad" so the emotional cost
+  // of waiting is obvious.
   useEffect(() => {
     const t = window.setTimeout(() => setIdleNudge(true), 7000);
     return () => window.clearTimeout(t);
@@ -581,10 +587,13 @@ export function ChildPlantQuest({
     null;
 
   const friend = childName.trim() || "friend";
-  const mood: Mood = idleNudge ? "sad" : "thinking";
+  // Always sad here — this is the emotional climax of onboarding.
+  // The kid sees sad Bugsy, hears the cause/effect, and is asked
+  // to play the rescue quest. Idle nudge just tightens the screws.
+  const mood: Mood = "sad";
   const line = idleNudge
-    ? `…come on, ${friend}. Tap Play. I'm ready.`
-    : "Okay — here's your first quest. Tap Play and let's go!";
+    ? `…still waiting, ${friend}. The longer you wait, the heavier this gets. Please?`
+    : `See me? This is what no-quests-played looks like. Will you play Bird Spike with me, ${friend}? Each quest pulls me back.`;
 
   return (
     <ConvoStage step={3 /* mint */}>
@@ -596,10 +605,12 @@ export function ChildPlantQuest({
         onDone={() => setBubbleDone(true)}
       />
 
-      {/* Featured task card — dark, hero-styled. One quest, not a
-          picker, so the kid never stalls choosing. Coral primary
-          accents pop against the dark surface, matching the rest
-          of the Bugsy palette without feeling clinical. */}
+      {/* Featured quest card — a gamified RPG-style task tile.
+          Dark surface, inset coral edge glow, "NEW QUEST" ribbon,
+          icon framed with sparkle accents, difficulty stars,
+          diamond divider, and stat chips with iconography. The
+          subtle shimmer overlay sweeps across every few seconds
+          to hint at "freshly unlocked" energy. */}
       {task && (
         <div
           style={{
@@ -609,17 +620,29 @@ export function ChildPlantQuest({
             background:
               "linear-gradient(140deg, #2a1028 0%, #1a1420 100%)",
             color: "#fff",
-            padding: "20px 22px",
+            padding: "22px 22px 20px",
             overflow: "hidden",
             boxShadow:
-              "0 16px 32px rgba(42, 16, 40, 0.32), 0 4px 0 #0e0a12",
+              "0 18px 36px rgba(42, 16, 40, 0.40), 0 4px 0 #0e0a12, inset 0 0 0 1px rgba(255, 92, 138, 0.22)",
             opacity: bubbleDone ? 1 : 0,
             transform: bubbleDone ? "translateY(0)" : "translateY(6px)",
             transition: "opacity 0.4s ease, transform 0.4s ease",
           }}
         >
-          {/* Soft coral halo in the upper-right corner — pulls the
-              eye to the brand color and adds depth to the card. */}
+          {/* Decorative dot-grid pattern for that quest-screen depth */}
+          <div
+            aria-hidden
+            style={{
+              position: "absolute",
+              inset: 0,
+              backgroundImage:
+                "radial-gradient(circle, rgba(255,255,255,0.045) 1px, transparent 1px)",
+              backgroundSize: "12px 12px",
+              pointerEvents: "none",
+            }}
+          />
+          {/* Coral halo in the upper-right corner — pulls the eye
+              to the brand color and adds depth. */}
           <div
             aria-hidden
             style={{
@@ -634,32 +657,79 @@ export function ChildPlantQuest({
               pointerEvents: "none",
             }}
           />
+          {/* Slow diagonal shimmer sweep — subtle, ~6s loop, sells
+              the "freshly unlocked" quest-card energy. */}
+          <div
+            aria-hidden
+            style={{
+              position: "absolute",
+              top: 0,
+              left: "-40%",
+              width: "40%",
+              height: "100%",
+              background:
+                "linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%)",
+              animation: "card-shimmer 6s ease-in-out infinite",
+              pointerEvents: "none",
+            }}
+          />
+
+          {/* "NEW QUEST" ribbon — top-right, gold accent */}
+          <div
+            style={{
+              position: "absolute",
+              top: 14,
+              right: 14,
+              padding: "4px 10px 4px 8px",
+              borderRadius: 999,
+              background: "rgba(255, 200, 0, 0.18)",
+              color: "#FFC800",
+              fontFamily: "var(--font-nunito), system-ui",
+              fontSize: 9.5,
+              fontWeight: 900,
+              letterSpacing: 1.2,
+              textTransform: "uppercase",
+              border: "1px solid rgba(255, 200, 0, 0.45)",
+              boxShadow: "0 0 12px rgba(255, 200, 0, 0.18)",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              zIndex: 2,
+              animation: "tap-pulse 2.4s ease-in-out infinite",
+            }}
+          >
+            New Quest
+          </div>
+
           <div
             style={{
               display: "flex",
               gap: 14,
               alignItems: "center",
-              marginBottom: 12,
+              marginBottom: 14,
               position: "relative",
             }}
           >
+            {/* Icon frame with glowing coral ring + sparkle */}
             <div
               style={{
-                width: 56,
-                height: 56,
+                position: "relative",
+                width: 60,
+                height: 60,
                 borderRadius: 16,
                 background: "rgba(255, 92, 138, 0.18)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: 30,
+                fontSize: 32,
                 flexShrink: 0,
-                boxShadow: "inset 0 0 0 1px rgba(255, 92, 138, 0.4)",
+                boxShadow:
+                  "inset 0 0 0 1px rgba(255, 92, 138, 0.55), 0 0 18px rgba(255, 92, 138, 0.35)",
               }}
             >
               {task.emoji}
             </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ flex: 1, minWidth: 0, paddingRight: 88 /* clear the ribbon */ }}>
               <div
                 style={{
                   fontFamily: "var(--font-nunito), system-ui",
@@ -669,9 +739,12 @@ export function ChildPlantQuest({
                   textTransform: "uppercase",
                   color: "#FF5C8A",
                   marginBottom: 4,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
                 }}
               >
-                Your first quest
+                <span>⚔</span> Help Bugsy power up
               </div>
               <div
                 style={{
@@ -681,11 +754,64 @@ export function ChildPlantQuest({
                   color: "#fff",
                   letterSpacing: -0.4,
                   lineHeight: 1.1,
+                  textShadow: "0 2px 14px rgba(255, 92, 138, 0.30)",
                 }}
               >
                 {task.title}
               </div>
             </div>
+          </div>
+
+          {/* Difficulty row */}
+          <div
+            style={{
+              position: "relative",
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              marginBottom: 14,
+            }}
+          >
+            <span
+              style={{
+                fontFamily: "var(--font-nunito), system-ui",
+                fontSize: 9.5,
+                fontWeight: 900,
+                letterSpacing: 1.4,
+                textTransform: "uppercase",
+                color: "rgba(255,255,255,0.55)",
+              }}
+            >
+              Difficulty
+            </span>
+            <span
+              style={{
+                fontSize: 16,
+                letterSpacing: 2,
+                color: "#FFC800",
+                textShadow: "0 0 8px rgba(255, 200, 0, 0.45)",
+                lineHeight: 1,
+              }}
+            >
+              ★<span style={{ opacity: 0.22 }}>★★</span>
+            </span>
+            <span
+              style={{
+                marginLeft: "auto",
+                padding: "3px 9px",
+                borderRadius: 6,
+                background: "rgba(76, 199, 107, 0.18)",
+                color: "#7BE198",
+                border: "1px solid rgba(76, 199, 107, 0.40)",
+                fontFamily: "var(--font-nunito), system-ui",
+                fontSize: 9.5,
+                fontWeight: 900,
+                letterSpacing: 1.2,
+                textTransform: "uppercase",
+              }}
+            >
+              Easy
+            </span>
           </div>
 
           <div
@@ -702,41 +828,81 @@ export function ChildPlantQuest({
             {task.blurb}
           </div>
 
+          {/* Diamond divider — visual cue between flavor and stats */}
+          <div
+            aria-hidden
+            style={{
+              position: "relative",
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              marginBottom: 14,
+            }}
+          >
+            <div
+              style={{
+                flex: 1,
+                height: 1,
+                background:
+                  "linear-gradient(90deg, transparent, rgba(255, 92, 138, 0.35), transparent)",
+              }}
+            />
+            <span style={{ fontSize: 8, color: "#FF5C8A", letterSpacing: 3 }}>◆ ◆ ◆</span>
+            <div
+              style={{
+                flex: 1,
+                height: 1,
+                background:
+                  "linear-gradient(90deg, transparent, rgba(255, 92, 138, 0.35), transparent)",
+              }}
+            />
+          </div>
+
+          {/* Stat chips — duration + reward, with iconography */}
           <div
             style={{
               display: "flex",
-              gap: 8,
+              gap: 10,
               flexWrap: "wrap",
               position: "relative",
             }}
           >
             <span
               style={{
-                padding: "6px 12px",
-                borderRadius: 999,
-                background: "rgba(255, 255, 255, 0.10)",
+                padding: "8px 14px",
+                borderRadius: 10,
+                background: "rgba(255, 255, 255, 0.07)",
+                border: "1px solid rgba(255, 255, 255, 0.12)",
                 fontFamily: "var(--font-nunito), system-ui",
                 fontSize: 12,
-                fontWeight: 800,
+                fontWeight: 900,
                 color: "#fff",
-                letterSpacing: 0.3,
+                letterSpacing: 0.5,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
               }}
             >
-              ⏱ {task.mins} min
+              <span style={{ fontSize: 14 }}>⏱</span> {task.mins} MIN
             </span>
             <span
               style={{
-                padding: "6px 12px",
-                borderRadius: 999,
+                padding: "8px 14px",
+                borderRadius: 10,
                 background: "rgba(255, 92, 138, 0.20)",
+                border: "1px solid rgba(255, 92, 138, 0.45)",
                 fontFamily: "var(--font-nunito), system-ui",
                 fontSize: 12,
-                fontWeight: 800,
-                color: "#FF5C8A",
-                letterSpacing: 0.3,
+                fontWeight: 900,
+                color: "#FFB8CC",
+                letterSpacing: 0.5,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                boxShadow: "0 0 14px rgba(255, 92, 138, 0.28)",
               }}
             >
-              +{task.points} Bugsy power
+              <span style={{ fontSize: 14 }}>⚡</span> +{task.points} POWER
             </span>
           </div>
         </div>
@@ -1105,7 +1271,11 @@ export function ChildDailyGoal({
             <button
               key={opt.mins}
               onClick={() => {
-                setBubbleDone(false);
+                // Don't reset bubbleDone here — the Typewriter
+                // remounts on its `key` change and will call its
+                // own onDone again when the new line finishes.
+                // Hiding the options every tap made them fade
+                // in/out distractingly.
                 setGoal(opt.mins);
               }}
               style={{

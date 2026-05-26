@@ -932,13 +932,17 @@ export function ParentNoticing({
         onDone={() => setDone(true)}
       />
 
+      {/* 3-column grid — matches the relationship picker pattern
+          used elsewhere in onboarding. Drops the subtitle and the
+          circular checkbox: selection state is now carried by the
+          coral border + soft-pink fill + slight lift, which is
+          enough signal and removes a lot of vertical/visual noise. */}
       <div
         style={{
           marginTop: 14,
-          display: "flex",
-          flexDirection: "column",
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
           gap: 8,
-          overflowY: "auto",
           opacity: done ? 1 : 0,
           transition: "opacity 0.4s ease",
           pointerEvents: done ? "auto" : "none",
@@ -951,93 +955,45 @@ export function ParentNoticing({
               key={opt.key}
               onClick={() => toggle(opt.key)}
               style={{
-                textAlign: "left",
-                padding: "10px 14px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "flex-start",
+                gap: 8,
+                padding: "12px 6px 10px",
                 borderRadius: 16,
                 cursor: "pointer",
                 background: active ? "var(--accent-soft)" : "var(--surface)",
-                border: active ? "2px solid var(--primary)" : "2px solid var(--border)",
+                border: active ? "3px solid var(--primary)" : "2px solid var(--border)",
                 boxShadow: active
-                  ? "0 2px 0 var(--primary-shadow)"
-                  : "0 2px 0 var(--border)",
-                display: "flex",
-                gap: 12,
-                alignItems: "center",
+                  ? "0 3px 0 var(--primary-shadow)"
+                  : "0 3px 0 var(--border)",
+                transform: active ? "translateY(-2px)" : "none",
+                transition:
+                  "transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease",
+                minHeight: 96,
               }}
             >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={opt.icon}
+                alt=""
+                width={40}
+                height={40}
+                style={{ display: "block", flexShrink: 0 }}
+              />
               <div
                 style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 12,
-                  background: "var(--surface-1)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                  padding: 6,
-                  boxSizing: "border-box",
+                  fontFamily: "var(--font-nunito), system-ui",
+                  fontSize: 12.5,
+                  fontWeight: 800,
+                  color: active ? "var(--primary)" : "var(--ink)",
+                  letterSpacing: -0.1,
+                  lineHeight: 1.2,
+                  textAlign: "center",
                 }}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={opt.icon}
-                  alt=""
-                  width={32}
-                  height={32}
-                  style={{ display: "block" }}
-                />
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div
-                  style={{
-                    fontFamily: "var(--font-nunito), system-ui",
-                    fontSize: 14.5,
-                    fontWeight: 800,
-                    color: "var(--ink)",
-                    letterSpacing: -0.1,
-                  }}
-                >
-                  {opt.title}
-                </div>
-                <div
-                  style={{
-                    fontFamily: "var(--font-nunito), system-ui",
-                    fontSize: 12,
-                    fontWeight: 700,
-                    color: "var(--ink-muted)",
-                    marginTop: 1,
-                  }}
-                >
-                  {opt.sub}
-                </div>
-              </div>
-              <div
-                style={{
-                  width: 22,
-                  height: 22,
-                  borderRadius: 999,
-                  border: active ? "none" : "2px solid var(--border)",
-                  background: active ? "var(--primary)" : "transparent",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                  boxShadow: active ? "0 2px 0 var(--primary-shadow)" : "none",
-                }}
-              >
-                {active && (
-                  <svg width="12" height="12" viewBox="0 0 12 12">
-                    <path
-                      d="M2 6l3 3 5-6"
-                      stroke="#fff"
-                      strokeWidth="2.5"
-                      fill="none"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                )}
+                {opt.title}
               </div>
             </button>
           );

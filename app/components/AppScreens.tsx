@@ -1183,7 +1183,7 @@ export function ScreenReward({
             animation: "bubble-pop 0.45s cubic-bezier(0.22, 1.5, 0.36, 1) 0.15s backwards",
           }}
         >
-          {`YESSS${childName ? `, ${childName}` : ""}! I felt that — you just powered me up!`}
+          {`YESSS${childName ? `, ${childName}` : ""}! You pulled me right out of sad. I can feel the power!`}
           <span
             aria-hidden
             style={{
@@ -1383,7 +1383,7 @@ export function ScreenReward({
                 letterSpacing: -0.05,
               }}
             >
-              <b style={{ color: "var(--ink)" }}>Come back tomorrow?</b> Every quest you finish powers me up more.
+              <b style={{ color: "var(--ink)" }}>Come back tomorrow?</b> If you skip a day, the sad creeps back in. Every quest holds it off.
             </div>
           </div>
           <PrimaryButton onClick={onContinue}>Continue</PrimaryButton>

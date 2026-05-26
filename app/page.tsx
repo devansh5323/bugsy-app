@@ -47,8 +47,6 @@ import { WhoAreYou } from "./components/onboarding/WhoAreYou";
 import { Welcome } from "./components/onboarding/Welcome";
 import {
   ChildHelloKnown,
-  DailyMap,
-  FirstAction,
   HandoverPrompt,
   PinkyPromise,
 } from "./components/onboarding/Handover";
@@ -76,7 +74,12 @@ type Stage =
   | { kind: "project"; projectId: string }
   | { kind: "reward"; projectId: string; unlockedHatKey: string | null };
 
-const HANDOVER_STEPS = 5; // 0: pass-phone prompt, 1-4: helloKnown/pinky/dailyMap/firstAction
+// Handover (parent → child) now runs the same emotional story as
+// the kid-only onboarding so neither path is missing the bond
+// arc. 0: pass-phone prompt, 1: Bugsy meets the kid by name,
+// 2-5: soothe/feed/secret/plant-quest (same beats as child flow),
+// 6: pinky promise → app.
+const HANDOVER_STEPS = 7;
 
 // Stored in localStorage so users can resume their place across
 // sessions — important when a parent does half the setup, exits,
@@ -96,11 +99,14 @@ export default function Home() {
   const [stage, setStage] = useState<Stage>({ kind: "welcome" });
   const [prevStep, setPrevStep] = useState(0);
 
-  // When the child plays a real quest mid-onboarding (step 3
-  // picker), this records which child step to drop them back on
-  // after the reward screen. null = no resume pending (so the
-  // reward routes to app home as normal).
-  const [onboardingResumeStep, setOnboardingResumeStep] = useState<number | null>(null);
+  // When the kid plays a real quest mid-onboarding (either inside
+  // the child flow's ChildPlantQuest or inside the handover flow's
+  // version of the same), this records which flow + which step to
+  // drop them back on once the reward screen finishes. `null` =
+  // no resume pending, so the reward routes to app home as normal.
+  const [onboardingResume, setOnboardingResume] = useState<
+    { kind: "child" | "handover"; step: number } | null
+  >(null);
 
   // Onboarding state
   const [userType, setUserType] = useState<UserType | null>(null);
@@ -154,8 +160,14 @@ export default function Home() {
           setEquippedHat(data.equippedHat);
         }
         if (typeof data.seenHomeTour === "boolean") setSeenHomeTour(data.seenHomeTour);
-        if (typeof data.onboardingResumeStep === "number" || data.onboardingResumeStep === null) {
-          setOnboardingResumeStep(data.onboardingResumeStep);
+        if (
+          data.onboardingResume === null ||
+          (data.onboardingResume &&
+            (data.onboardingResume.kind === "child" ||
+              data.onboardingResume.kind === "handover") &&
+            typeof data.onboardingResume.step === "number")
+        ) {
+          setOnboardingResume(data.onboardingResume);
         }
       }
     } catch {
@@ -185,7 +197,7 @@ export default function Home() {
         totalPoints,
         equippedHat,
         seenHomeTour,
-        onboardingResumeStep,
+        onboardingResume,
       };
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     } catch {
@@ -206,7 +218,7 @@ export default function Home() {
     totalPoints,
     equippedHat,
     seenHomeTour,
-    onboardingResumeStep,
+    onboardingResume,
   ]);
 
   const clan = (() => {
@@ -233,7 +245,7 @@ export default function Home() {
     setTotalPoints(0);
     setEquippedHat(null);
     setSeenHomeTour(false);
-    setOnboardingResumeStep(null);
+    setOnboardingResume(null);
     setPrevStep(0);
     setStage({ kind: "welcome" });
     if (typeof window !== "undefined") {
@@ -471,36 +483,14 @@ export default function Home() {
     if (stage.kind === "child") {
       const friend = childName.trim() || "friend";
       switch (stage.step) {
-        // ── Meet Bugsy + gesture bond beats first ──
+        // ── Meet Bugsy, get to know each other ──
+        // The first beats now play as one continuous conversation:
+        // Bugsy says hi → asks name → reacts and asks age. The
+        // mood shift to angry Bugsy (soothe) then lands as a
+        // mid-chat reveal instead of a topic-out-of-nowhere.
         case 0:
           return <ChildIntro tint={TINT} onNext={advanceChild} />;
         case 1:
-          return <ChildSootheBugsy tint={TINT} onNext={advanceChild} />;
-        case 2:
-          return <ChildFeedBugsy tint={TINT} onNext={advanceChild} />;
-        // ── The narrative bridge: real-world tasks power Bugsy
-        // up more than snacks. Sets up *why* the next screen
-        // (quest picker) matters. ──
-        case 3:
-          return <ChildPowerSecret tint={TINT} onNext={advanceChild} />;
-        // ── Teach the core loop: pick a real quest and play it.
-        // The kid taps "Play this quest" → ScreenProjectDetail →
-        // ScreenReward (with points flying into the clan rank) →
-        // and lands back here on the next child step. ──
-        case 4:
-          return (
-            <ChildPlantQuest
-              tint={TINT}
-              childName={friend}
-              onPlay={(id) => {
-                setOnboardingResumeStep(stage.step + 1);
-                setStage({ kind: "project", projectId: id });
-              }}
-              onSkip={advanceChild}
-            />
-          );
-        // ── Now collect: name, age, daily goal ──
-        case 5:
           return (
             <ChildName
               tint={TINT}
@@ -509,7 +499,7 @@ export default function Home() {
               onNext={advanceChild}
             />
           );
-        case 6:
+        case 2:
           return (
             <ChildAge
               tint={TINT}
@@ -519,6 +509,34 @@ export default function Home() {
               onNext={advanceChild}
             />
           );
+        // ── Bond beats: now Bugsy reveals he's been struggling
+        // and walks the kid through the rules of their bond. ──
+        case 3:
+          return <ChildSootheBugsy tint={TINT} onNext={advanceChild} />;
+        case 4:
+          return <ChildFeedBugsy tint={TINT} onNext={advanceChild} />;
+        case 5:
+          return <ChildPowerSecret tint={TINT} onNext={advanceChild} />;
+        // ── Teach the core loop: pick a real quest and play it.
+        // The kid taps "Play this quest" → ScreenProjectDetail →
+        // ScreenReward (with points flying into the clan rank) →
+        // and lands back here on the next child step. ──
+        case 6:
+          return (
+            <ChildPlantQuest
+              tint={TINT}
+              childName={friend}
+              onPlay={(id) => {
+                setOnboardingResume({
+                  kind: "child",
+                  step: stage.step + 1,
+                });
+                setStage({ kind: "project", projectId: id });
+              }}
+              onSkip={advanceChild}
+            />
+          );
+        // ── Daily goal commitment ──
         case 7:
           return (
             <ChildDailyGoal
@@ -589,6 +607,7 @@ export default function Home() {
     if (stage.kind === "handover") {
       const friend = childName || "friend";
       switch (stage.step) {
+        // ── Pass the phone + meet Bugsy by name ──
         case 0:
           return (
             <HandoverPrompt
@@ -607,17 +626,42 @@ export default function Home() {
               onNext={advanceHandover}
             />
           );
+        // ── Same emotional bond beats as the kid-only flow.
+        // Soothe (angry) → feed (hungry) → the secret of real
+        // power-ups → the sad rescue quest. Without these the
+        // handover skipped straight from "hi" to "pick a project",
+        // and the kid never heard the story. ──
         case 2:
-          return <PinkyPromise tint={TINT} childName={friend} onNext={advanceHandover} />;
+          return <ChildSootheBugsy tint={TINT} onNext={advanceHandover} />;
         case 3:
-          return <DailyMap tint={TINT} onNext={advanceHandover} />;
+          return <ChildFeedBugsy tint={TINT} onNext={advanceHandover} />;
         case 4:
+          return <ChildPowerSecret tint={TINT} onNext={advanceHandover} />;
+        case 5:
           return (
-            <FirstAction
+            <ChildPlantQuest
               tint={TINT}
               childName={friend}
-              onOpenProject={(id) => setStage({ kind: "project", projectId: id })}
-              onSkip={() => setStage({ kind: "app", tab: "home" })}
+              onPlay={(id) => {
+                // Resume on the NEXT handover step after the
+                // reward screen finishes, so the rest of the
+                // handover (daily map, pinky promise) still plays.
+                setOnboardingResume({
+                  kind: "handover",
+                  step: stage.step + 1,
+                });
+                setStage({ kind: "project", projectId: id });
+              }}
+              onSkip={advanceHandover}
+            />
+          );
+        // ── Pinky promise → app home ──
+        case 6:
+          return (
+            <PinkyPromise
+              tint={TINT}
+              childName={friend}
+              onNext={advanceHandover}
             />
           );
       }
@@ -683,12 +727,13 @@ export default function Home() {
           clanName={hasClan ? clan.name : null}
           onContinue={() => {
             // If this completion came from the onboarding quest
-            // picker, drop the kid back into the rest of the
-            // onboarding flow instead of the app home.
-            if (onboardingResumeStep !== null) {
-              const resume = onboardingResumeStep;
-              setOnboardingResumeStep(null);
-              setStage({ kind: "child", step: resume });
+            // picker (either the child flow's or the handover's
+            // version of it), drop the kid back into the rest of
+            // that onboarding flow instead of the app home.
+            if (onboardingResume !== null) {
+              const resume = onboardingResume;
+              setOnboardingResume(null);
+              setStage({ kind: resume.kind, step: resume.step });
             } else {
               setStage({ kind: "app", tab: "home" });
             }
