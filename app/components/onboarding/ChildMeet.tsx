@@ -692,38 +692,48 @@ export function ChildHideSeek({
   onBack,
 }: Common & { setChildName?: (s: string) => void }) {
   const named = childName.trim().length > 0;
-  // Ask for the name first (unless we already know it, e.g. from the parent).
-  const [phase, setPhase] = useState<"name" | "search">(
-    !named && setChildName ? "name" : "search",
-  );
+  // New flow: child *finds* Bugsy first, then he asks for their name,
+  // then a two-line greeting (with a small pause between the lines).
+  const askName = !named && !!setChildName;
+  const [phase, setPhase] = useState<"search" | "askName" | "greet">("search");
   const [nameInput, setNameInput] = useState(childName);
   const [found, setFound] = useState(false);
   const [shake, setShake] = useState<string | null>(null);
   const [bubbleDone, setBubbleDone] = useState(false);
   const [peeking, setPeeking] = useState(false);
+  // 0 = "Hi [name]. I feel shy…", 1 = "But you seem nice. Can we play?"
+  const [greetStep, setGreetStep] = useState<0 | 1>(0);
   const { meow } = useCatSounds();
 
   const enteredName = (setChildName ? nameInput : childName).trim();
   const friend = enteredName || "friend";
 
-  // Once the search begins, leave the room empty for a beat, then let
-  // Bugsy pop up to peek.
+  // While the room is empty, let Bugsy pop up to peek after a beat.
   useEffect(() => {
     if (phase !== "search") return;
     const t = window.setTimeout(() => setPeeking(true), 1500);
     return () => window.clearTimeout(t);
   }, [phase]);
 
+  // Reset the typewriter "done" flag whenever the bubble's content
+  // changes (askName intro / first greeting / second greeting).
+  useEffect(() => {
+    setBubbleDone(false);
+  }, [phase, greetStep]);
+
   const submitName = () => {
     const n = nameInput.trim();
     if (!n) return;
     setChildName?.(n);
-    setPhase("search");
+    setGreetStep(0);
+    setPhase("greet");
     meow();
   };
 
-  const introLine = `Hi ${friend}! I'm Bugsy — I'm so happy you found me! …I just get a little shy around new friends.`;
-  const ctaLabel = `Hi Bugsy! 👋`;
+  const greetLines: [string, string] = [
+    `Hi ${friend}. I feel shy when I meet new people.`,
+    `But you seem nice. Can we play?`,
+  ];
 
   const wrong = (id: string) => {
     if (found) return;
@@ -735,6 +745,12 @@ export function ChildHideSeek({
     if (found) return;
     setFound(true);
     meow();
+    // Reveal → ask the name (if unknown) → greeting. Tiny delay so the
+    // reveal animation lands before the overlay slides in.
+    window.setTimeout(() => {
+      setPhase(askName ? "askName" : "greet");
+      setGreetStep(0);
+    }, 450);
   };
 
   const tapStyle = (id: string) => ({
@@ -1007,7 +1023,7 @@ export function ChildHideSeek({
             textShadow: "0 1px 0 rgba(255,255,255,0.6)",
           }}
         >
-          {phase === "name" ? "Hi there! 🐱" : found ? "There you are! 🐾" : "Who's in my room?"}
+          {phase === "search" ? (found ? "There you are! 🐾" : "Find Bugsy!") : ""}
           {phase === "search" && !found && (
             <span style={{ display: "block", fontSize: 19, fontWeight: 800, color: "#9c6f54", marginTop: 4 }}>
               Tap around to find me!
@@ -1016,8 +1032,8 @@ export function ChildHideSeek({
         </div>
       </div>
 
-      {/* ── Name first: Bugsy greets and asks who's playing ── */}
-      {phase === "name" && !found && (
+      {/* ── askName: Bugsy is out, asks "Who is in my room?" → name input ── */}
+      {phase === "askName" && (
         <div
           style={{
             position: "absolute",
@@ -1026,63 +1042,85 @@ export function ChildHideSeek({
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            gap: 18,
-            padding: "0 28px 70px",
+            gap: 16,
+            padding: "0 28px 110px",
             background: "rgba(252,234,221,0.72)",
             zIndex: 5,
           }}
         >
-          <Bobo mood="happy" tint={tint} size={148} />
-          <div
-            style={{
-              fontFamily: "var(--font-nunito), system-ui",
-              fontSize: 20,
-              lineHeight: 1.3,
-              fontWeight: 900,
-              color: "#5e3f2d",
-              textAlign: "center",
-            }}
-          >
-            Before we play hide-and-seek…
-            <br />
-            what should I call you?
+          <div style={{ animation: "bugsy-reveal 0.6s ease both" }}>
+            <Bobo mood="happy" tint={tint} size={156} />
           </div>
-          <input
-            autoFocus
-            value={nameInput}
-            onChange={(e) => setNameInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") submitName();
-            }}
-            placeholder="Type your name"
-            maxLength={20}
+          <RoomBubble
+            tail="up"
+            text="Who is in my room?"
+            onDone={() => setBubbleDone(true)}
+          />
+          <div
             style={{
               width: "100%",
               maxWidth: 300,
-              height: 60,
-              borderRadius: 16,
-              border: "3px solid rgba(0,0,0,0.1)",
-              background: "#fff",
-              padding: "0 18px",
-              fontFamily: "var(--font-nunito), system-ui",
-              fontSize: 20,
-              fontWeight: 800,
-              color: "#5e3f2d",
-              textAlign: "center",
-              outline: "none",
-              boxSizing: "border-box",
+              display: "flex",
+              flexDirection: "column",
+              gap: 12,
+              opacity: bubbleDone ? 1 : 0,
+              transform: bubbleDone ? "translateY(0)" : "translateY(8px)",
+              transition: "opacity 0.35s ease, transform 0.35s ease",
+              pointerEvents: bubbleDone ? "auto" : "none",
             }}
-          />
-          <div style={{ width: "100%", maxWidth: 300 }}>
-            <BigCTA onClick={submitName} disabled={!nameInput.trim()}>
-              That&apos;s me! →
-            </BigCTA>
+          >
+            <input
+              autoFocus
+              value={nameInput}
+              onChange={(e) => setNameInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") submitName();
+              }}
+              placeholder="Type your name"
+              maxLength={20}
+              style={{
+                width: "100%",
+                height: 60,
+                borderRadius: 16,
+                border: "3px solid rgba(0,0,0,0.1)",
+                background: "#fff",
+                padding: "0 18px",
+                fontFamily: "var(--font-nunito), system-ui",
+                fontSize: 20,
+                fontWeight: 800,
+                color: "#5e3f2d",
+                textAlign: "center",
+                outline: "none",
+                boxSizing: "border-box",
+              }}
+            />
           </div>
         </div>
       )}
 
-      {/* ── Found: Bugsy springs to centre + speech bubble + CTA ── */}
-      {found && (
+      {/* CTA for askName: submit the name */}
+      {phase === "askName" && (
+        <div
+          style={{
+            position: "absolute",
+            left: 20,
+            right: 20,
+            bottom: 28,
+            opacity: bubbleDone ? 1 : 0,
+            transform: bubbleDone ? "translateY(0)" : "translateY(10px)",
+            transition: "opacity 0.4s ease, transform 0.4s ease",
+            pointerEvents: bubbleDone ? "auto" : "none",
+            zIndex: 6,
+          }}
+        >
+          <BigCTA onClick={submitName} disabled={!nameInput.trim()}>
+            That&apos;s me! →
+          </BigCTA>
+        </div>
+      )}
+
+      {/* ── greet: two-line greeting with a tiny pause between them ── */}
+      {phase === "greet" && (
         <div
           style={{
             position: "absolute",
@@ -1098,13 +1136,26 @@ export function ChildHideSeek({
           }}
         >
           <div style={{ animation: "bugsy-reveal 0.6s ease both" }}>
-            <Bobo mood="excited" tint={tint} size={156} />
+            <Bobo mood={greetStep === 0 ? "worried" : "happy"} tint={tint} size={156} />
           </div>
-          <RoomBubble tail="up" text={introLine} onDone={() => setBubbleDone(true)} />
+          <RoomBubble
+            key={`greet-${greetStep}`}
+            tail="up"
+            text={greetLines[greetStep]}
+            onDone={() => {
+              if (greetStep === 0) {
+                // pause, then move to the second line
+                window.setTimeout(() => setGreetStep(1), 1200);
+              } else {
+                setBubbleDone(true);
+              }
+            }}
+          />
         </div>
       )}
 
-      {found && (
+      {/* CTA for greet: "Yes!" only on the second line, after it types */}
+      {phase === "greet" && greetStep === 1 && (
         <div
           style={{
             position: "absolute",
@@ -1118,7 +1169,7 @@ export function ChildHideSeek({
             zIndex: 6,
           }}
         >
-          <BigCTA onClick={onNext}>{ctaLabel}</BigCTA>
+          <BigCTA onClick={onNext}>Yes!</BigCTA>
         </div>
       )}
     </div>
