@@ -274,15 +274,24 @@ export function ChildDoorway({ tint, onNext, onBack }: Common) {
   return (
     <Room brighten={entered} onBack={onBack}>
       <div style={{ flex: 1 }} />
-      {/* Doorway with light spilling out, Bugsy strolling through */}
+      {/* The whole doorway is the tap target — kid follows the cat
+          by tapping the door once it's open. */}
       <div
+        onClick={ready ? onNext : undefined}
+        role="button"
+        aria-label="Enter Bugsy's room"
+        aria-disabled={!ready}
         style={{
           position: "relative",
-          width: 220,
-          height: 260,
+          width: 320,
+          height: 440,
           display: "flex",
           alignItems: "flex-end",
           justifyContent: "center",
+          cursor: ready ? "pointer" : "default",
+          touchAction: "manipulation",
+          animation: ready ? "door-tap-pulse 1.8s ease-in-out infinite" : undefined,
+          transformOrigin: "center bottom",
         }}
       >
         {/* Door frame */}
@@ -292,11 +301,11 @@ export function ChildDoorway({ tint, onNext, onBack }: Common) {
             bottom: 0,
             left: "50%",
             transform: "translateX(-50%)",
-            width: 150,
-            height: 230,
-            borderRadius: "14px 14px 0 0",
+            width: 220,
+            height: 340,
+            borderRadius: "18px 18px 0 0",
             background: "linear-gradient(#6a5a3a, #4a3d28)",
-            boxShadow: "0 0 0 8px #3a3020",
+            boxShadow: "0 0 0 10px #3a3020",
           }}
         />
         {/* Warm light from the doorway. Centered with margin (not
@@ -306,17 +315,71 @@ export function ChildDoorway({ tint, onNext, onBack }: Common) {
           aria-hidden
           style={{
             position: "absolute",
-            bottom: 8,
+            bottom: 10,
             left: "50%",
-            marginLeft: -65,
+            marginLeft: -98,
             transformOrigin: "center bottom",
-            width: 130,
-            height: 214,
-            borderRadius: "10px 10px 0 0",
+            width: 196,
+            height: 320,
+            borderRadius: "12px 12px 0 0",
             background:
               "linear-gradient(#fff6d8 0%, #ffe6a8 55%, #ffd27a 100%)",
             animation: "door-open 0.9s ease forwards",
-            boxShadow: "0 0 40px 18px rgba(255, 224, 150, 0.45)",
+            boxShadow: "0 0 56px 24px rgba(255, 224, 150, 0.5)",
+          }}
+        />
+        {/* "Bugsy's room" hanging name plate above the door */}
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            bottom: 358,
+            left: "50%",
+            marginLeft: -110,
+            width: 220,
+            padding: "12px 16px",
+            background: "#fff3d6",
+            border: "3px solid #6b4520",
+            borderRadius: 14,
+            color: "#3a2410",
+            fontFamily: "var(--font-nunito), system-ui",
+            fontWeight: 900,
+            fontSize: 22,
+            letterSpacing: 0.3,
+            textAlign: "center",
+            boxShadow: "0 5px 0 #4a2f15, 0 8px 16px rgba(0,0,0,0.35)",
+            zIndex: 3,
+          }}
+        >
+          Bugsy&apos;s room
+        </div>
+        {/* small ropes hanging the sign from above the door */}
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            bottom: 420,
+            left: "50%",
+            marginLeft: -84,
+            width: 3,
+            height: 18,
+            background: "#6b4520",
+            borderRadius: 2,
+            zIndex: 2,
+          }}
+        />
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            bottom: 420,
+            left: "50%",
+            marginLeft: 82,
+            width: 3,
+            height: 18,
+            background: "#6b4520",
+            borderRadius: 2,
+            zIndex: 2,
           }}
         />
         {/* Bugsy walking in */}
@@ -324,12 +387,12 @@ export function ChildDoorway({ tint, onNext, onBack }: Common) {
           style={{
             position: "relative",
             zIndex: 2,
-            marginBottom: 6,
+            marginBottom: 10,
             animation: entered ? "bugsy-walk-in 1.5s ease forwards" : "none",
             opacity: entered ? undefined : 0,
           }}
         >
-          <Bobo mood="waving" tint={tint} size={150} />
+          <Bobo mood="waving" tint={tint} size={216} />
         </div>
       </div>
 
@@ -338,29 +401,19 @@ export function ChildDoorway({ tint, onNext, onBack }: Common) {
           marginTop: 18,
           textAlign: "center",
           fontFamily: "var(--font-nunito), system-ui",
-          fontSize: 20,
-          fontWeight: 900,
+          fontSize: 18,
+          fontWeight: 800,
           color: "#fff",
           textShadow: "0 2px 12px rgba(0,0,0,0.35)",
-          opacity: entered ? 1 : 0,
-          transition: "opacity 0.6s ease 0.6s",
+          opacity: ready ? 1 : 0,
+          transform: ready ? "translateY(0)" : "translateY(6px)",
+          transition: "opacity 0.5s ease, transform 0.5s ease",
         }}
       >
-        Welcome to Bugsy&apos;s room…
+        Follow the cat by tapping on the door
       </div>
 
       <div style={{ flex: 1 }} />
-      <div
-        style={{
-          width: "100%",
-          opacity: ready ? 1 : 0,
-          transform: ready ? "translateY(0)" : "translateY(10px)",
-          transition: "opacity 0.5s ease, transform 0.5s ease",
-          pointerEvents: ready ? "auto" : "none",
-        }}
-      >
-        <BigCTA onClick={onNext}>Step inside →</BigCTA>
-      </div>
     </Room>
   );
 }

@@ -269,7 +269,7 @@ export function WhoAreYou({
             }}
           >
             <Typewriter
-              text="Hi there… I'm Bugsy."
+              text="Hi, I'm Bugsy. Follow me to discover something cool"
               speedMultiplier={1.4}
               onDone={() => setPhase("ready")}
             />

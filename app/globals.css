@@ -290,6 +290,12 @@ textarea {
   50%  { transform: rotate(22deg); }
   100% { transform: rotate(-16deg); }
 }
+/* The doorway pulses gently once it's open — hint that it's tappable. */
+@keyframes door-tap-pulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
 /* Pure-joy zoomies — Bugsy darts left and right after a cuddle. */
 @keyframes bugsy-happy-run {
   0%   { transform: translateX(0)    rotate(0deg); }
