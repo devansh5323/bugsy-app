@@ -3,24 +3,33 @@
 import { useEffect, useState } from "react";
 import { BackChevron, BugsyStage, ChunkyButton, ConvoStage, SpeechBubble } from "./ConvoUI";
 import { BoboHead } from "../Mascot";
+import { Typewriter } from "../Typewriter";
 import { LoginScreen } from "./LoginScreen";
 import {
   AGE_MAX,
   AGE_MIN,
   NOTICING_OPTIONS,
   OPEN_CLANS,
+  PARENT_GOAL_OPTIONS,
   RELATIONSHIP_OPTIONS,
+  type ChipOption,
   type Clan,
   type ClanIntent,
+  type Mood,
   type Relationship,
 } from "../../lib/data";
 
-// 11 screens after the shared "Who are you?" branch.
-// Storyline: meet you → meet Bugsy → bond loop → meet your child
-// → what you're noticing → what they'll achieve → login → handover.
-// "Achieve" sits *after* "Noticing" so it lands as Bugsy's answer
-// to what the parent just shared, not a generic preview up front.
-export const PARENT_STEPS = 11;
+// 9 screens after the shared "Who are you?" branch:
+//   0 ParentWelcome   — Bugsy greets the grown-up + pet beat
+//   1 WhoIsBugsy       — missions / growth / emotional support
+//   2 ParentName       — "Tell me about you" (name + relationship)
+//   3 ParentChildSetup — child name → age
+//   4 ParentNoticing   — what they're noticing
+//   5 ParentGoals      — what they'd love to improve
+//   6 ParentAchieve    — "here's what we'll do together"
+//   7 ParentLogin      — sign in
+//   8 ParentDone       — handoff to the child
+export const PARENT_STEPS = 9;
 
 type Common = { tint: number; onBack?: () => void };
 
@@ -55,7 +64,7 @@ export function ParentName({
 
   const text =
     phase === "ask"
-      ? "Great. Tell me about you."
+      ? "Tell me about you."
       : `Lovely to meet you, ${parentName.trim()}.`;
 
   return (
@@ -189,26 +198,309 @@ export function RelationshipChips({
   );
 }
 
-// ── P1: intro ─────────────────────────────────────────────────
-// Bubble: "They'll join a team, earn rewards, and grow."
-export function ParentIntro2({
+// ── SCREEN 2: Parent selection response ───────────────────────
+// Three-beat dialogue: Bugsy welcomes the grown-up, asks to be
+// petted (tap him), then explains his developmental purpose.
+export function ParentWelcome({
   tint,
   onNext,
   onBack,
 }: Common & { onNext: () => void }) {
-  const [done, setDone] = useState(false);
+  const [phase, setPhase] = useState<"good" | "petme" | "missions">("good");
+  const [bubbleDone, setBubbleDone] = useState(false);
+  const [petKey, setPetKey] = useState(0);
+
+  // After the opening line lands, pause then invite the pet.
+  useEffect(() => {
+    if (phase === "good" && bubbleDone) {
+      const t = setTimeout(() => {
+        setBubbleDone(false);
+        setPhase("petme");
+      }, 1100);
+      return () => clearTimeout(t);
+    }
+  }, [phase, bubbleDone]);
+
+  const text =
+    phase === "good"
+      ? "Good! Grown-ups help me understand children better."
+      : phase === "petme"
+      ? "I'm your child's pet and friend — I grow with them every day. Pet me!"
+      : "I help kids practice focus and calm thinking through little adventures and missions.";
+  const mood: Mood = phase === "missions" ? "cheer" : "happy";
+
+  const pet = () => {
+    if (phase !== "petme") return;
+    setPetKey((k) => k + 1);
+    setBubbleDone(false);
+    setPhase("missions");
+  };
+
   return (
     <ConvoStage step={2 /* sky */}>
       {onBack && <BackChevron onBack={onBack} />}
-      <BugsyStage mood="cheer" tint={tint} size={150} animationKey="p-intro2" />
+      <div
+        onPointerDown={pet}
+        role={phase === "petme" ? "button" : undefined}
+        aria-label={phase === "petme" ? "Pet Bugsy" : undefined}
+        style={{
+          cursor: phase === "petme" ? "pointer" : "default",
+          touchAction: "manipulation",
+        }}
+      >
+        <div
+          key={petKey}
+          style={{
+            animation: petKey > 0 ? "bugsy-wiggle 0.5s ease-in-out" : undefined,
+            transformOrigin: "bottom center",
+          }}
+        >
+          <BugsyStage mood={mood} tint={tint} size={150} animationKey={phase} />
+        </div>
+      </div>
       <div style={{ marginTop: 8 }} />
-      <SpeechBubble
-        text="Your kid will get a buddy who grows with them every day."
-        onDone={() => setDone(true)}
-      />
+      <SpeechBubble key={phase} text={text} onDone={() => setBubbleDone(true)} />
+
+      {phase === "petme" && bubbleDone && (
+        <div
+          style={{
+            marginTop: 14,
+            textAlign: "center",
+            fontFamily: "var(--font-nunito), system-ui",
+            fontSize: 13,
+            fontWeight: 800,
+            color: "var(--primary)",
+            letterSpacing: 0.3,
+            animation: "tap-pulse 1.2s ease-in-out infinite",
+          }}
+        >
+          👆 Tap Bugsy to pet him
+        </div>
+      )}
+
       <div style={{ flex: 1 }} />
-      <ChunkyButton onClick={onNext} disabled={!done}>
-        Sounds good
+      {phase === "missions" && (
+        <ChunkyButton onClick={onNext} disabled={!bubbleDone}>
+          Ready to know more
+        </ChunkyButton>
+      )}
+    </ConvoStage>
+  );
+}
+
+// ── SCREEN 3: "Who is Bugsy?" ─────────────────────────────────
+// Bugsy on the left, three tappable facets on the right. Each
+// facet swaps Bugsy's mood + a little prop animation and explains
+// one pillar: missions (attention), growth (retention), emotional
+// support (companionship). Continue unlocks after exploring.
+type BugsyFacet = "missions" | "growth" | "emotional";
+const FACETS: {
+  key: BugsyFacet;
+  emoji: string;
+  title: string;
+  mood: Mood;
+  prop: string;
+  line: string;
+}[] = [
+  {
+    key: "missions",
+    emoji: "🎯",
+    title: "Missions",
+    mood: "excited",
+    prop: "🐠",
+    line: "I guide kids through missions that build attention. Finish one? I light up — and earn a treat!",
+  },
+  {
+    key: "growth",
+    emoji: "🌱",
+    title: "Growth",
+    mood: "cheer",
+    prop: "🏅",
+    line: "As they practice, I grow with them. Every visit I get a little stronger — badges, collectibles, new places.",
+  },
+  {
+    key: "emotional",
+    emoji: "💛",
+    title: "Emotional support",
+    mood: "happy",
+    prop: "🧶",
+    line: "I'm a great friend, too — we all need companionship. I need attention daily: cuddles and food.",
+  },
+];
+
+export function WhoIsBugsy({
+  tint,
+  onNext,
+  onBack,
+}: Common & { onNext: () => void }) {
+  const [facet, setFacet] = useState<BugsyFacet>("missions");
+  const [seen, setSeen] = useState<BugsyFacet[]>(["missions"]);
+  const [bubbleDone, setBubbleDone] = useState(false);
+
+  const current = FACETS.find((f) => f.key === facet)!;
+  const allSeen = seen.length === FACETS.length;
+
+  const pick = (k: BugsyFacet) => {
+    setFacet(k);
+    setBubbleDone(false);
+    setSeen((prev) => (prev.includes(k) ? prev : [...prev, k]));
+  };
+
+  return (
+    <ConvoStage step={1 /* lavender */}>
+      {onBack && <BackChevron onBack={onBack} />}
+
+      {/* Bugsy + dialogue side by side — reads as him speaking */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
+        <div
+          style={{
+            position: "relative",
+            width: 116,
+            flexShrink: 0,
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          <BugsyStage
+            mood={current.mood}
+            tint={tint}
+            size={106}
+            animationKey={facet}
+          />
+          {/* Facet prop — bobs next to Bugsy */}
+          <span
+            key={`prop-${facet}`}
+            aria-hidden
+            style={{
+              position: "absolute",
+              bottom: 12,
+              right: 0,
+              fontSize: 26,
+              animation: "prop-bob 1.4s ease-in-out infinite",
+              filter: "drop-shadow(0 2px 0 rgba(0,0,0,0.12))",
+            }}
+          >
+            {current.prop}
+          </span>
+        </div>
+
+        {/* Dialogue bubble with a left-pointing tail toward Bugsy */}
+        <div
+          style={{
+            position: "relative",
+            flex: 1,
+            padding: "14px 16px",
+            borderRadius: 18,
+            background: "var(--surface)",
+            border: "1px solid var(--border-strong)",
+            color: "var(--ink)",
+            fontFamily: "var(--font-nunito), system-ui",
+            fontSize: 14.5,
+            fontWeight: 700,
+            lineHeight: 1.4,
+            boxShadow: "0 4px 14px rgba(0,0,0,0.06)",
+            minHeight: 84,
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          <Typewriter
+            key={facet}
+            text={current.line}
+            onDone={() => setBubbleDone(true)}
+          />
+          <span
+            aria-hidden
+            style={{
+              position: "absolute",
+              left: -7,
+              top: "50%",
+              transform: "translateY(-50%) rotate(45deg)",
+              width: 14,
+              height: 14,
+              background: "var(--surface)",
+              borderLeft: "1px solid var(--border-strong)",
+              borderBottom: "1px solid var(--border-strong)",
+              borderRadius: 2,
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Facet cards — a row below, 3-up */}
+      <div
+        style={{
+          marginTop: 22,
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: 8,
+        }}
+      >
+        {FACETS.map((f) => {
+          const active = f.key === facet;
+          const visited = seen.includes(f.key);
+          return (
+            <button
+              key={f.key}
+              onClick={() => pick(f.key)}
+              style={{
+                position: "relative",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "flex-start",
+                gap: 6,
+                padding: "12px 6px 10px",
+                borderRadius: 16,
+                cursor: "pointer",
+                background: active ? "var(--accent-soft)" : "var(--surface)",
+                border: active
+                  ? "3px solid var(--primary)"
+                  : "2px solid var(--border)",
+                boxShadow: active
+                  ? "0 3px 0 var(--primary-shadow)"
+                  : "0 3px 0 var(--border)",
+                transform: active ? "translateY(-2px)" : "none",
+                transition:
+                  "transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease",
+                minHeight: 92,
+              }}
+            >
+              <span style={{ fontSize: 26, lineHeight: 1 }}>{f.emoji}</span>
+              <span
+                style={{
+                  fontFamily: "var(--font-nunito), system-ui",
+                  fontSize: 12,
+                  fontWeight: 800,
+                  color: active ? "var(--primary)" : "var(--ink)",
+                  letterSpacing: -0.1,
+                  lineHeight: 1.2,
+                  textAlign: "center",
+                }}
+              >
+                {f.title}
+              </span>
+              {visited && !active && (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: 6,
+                    right: 6,
+                    fontSize: 11,
+                    color: "var(--correct)",
+                  }}
+                >
+                  ✓
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      <div style={{ flex: 1, minHeight: 8 }} />
+      <ChunkyButton onClick={onNext} disabled={!bubbleDone}>
+        {allSeen ? "Continue" : "Tap each to learn more"}
       </ChunkyButton>
     </ConvoStage>
   );
@@ -230,7 +522,7 @@ export function ParentAchieve({
       <BugsyStage mood="cheer" tint={tint} size={140} animationKey="p-achieve" />
       <div style={{ marginTop: 8 }} />
       <SpeechBubble
-        text="Got it. Here's what they'll achieve with me."
+        text="Got it! Here's what we'll do together."
         onDone={() => setDone(true)}
       />
 
@@ -550,6 +842,7 @@ export function ParentBondLoop({
 // Phase 2: "Perfect. And how old is [Name]?"  + age picker
 export function ParentChildSetup({
   tint,
+  parentName,
   childName,
   setChildName,
   childAge,
@@ -557,6 +850,7 @@ export function ParentChildSetup({
   onNext,
   onBack,
 }: Common & {
+  parentName: string;
   childName: string;
   setChildName: (s: string) => void;
   childAge: number | null;
@@ -567,10 +861,11 @@ export function ParentChildSetup({
   const [bubbleDone, setBubbleDone] = useState(false);
   const ages = Array.from({ length: AGE_MAX - AGE_MIN + 1 }, (_, i) => AGE_MIN + i);
 
+  const parent = parentName.trim();
   const text =
     phase === "name"
-      ? "What's your child's name?"
-      : `Perfect. And how old is ${childName.trim()}?`;
+      ? `Nice to meet you${parent ? `, ${parent}` : ""}! What's your child's name?`
+      : `How old is ${childName.trim()}?`;
 
   return (
     <ConvoStage step={3 /* mint */}>
@@ -932,73 +1227,7 @@ export function ParentNoticing({
         onDone={() => setDone(true)}
       />
 
-      {/* 3-column grid — matches the relationship picker pattern
-          used elsewhere in onboarding. Drops the subtitle and the
-          circular checkbox: selection state is now carried by the
-          coral border + soft-pink fill + slight lift, which is
-          enough signal and removes a lot of vertical/visual noise. */}
-      <div
-        style={{
-          marginTop: 14,
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
-          gap: 8,
-          opacity: done ? 1 : 0,
-          transition: "opacity 0.4s ease",
-          pointerEvents: done ? "auto" : "none",
-        }}
-      >
-        {NOTICING_OPTIONS.map((opt) => {
-          const active = noticing.includes(opt.key);
-          return (
-            <button
-              key={opt.key}
-              onClick={() => toggle(opt.key)}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "flex-start",
-                gap: 8,
-                padding: "12px 6px 10px",
-                borderRadius: 16,
-                cursor: "pointer",
-                background: active ? "var(--accent-soft)" : "var(--surface)",
-                border: active ? "3px solid var(--primary)" : "2px solid var(--border)",
-                boxShadow: active
-                  ? "0 3px 0 var(--primary-shadow)"
-                  : "0 3px 0 var(--border)",
-                transform: active ? "translateY(-2px)" : "none",
-                transition:
-                  "transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease",
-                minHeight: 96,
-              }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={opt.icon}
-                alt=""
-                width={40}
-                height={40}
-                style={{ display: "block", flexShrink: 0 }}
-              />
-              <div
-                style={{
-                  fontFamily: "var(--font-nunito), system-ui",
-                  fontSize: 12.5,
-                  fontWeight: 800,
-                  color: active ? "var(--primary)" : "var(--ink)",
-                  letterSpacing: -0.1,
-                  lineHeight: 1.2,
-                  textAlign: "center",
-                }}
-              >
-                {opt.title}
-              </div>
-            </button>
-          );
-        })}
-      </div>
+      <ChipGrid options={NOTICING_OPTIONS} selected={noticing} onToggle={toggle} ready={done} />
 
       <div style={{ flex: 1, minHeight: 8 }} />
 
@@ -1015,6 +1244,136 @@ export function ParentNoticing({
         {noticing.length === 0 ? "Pick at least one" : `${noticing.length} selected — pick a few more if you like`}
       </div>
       <ChunkyButton onClick={onNext} disabled={!done || noticing.length === 0}>
+        Next
+      </ChunkyButton>
+    </ConvoStage>
+  );
+}
+
+// Shared 3-column emoji chip grid for the multi-select screens
+// (noticing + goals). Selection is conveyed by the coral border +
+// soft-pink fill + slight lift — no separate checkbox needed.
+function ChipGrid({
+  options,
+  selected,
+  onToggle,
+  ready,
+}: {
+  options: ChipOption[];
+  selected: string[];
+  onToggle: (key: string) => void;
+  ready: boolean;
+}) {
+  return (
+    <div
+      style={{
+        marginTop: 14,
+        display: "grid",
+        gridTemplateColumns: "repeat(3, 1fr)",
+        gap: 8,
+        opacity: ready ? 1 : 0,
+        transition: "opacity 0.4s ease",
+        pointerEvents: ready ? "auto" : "none",
+      }}
+    >
+      {options.map((opt) => {
+        const active = selected.includes(opt.key);
+        return (
+          <button
+            key={opt.key}
+            onClick={() => onToggle(opt.key)}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "flex-start",
+              gap: 6,
+              padding: "12px 6px 10px",
+              borderRadius: 16,
+              cursor: "pointer",
+              background: active ? "var(--accent-soft)" : "var(--surface)",
+              border: active ? "3px solid var(--primary)" : "2px solid var(--border)",
+              boxShadow: active
+                ? "0 3px 0 var(--primary-shadow)"
+                : "0 3px 0 var(--border)",
+              transform: active ? "translateY(-2px)" : "none",
+              transition:
+                "transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease",
+              minHeight: 92,
+            }}
+          >
+            <span style={{ fontSize: 28, lineHeight: 1, flexShrink: 0 }}>
+              {opt.emoji}
+            </span>
+            <div
+              style={{
+                fontFamily: "var(--font-nunito), system-ui",
+                fontSize: 12.5,
+                fontWeight: 800,
+                color: active ? "var(--primary)" : "var(--ink)",
+                letterSpacing: -0.1,
+                lineHeight: 1.2,
+                textAlign: "center",
+              }}
+            >
+              {opt.title}
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── SCREEN 8: Parent goals ────────────────────────────────────
+// "What would you love to see improve over time?" Multi-select,
+// sets up the "here's what we'll work on together" beat next.
+export function ParentGoals({
+  tint,
+  childName,
+  goals,
+  setGoals,
+  onNext,
+  onBack,
+}: Common & {
+  childName: string;
+  goals: string[];
+  setGoals: (g: string[]) => void;
+  onNext: () => void;
+}) {
+  const [done, setDone] = useState(false);
+  const friend = childName.trim() || "your child";
+  const toggle = (key: string) => {
+    if (goals.includes(key)) setGoals(goals.filter((k) => k !== key));
+    else setGoals([...goals, key]);
+  };
+
+  return (
+    <ConvoStage step={2 /* yellow — hopeful */}>
+      {onBack && <BackChevron onBack={onBack} />}
+      <BugsyStage mood="cheer" tint={tint} size={130} animationKey="p-goals" />
+      <div style={{ marginTop: 8 }} />
+      <SpeechBubble
+        text={`What would you love to see improve for ${friend}?`}
+        onDone={() => setDone(true)}
+      />
+
+      <ChipGrid options={PARENT_GOAL_OPTIONS} selected={goals} onToggle={toggle} ready={done} />
+
+      <div style={{ flex: 1, minHeight: 8 }} />
+      <div
+        style={{
+          fontFamily: "var(--font-nunito), system-ui",
+          fontSize: 12,
+          fontWeight: 700,
+          color: "var(--ink-muted)",
+          textAlign: "center",
+          marginBottom: 8,
+        }}
+      >
+        {goals.length === 0 ? "Pick at least one" : `${goals.length} chosen`}
+      </div>
+      <ChunkyButton onClick={onNext} disabled={!done || goals.length === 0}>
         Next
       </ChunkyButton>
     </ConvoStage>
@@ -1068,11 +1427,11 @@ export function ParentDone({
     }
   }, [phase, bubbleDone]);
 
-  const friend = childName.trim() || "Your child";
+  const friend = childName.trim() || "your child";
   const text =
     phase === "meet"
-      ? `${friend} is all set. Meet Bugsy.`
-      : "Bugsy will look after them every single day.";
+      ? `I'm ready to meet ${friend} now. Can we play together?`
+      : "Hand me over whenever you're ready — I'll take great care of them.";
 
   return (
     <ConvoStage step={4 /* rainbow finale */}>
@@ -1094,7 +1453,7 @@ export function ParentDone({
         onClick={onHandOver}
         disabled={phase !== "reassure" || !bubbleDone}
       >
-        I&apos;m ready
+        Hand the device to your child
       </ChunkyButton>
     </ConvoStage>
   );

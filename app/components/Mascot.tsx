@@ -22,6 +22,15 @@ type BoboProps = {
   // popping between discrete moods. Falls back to 1 when
   // mood === "angry" and angerLevel is omitted (back-compat).
   angerLevel?: number;
+  // Continuous eye-openness 0..1. When provided, the eyes render
+  // open with a body-colored eyelid that slides up + fades as the
+  // value rises — giving a smooth "waking up" animation instead of
+  // popping between sleep/sleepy/open eye shapes. Blinking is
+  // suppressed while this is controlled. Undefined = mood drives eyes.
+  eyeOpen?: number;
+  // When true, the tail swishes fast and wide (an excited, happy wag)
+  // instead of its slow idle sway. Used for petting/cuddle moments.
+  tailWag?: boolean;
 };
 
 // Hats sit above the ears — y centred around -120
@@ -91,7 +100,9 @@ function Hat({ kind }: { kind: string }) {
   }
 }
 
-export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, hat, angerLevel }: BoboProps) {
+export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, hat, angerLevel, eyeOpen, tailWag }: BoboProps) {
+  const lidControlled = eyeOpen !== undefined;
+  const eyeOpenClamped = Math.max(0, Math.min(1, eyeOpen ?? 1));
   // Continuous anger 0..1. mood="angry" implies 1 when angerLevel
   // is omitted, so older callers still get the full angry look.
   const safeAnger = Math.max(
@@ -125,7 +136,7 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
   // has prefers-reduced-motion on.
   const [blinking, setBlinking] = useState(false);
   useEffect(() => {
-    if (!animate || prefersReducedMotion()) return;
+    if (!animate || lidControlled || prefersReducedMotion()) return;
     let cancelled = false;
     let timer: number | null = null;
     const tick = () => {
@@ -145,7 +156,7 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
       cancelled = true;
       if (timer !== null) clearTimeout(timer);
     };
-  }, [animate]);
+  }, [animate, lidControlled]);
 
   // ── Aliveness: eyes follow pointer ───────────────────────
   // Tracks pointer position and offsets pupils slightly toward
@@ -212,7 +223,12 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
     hungry:   { lx: -18, rx: 18, y: 0,  r: 5, pupilDown: true },
     angry:    { lx: -18, rx: 18, y: -2, r: 5 },
   };
-  const eyes = eyesMap[mood] ?? eyesMap.happy;
+  // When the eyelid system is driving the eyes, force a normal
+  // open-eye geometry (sleep/sleepy configs use r:0, which would
+  // render invisible pupils under the lid).
+  const eyes = lidControlled
+    ? { lx: -18, rx: 18, y: -2, r: 6 }
+    : eyesMap[mood] ?? eyesMap.happy;
 
   const mouthMap: Record<Mood, React.ReactNode> = {
     happy:    <path d="M 0 16 Q -6 22 -10 18 M 0 16 Q 6 22 10 18" stroke="#2a1028" strokeWidth="2.8" fill="none" strokeLinecap="round"/>,
@@ -321,7 +337,11 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
 
         <g
           style={{
-            animation: animate ? "bobo-tail 3.4s ease-in-out infinite" : "none",
+            animation: tailWag
+              ? "bobo-tail-wag 0.5s ease-in-out infinite"
+              : animate
+              ? "bobo-tail 3.4s ease-in-out infinite"
+              : "none",
             transformOrigin: "58px 60px",
           }}
         >
@@ -405,7 +425,48 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
                 "transform 0.28s cubic-bezier(0.22, 1, 0.36, 1)",
             }}
           >
-          {(eyes.closed || (blinking && !eyes.halfClosed)) ? (
+          {lidControlled ? (
+            <>
+              {/* Closed-eye lash lines — shown while shut, fade out
+                  as the eyes open. No overlay lid (that bled through
+                  mid-transition); instead the pupils themselves
+                  scale open below. */}
+              <g
+                style={{
+                  opacity: 1 - eyeOpenClamped,
+                  transition: "opacity 0.9s ease",
+                }}
+              >
+                <path d={`M ${eyes.lx - 9} ${eyes.y} Q ${eyes.lx} ${eyes.y + 5} ${eyes.lx + 9} ${eyes.y}`} stroke="#1a1420" strokeWidth="3.2" fill="none" strokeLinecap="round"/>
+                <path d={`M ${eyes.rx - 9} ${eyes.y} Q ${eyes.rx} ${eyes.y + 5} ${eyes.rx + 9} ${eyes.y}`} stroke="#1a1420" strokeWidth="3.2" fill="none" strokeLinecap="round"/>
+              </g>
+              {/* Each eye scales open vertically from a flat line
+                  (scaleY 0) to a full eye (scaleY 1) around its own
+                  center — a clean reveal with no artifacts. */}
+              <g
+                style={{
+                  transformBox: "fill-box",
+                  transformOrigin: "center",
+                  transform: `scaleY(${eyeOpenClamped})`,
+                  transition: "transform 1.1s cubic-bezier(0.33, 0, 0.2, 1)",
+                }}
+              >
+                <ellipse cx={eyes.lx} cy={eyes.y} rx={eyes.r} ry={eyes.r + 1.5} fill="#1a1420"/>
+                <circle cx={eyes.lx + 2} cy={eyes.y - 3} r="2" fill="#fff"/>
+              </g>
+              <g
+                style={{
+                  transformBox: "fill-box",
+                  transformOrigin: "center",
+                  transform: `scaleY(${eyeOpenClamped})`,
+                  transition: "transform 1.1s cubic-bezier(0.33, 0, 0.2, 1)",
+                }}
+              >
+                <ellipse cx={eyes.rx} cy={eyes.y} rx={eyes.r} ry={eyes.r + 1.5} fill="#1a1420"/>
+                <circle cx={eyes.rx + 2} cy={eyes.y - 3} r="2" fill="#fff"/>
+              </g>
+            </>
+          ) : (eyes.closed || (blinking && !eyes.halfClosed)) ? (
             <>
               <path d={`M ${eyes.lx - 9} ${eyes.y} Q ${eyes.lx} ${eyes.y + 5} ${eyes.lx + 9} ${eyes.y}`} stroke="#1a1420" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
               <path d={`M ${eyes.rx - 9} ${eyes.y} Q ${eyes.rx} ${eyes.y + 5} ${eyes.rx + 9} ${eyes.y}`} stroke="#1a1420" strokeWidth="3.5" fill="none" strokeLinecap="round"/>

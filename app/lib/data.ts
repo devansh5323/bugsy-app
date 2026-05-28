@@ -70,19 +70,34 @@ export type Hat = {
 // ── Parent screening: behavioural concerns ──────────────────
 // Short list of patterns parents commonly notice. Multi-select.
 // Drives which projects we'll lean toward later.
-export type NoticingOption = {
+export type ChipOption = {
   key: string;
-  icon: string;
+  emoji: string;
   title: string;
-  sub: string;
 };
-export const NOTICING_OPTIONS: NoticingOption[] = [
-  { key: "focus",      icon: "/noticing/loses_focus.svg",          title: "Loses focus",         sub: "drifts off mid-task" },
-  { key: "interrupt",  icon: "/noticing/talks_over_others.svg",    title: "Talks over others",   sub: "hard to wait turn" },
-  { key: "reading",    icon: "/noticing/loses_reading_thread.svg", title: "Loses reading thread",sub: "re-reads pages" },
-  { key: "screens",    icon: "/noticing/glued_to_screen.svg",      title: "Glued to screens",    sub: '"5 more minutes"' },
-  { key: "newthings",  icon: "/noticing/avoid.svg",                title: "Avoids new things",   sub: "sticks to safe" },
-  { key: "giveup",     icon: "/noticing/gives_up.svg",             title: "Gives up fast",       sub: "stops when hard" },
+// What a parent is noticing about their child. Emoji-based so the
+// set is self-contained (no icon-asset dependency) and easy to extend.
+export const NOTICING_OPTIONS: ChipOption[] = [
+  { key: "focus",      emoji: "🎯", title: "Loses focus" },
+  { key: "giveup",     emoji: "🏳️", title: "Gives up easily" },
+  { key: "screens",    emoji: "📱", title: "Glued to screens" },
+  { key: "finishing",  emoji: "🧩", title: "Finishing tasks" },
+  { key: "stillness",  emoji: "🪑", title: "Sitting still" },
+  { key: "forgetful",  emoji: "💭", title: "Forgetting things" },
+  { key: "schoolwork", emoji: "📚", title: "Schoolwork attention" },
+  { key: "upset",      emoji: "😤", title: "Gets upset quickly" },
+];
+
+// What the parent hopes to see improve over time. Drives the
+// "here's what we'll work on" framing later in the flow.
+export const PARENT_GOAL_OPTIONS: ChipOption[] = [
+  { key: "focus",        emoji: "🎯", title: "Better focus" },
+  { key: "independence", emoji: "🦋", title: "More independence" },
+  { key: "confidence",   emoji: "⭐", title: "Improved confidence" },
+  { key: "calm",         emoji: "🌊", title: "Emotional calmness" },
+  { key: "completion",   emoji: "✅", title: "Task completion" },
+  { key: "school",       emoji: "🎒", title: "School readiness" },
+  { key: "routines",     emoji: "🗓️", title: "Better routines" },
 ];
 
 // Number of completed projects before the Clan tab unlocks.

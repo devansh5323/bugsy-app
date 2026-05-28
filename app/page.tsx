@@ -15,41 +15,33 @@ import {
 import {
   PARENT_STEPS,
   ParentAchieve,
-  ParentBondAbsence,
-  ParentBondGrowth,
-  ParentBondLoop,
-  ParentBondTasks,
   ParentChildSetup,
   ParentDone,
-  ParentIntro2,
+  ParentGoals,
   ParentLogin,
   ParentName,
   ParentNoticing,
+  ParentWelcome,
+  WhoIsBugsy,
 } from "./components/onboarding/ParentFlow";
 import {
   CHILD_STEPS,
   ChildAdultLogin,
-  ChildAge,
-  ChildAlmostDone,
-  ChildDailyGoal,
-  ChildFeedBugsy,
-  ChildIntro,
-  ChildName,
   ChildParentDetails,
-  ChildPlantQuest,
-  ChildPowerSecret,
-  ChildPromise,
-  ChildSendoff,
-  ChildSootheBugsy,
 } from "./components/onboarding/ChildFlow";
 import { LoginScreen } from "./components/onboarding/LoginScreen";
 import { WhoAreYou } from "./components/onboarding/WhoAreYou";
 import { Welcome } from "./components/onboarding/Welcome";
+import { PinkyPromise } from "./components/onboarding/Handover";
 import {
-  ChildHelloKnown,
-  HandoverPrompt,
-  PinkyPromise,
-} from "./components/onboarding/Handover";
+  ChildAlmostDone,
+  ChildDailyGoal,
+  ChildDoorway,
+  ChildFirstContact,
+  ChildHideSeek,
+  ChildPetMeet,
+  ChildPromise,
+} from "./components/onboarding/ChildMeet";
 import { BirdSpikeGame } from "./components/BirdSpikeGame";
 import { TourOverlay, type TourStep } from "./components/TourOverlay";
 import { ProgressContext } from "./components/onboarding/ConvoUI";
@@ -74,12 +66,13 @@ type Stage =
   | { kind: "project"; projectId: string }
   | { kind: "reward"; projectId: string; unlockedHatKey: string | null };
 
-// Handover (parent → child) now runs the same emotional story as
-// the kid-only onboarding so neither path is missing the bond
-// arc. 0: pass-phone prompt, 1: Bugsy meets the kid by name,
-// 2-5: soothe/feed/secret/plant-quest (same beats as child flow),
-// 6: pinky promise → app.
-const HANDOVER_STEPS = 7;
+// Handover (parent → child) — the child's "meet Bugsy in his room"
+// experience. 0: walk through the doorway, 1: hide-and-seek find
+// Bugsy, 2: coax him out with toys + become friends, 3: pet him,
+// 4: pinky promise → app. (Screens 5-10 of the spec — age,
+// adventure explainer, snacks mini-game, box breathing, home
+// unlock — are the next installment.)
+const HANDOVER_STEPS = 5;
 
 // Stored in localStorage so users can resume their place across
 // sessions — important when a parent does half the setup, exits,
@@ -116,6 +109,7 @@ export default function Home() {
   const [childAge, setChildAge] = useState<number | null>(null);
   const [clanIntent, setClanIntent] = useState<ClanIntent | null>(null);
   const [noticing, setNoticing] = useState<string[]>([]);
+  const [goals, setGoals] = useState<string[]>([]);
   const [dailyGoal, setDailyGoal] = useState<number | null>(null);
 
   // App state
@@ -152,6 +146,7 @@ export default function Home() {
         if (typeof data.childName === "string") setChildName(data.childName);
         if (typeof data.childAge === "number" || data.childAge === null) setChildAge(data.childAge);
         if (Array.isArray(data.noticing)) setNoticing(data.noticing);
+        if (Array.isArray(data.goals)) setGoals(data.goals);
         if (typeof data.dailyGoal === "number" || data.dailyGoal === null) setDailyGoal(data.dailyGoal);
         if (data.clanIntent !== undefined) setClanIntent(data.clanIntent);
         if (Array.isArray(data.completedIds)) setCompletedIds(data.completedIds);
@@ -191,6 +186,7 @@ export default function Home() {
         childName,
         childAge,
         noticing,
+        goals,
         dailyGoal,
         clanIntent,
         completedIds,
@@ -212,6 +208,7 @@ export default function Home() {
     childName,
     childAge,
     noticing,
+    goals,
     dailyGoal,
     clanIntent,
     completedIds,
@@ -240,6 +237,7 @@ export default function Home() {
     setChildAge(null);
     setClanIntent(null);
     setNoticing([]);
+    setGoals([]);
     setDailyGoal(null);
     setCompletedIds([]);
     setTotalPoints(0);
@@ -413,20 +411,13 @@ export default function Home() {
     if (stage.kind === "parent") {
       const back = stage.step === 0 ? () => setStage({ kind: "who" }) : backParent;
       switch (stage.step) {
-        // ── Meet Bugsy + bond loop first — explain the mascot's
-        // role before asking the parent for anything ──
+        // ── Meet Bugsy: greeting + pet, then who he is ──
         case 0:
-          return <ParentIntro2 tint={TINT} onNext={advanceParent} onBack={back} />;
+          return <ParentWelcome tint={TINT} onNext={advanceParent} onBack={back} />;
         case 1:
-          return <ParentBondGrowth tint={TINT} onNext={advanceParent} onBack={back} />;
+          return <WhoIsBugsy tint={TINT} onNext={advanceParent} onBack={back} />;
+        // ── Collect: parent identity, child, concerns, goals ──
         case 2:
-          return <ParentBondAbsence tint={TINT} onNext={advanceParent} onBack={back} />;
-        case 3:
-          return <ParentBondTasks tint={TINT} onNext={advanceParent} onBack={back} />;
-        case 4:
-          return <ParentBondLoop tint={TINT} onNext={advanceParent} onBack={back} />;
-        // ── Now collect info: parent identity, child, what they're noticing ──
-        case 5:
           return (
             <ParentName
               tint={TINT}
@@ -438,10 +429,11 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 6:
+        case 3:
           return (
             <ParentChildSetup
               tint={TINT}
+              parentName={parentName}
               childName={childName}
               setChildName={setChildName}
               childAge={childAge}
@@ -450,7 +442,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 7:
+        case 4:
           return (
             <ParentNoticing
               tint={TINT}
@@ -461,10 +453,21 @@ export default function Home() {
               onBack={back}
             />
           );
-        // ── Bugsy's answer — what your child will achieve ──
-        case 8:
+        case 5:
+          return (
+            <ParentGoals
+              tint={TINT}
+              childName={childName}
+              goals={goals}
+              setGoals={setGoals}
+              onNext={advanceParent}
+              onBack={back}
+            />
+          );
+        // ── Bugsy's answer — what they'll work on together ──
+        case 6:
           return <ParentAchieve tint={TINT} onNext={advanceParent} onBack={back} />;
-        case 9:
+        case 7:
           return (
             <ParentLogin
               tint={TINT}
@@ -473,7 +476,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 10:
+        case 8:
           return (
             <ParentDone
               tint={TINT}
@@ -490,16 +493,13 @@ export default function Home() {
     if (stage.kind === "child") {
       const friend = childName.trim() || "friend";
       switch (stage.step) {
-        // ── Meet Bugsy, get to know each other ──
-        // The first beats now play as one continuous conversation:
-        // Bugsy says hi → asks name → reacts and asks age. The
-        // mood shift to angry Bugsy (soothe) then lands as a
-        // mid-chat reveal instead of a topic-out-of-nowhere.
+        // ── Meet Bugsy in his room: he asks the child's name, then
+        // they play hide-and-seek to find him. ──
         case 0:
-          return <ChildIntro tint={TINT} onNext={advanceChild} onBack={backChild} />;
+          return <ChildDoorway tint={TINT} childName={friend} onNext={advanceChild} onBack={backChild} />;
         case 1:
           return (
-            <ChildName
+            <ChildHideSeek
               tint={TINT}
               childName={childName}
               setChildName={setChildName}
@@ -508,69 +508,39 @@ export default function Home() {
             />
           );
         case 2:
+          return <ChildFirstContact tint={TINT} childName={friend} onNext={advanceChild} onBack={backChild} />;
+        case 3:
+          // Cuddle Bugsy → age → "play one more game with me?" invite.
           return (
-            <ChildAge
+            <ChildPetMeet
               tint={TINT}
-              childName={friend}
+              childName={childName}
               childAge={childAge}
               setChildAge={setChildAge}
+              gameNext
               onNext={advanceChild}
               onBack={backChild}
             />
           );
-        // ── Bond beats: now Bugsy reveals he's been struggling
-        // and walks the kid through the rules of their bond. ──
-        case 3:
-          return <ChildSootheBugsy tint={TINT} onNext={advanceChild} onBack={backChild} />;
+        // ── Bird Spike — the "one more game" promised on cuddle ──
         case 4:
-          return <ChildFeedBugsy tint={TINT} onNext={advanceChild} onBack={backChild} />;
+          return <BirdSpikeGame tint={TINT} onExit={advanceChild} />;
+        // ── A little about them ──
         case 5:
-          return <ChildPowerSecret tint={TINT} onNext={advanceChild} onBack={backChild} />;
-        // ── Teach the core loop: pick a real quest and play it.
-        // The kid taps "Play this quest" → ScreenProjectDetail →
-        // ScreenReward (with points flying into the clan rank) →
-        // and lands back here on the next child step. ──
-        case 6:
-          return (
-            <ChildPlantQuest
-              tint={TINT}
-              childName={friend}
-              onPlay={(id) => {
-                setOnboardingResume({
-                  kind: "child",
-                  step: stage.step + 1,
-                });
-                setStage({ kind: "project", projectId: id });
-              }}
-              onSkip={advanceChild}
-              onBack={backChild}
-            />
-          );
-        // ── Daily goal commitment ──
-        case 7:
           return (
             <ChildDailyGoal
               tint={TINT}
+              childName={childName}
               goal={dailyGoal}
               setGoal={setDailyGoal}
               onNext={advanceChild}
               onBack={backChild}
             />
           );
-        // ── Promise, sendoff, grown-up handoff ──
-        case 8:
-          return <ChildPromise tint={TINT} onNext={advanceChild} onBack={backChild} />;
-        case 9:
-          return (
-            <ChildSendoff
-              tint={TINT}
-              childName={friend}
-              equippedHat={equippedHat}
-              onEnter={advanceChild}
-              onBack={backChild}
-            />
-          );
-        case 10:
+        // ── Promise, grown-up consent ──
+        case 6:
+          return <ChildPromise tint={TINT} childName={childName} onNext={advanceChild} onBack={backChild} />;
+        case 7:
           return (
             <ChildAlmostDone
               tint={TINT}
@@ -579,7 +549,7 @@ export default function Home() {
               onBack={backChild}
             />
           );
-        case 11:
+        case 8:
           return (
             <ChildAdultLogin
               tint={TINT}
@@ -588,7 +558,7 @@ export default function Home() {
               onBack={backChild}
             />
           );
-        case 12:
+        case 9:
           return (
             <ChildParentDetails
               tint={TINT}
@@ -601,9 +571,9 @@ export default function Home() {
               onBack={backChild}
             />
           );
-        // ── Grown-up shares what they're noticing, then sees
-        // Bugsy's response (same beats as the parent flow) ──
-        case 13:
+        // ── Grown-up shares what they're noticing, then Bugsy's
+        // response (same beats as the parent flow) ──
+        case 10:
           return (
             <ParentNoticing
               tint={TINT}
@@ -614,7 +584,7 @@ export default function Home() {
               onBack={backChild}
             />
           );
-        case 14:
+        case 11:
           return <ParentAchieve tint={TINT} onNext={advanceChild} onBack={backChild} />;
       }
       return null;
@@ -623,56 +593,25 @@ export default function Home() {
     if (stage.kind === "handover") {
       const friend = childName || "friend";
       switch (stage.step) {
-        // ── Pass the phone + meet Bugsy by name ──
+        // ── Meet Bugsy in his room ──
         case 0:
-          return (
-            <HandoverPrompt
-              tint={TINT}
-              childName={friend}
-              onNext={advanceHandover}
-            />
-          );
+          return <ChildDoorway tint={TINT} childName={friend} onNext={advanceHandover} />;
         case 1:
+          return <ChildHideSeek tint={TINT} childName={friend} onNext={advanceHandover} />;
+        case 2:
+          return <ChildFirstContact tint={TINT} childName={friend} onNext={advanceHandover} />;
+        case 3:
           return (
-            <ChildHelloKnown
+            <ChildPetMeet
               tint={TINT}
               childName={friend}
-              parentName={parentName}
-              relationship={relationship}
+              childAge={childAge}
+              setChildAge={setChildAge}
               onNext={advanceHandover}
             />
           );
-        // ── Same emotional bond beats as the kid-only flow.
-        // Soothe (angry) → feed (hungry) → the secret of real
-        // power-ups → the sad rescue quest. Without these the
-        // handover skipped straight from "hi" to "pick a project",
-        // and the kid never heard the story. ──
-        case 2:
-          return <ChildSootheBugsy tint={TINT} onNext={advanceHandover} />;
-        case 3:
-          return <ChildFeedBugsy tint={TINT} onNext={advanceHandover} />;
+        // ── Daily commitment → app home ──
         case 4:
-          return <ChildPowerSecret tint={TINT} onNext={advanceHandover} />;
-        case 5:
-          return (
-            <ChildPlantQuest
-              tint={TINT}
-              childName={friend}
-              onPlay={(id) => {
-                // Resume on the NEXT handover step after the
-                // reward screen finishes, so the rest of the
-                // handover (daily map, pinky promise) still plays.
-                setOnboardingResume({
-                  kind: "handover",
-                  step: stage.step + 1,
-                });
-                setStage({ kind: "project", projectId: id });
-              }}
-              onSkip={advanceHandover}
-            />
-          );
-        // ── Pinky promise → app home ──
-        case 6:
           return (
             <PinkyPromise
               tint={TINT}
