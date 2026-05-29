@@ -19,15 +19,19 @@ import {
 // The standalone "I'm a child" path now opens with the same
 // "meet Bugsy in his room" experience as the parent-handover
 // path (doorway → hide-and-seek → first contact → pet), defined
-// in ChildMeet.tsx. ChildHideSeek collects the name first, and
-// ChildPetMeet collects the age + invites the child into one more
-// game (Bird Spike) right after. Steps here:
-//   0 ChildDoorway      5 ChildDailyGoal    9 ChildParentDetails
-//   1 ChildHideSeek     6 ChildPromise     10 ParentNoticing
-//   2 ChildFirstContact 7 ChildAlmostDone  11 ParentAchieve
-//   3 ChildPetMeet      8 ChildAdultLogin
-//   4 BirdSpikeGame  ("one more game")
-export const CHILD_STEPS = 12;
+// in ChildMeet.tsx. ChildHideSeek collects the name first, then
+// the cuddle (belly tap → adventure) leads into the age question
+// (park, no football), the kitchen mission setup, then the SnackCatch
+// drag-to-feed mini-game, the thunderstorm box-breathing soothe
+// beat, and finally the usual grown-up steps.
+// (BirdSpikeGame is kept in the codebase — it's used elsewhere and
+// can come back as a future mission.) Steps here:
+//   0 ChildDoorway       5 SnackCatchGame   10 ChildAdultLogin
+//   1 ChildHideSeek      6 ChildCalmBugsy   11 ChildParentDetails
+//   2 ChildPetMeet       7 ChildDailyGoal   12 ParentNoticing
+//   3 ChildAgeQuestion   8 ChildPromise     13 ParentAchieve
+//   4 ChildKitchen       9 ChildAlmostDone
+export const CHILD_STEPS = 14;
 
 type Common = { tint: number };
 

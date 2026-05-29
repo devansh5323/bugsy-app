@@ -31,6 +31,10 @@ type BoboProps = {
   // When true, the tail swishes fast and wide (an excited, happy wag)
   // instead of its slow idle sway. Used for petting/cuddle moments.
   tailWag?: boolean;
+  // When true, the feet step alternately (walking / running animation).
+  walking?: boolean;
+  // When true, render an open mouth (eating). Overrides the mood mouth.
+  mouthOpen?: boolean;
 };
 
 // Hats sit above the ears — y centred around -120
@@ -100,7 +104,7 @@ function Hat({ kind }: { kind: string }) {
   }
 }
 
-export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, hat, angerLevel, eyeOpen, tailWag }: BoboProps) {
+export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, hat, angerLevel, eyeOpen, tailWag, walking, mouthOpen }: BoboProps) {
   const lidControlled = eyeOpen !== undefined;
   const eyeOpenClamped = Math.max(0, Math.min(1, eyeOpen ?? 1));
   // Continuous anger 0..1. mood="angry" implies 1 when angerLevel
@@ -313,7 +317,13 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
             actual feet from a glance, not pebbles. Highlight on
             the upper rim plus a darker pad on the underside give
             them the same 3D feel as the body. */}
-        <g>
+        {/* Left foot — wrapped so it can rock while walking */}
+        <g
+          style={{
+            transformOrigin: "-28px 86px",
+            animation: walking ? "bobo-foot-step 0.42s ease-in-out infinite" : undefined,
+          }}
+        >
           <ellipse cx="-28" cy="86" rx="26" ry="13" fill={bodyMid}/>
           {/* darker underside */}
           <ellipse cx="-28" cy="91" rx="14" ry="4" fill={bodyBottom} opacity="0.42"/>
@@ -325,7 +335,15 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
           <path d="M -48 82 Q -28 73 -8 82" stroke={highlight} strokeWidth="2.5" fill="none" opacity="0.5" strokeLinecap="round"/>
           {/* tiny specular shine, top-left */}
           <ellipse cx="-38" cy="81" rx="5" ry="2" fill="#fff" opacity="0.35"/>
+        </g>
 
+        {/* Right foot — same animation but offset so it alternates */}
+        <g
+          style={{
+            transformOrigin: "28px 86px",
+            animation: walking ? "bobo-foot-step 0.42s ease-in-out -0.21s infinite" : undefined,
+          }}
+        >
           <ellipse cx="28" cy="86" rx="26" ry="13" fill={bodyMid}/>
           <ellipse cx="28" cy="91" rx="14" ry="4" fill={bodyBottom} opacity="0.42"/>
           <circle cx="12" cy="79" r="3" fill={bodyBottom} opacity="0.55"/>
@@ -539,11 +557,22 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
           <path d="M 0 8 L -6 14 Q 0 18 6 14 Z" fill={nose} stroke="#2a1028" strokeWidth="1.2" strokeLinejoin="round"/>
           <path d="M 0 15 L 0 17" stroke="#2a1028" strokeWidth="2" strokeLinecap="round"/>
           {/* Mood mouth — fades out as anger rises so we can crossfade
-              the snarl in below without double-rendering. */}
-          <g style={{ opacity: 1 - safeAnger }}>{mouthMap[mood]}</g>
+              the snarl in below without double-rendering. Also hidden
+              while the mouth is open (eating). */}
+          {!mouthOpen && (
+            <g style={{ opacity: 1 - safeAnger }}>{mouthMap[mood]}</g>
+          )}
           {/* Snarl crossfades in with anger so the cool-down isn't a snap. */}
-          {safeAnger > 0.01 && mood !== "angry" && (
+          {!mouthOpen && safeAnger > 0.01 && mood !== "angry" && (
             <g style={{ opacity: safeAnger }}>{mouthMap.angry}</g>
+          )}
+          {/* Open mouth — for eating. Wide dark oval with a tongue inside. */}
+          {mouthOpen && (
+            <g>
+              <ellipse cx="0" cy="20" rx="12" ry="9" fill="#2a1028" />
+              <ellipse cx="0" cy="23" rx="8" ry="5" fill="#e87b91" />
+              <path d="M-8 16 Q0 14 8 16" stroke="#ffffff" strokeWidth="1.2" fill="none" opacity="0.6" strokeLinecap="round" />
+            </g>
           )}
 
           {!eyes.closed && (

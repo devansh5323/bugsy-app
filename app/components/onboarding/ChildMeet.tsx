@@ -205,16 +205,61 @@ function RoomBubble({
   text,
   onDone,
   tail = "down",
+  maxWidth = 320,
 }: {
   text: string;
   onDone?: () => void;
-  tail?: "up" | "down";
+  // Tail direction names the side it comes OUT of the bubble — i.e.
+  // the direction the bubble is "pointing". So `tail="right"` puts the
+  // bubble on the left of the speaker.
+  tail?: "up" | "down" | "left" | "right";
+  maxWidth?: number;
 }) {
+  const tailBase: React.CSSProperties = {
+    position: "absolute",
+    width: 16,
+    height: 16,
+    background: "var(--surface)",
+    borderRadius: 3,
+  };
+  const tailVariant: React.CSSProperties =
+    tail === "up"
+      ? {
+          top: -8,
+          left: "50%",
+          transform: "translateX(-50%) rotate(45deg)",
+          borderTop: "1px solid var(--border-strong)",
+          borderLeft: "1px solid var(--border-strong)",
+        }
+      : tail === "down"
+        ? {
+            bottom: -8,
+            left: "50%",
+            transform: "translateX(-50%) rotate(45deg)",
+            borderRight: "1px solid var(--border-strong)",
+            borderBottom: "1px solid var(--border-strong)",
+          }
+        : tail === "right"
+          ? {
+              right: -8,
+              top: "50%",
+              transform: "translateY(-50%) rotate(45deg)",
+              borderTop: "1px solid var(--border-strong)",
+              borderRight: "1px solid var(--border-strong)",
+            }
+          : {
+              left: -8,
+              top: "50%",
+              transform: "translateY(-50%) rotate(45deg)",
+              borderBottom: "1px solid var(--border-strong)",
+              borderLeft: "1px solid var(--border-strong)",
+            };
+
   return (
     <div
       style={{
         position: "relative",
-        maxWidth: 320,
+        maxWidth,
         padding: "16px 22px",
         borderRadius: 22,
         background: "var(--surface)",
@@ -230,29 +275,7 @@ function RoomBubble({
       }}
     >
       <Typewriter text={text} onDone={onDone} speedMultiplier={1.15} />
-      <span
-        aria-hidden
-        style={{
-          position: "absolute",
-          left: "50%",
-          transform: "translateX(-50%) rotate(45deg)",
-          width: 16,
-          height: 16,
-          background: "var(--surface)",
-          borderRadius: 3,
-          ...(tail === "up"
-            ? {
-                top: -8,
-                borderTop: "1px solid var(--border-strong)",
-                borderLeft: "1px solid var(--border-strong)",
-              }
-            : {
-                bottom: -8,
-                borderRight: "1px solid var(--border-strong)",
-                borderBottom: "1px solid var(--border-strong)",
-              }),
-        }}
-      />
+      <span aria-hidden style={{ ...tailBase, ...tailVariant }} />
     </div>
   );
 }
@@ -447,6 +470,7 @@ function RoomBackdrop({
   peek,
   chairs = true,
   dusk = false,
+  stormy = false,
 }: {
   tap?: (id: string) => void;
   shake?: string | null;
@@ -454,16 +478,25 @@ function RoomBackdrop({
   peek?: React.ReactNode;
   chairs?: boolean;
   dusk?: boolean;
+  // Thunderstorm visuals through the window — used by ChildCalmBugsy.
+  stormy?: boolean;
 }) {
   const interactive = !!tap;
   // Evening palette for the "see you tomorrow" beat.
-  const skyFill = dusk ? "url(#hs-sky-dusk)" : "url(#hs-sky)";
-  const cloud = dusk ? "#f4c6ae" : "#ffffff";
-  const hillA = dusk ? "#7ba06d" : "#a9d99a";
-  const hillB = dusk ? "#67905d" : "#92c882";
-  const bush1 = dusk ? "#5e8d56" : "#7cc46f";
-  const bush2 = dusk ? "#6d9d62" : "#8ed07f";
-  const bush3 = dusk ? "#547d4d" : "#6fb862";
+  const skyFill = stormy
+    ? "url(#hs-sky-storm)"
+    : dusk
+      ? "url(#hs-sky-dusk)"
+      : "url(#hs-sky)";
+  const cloud = stormy ? "#4c4f6a" : dusk ? "#f4c6ae" : "#ffffff";
+  // Storm palette — hills shift toward warm wet-earth tones (muted
+  // olive-brown) so they read as soggy hillside rather than the same
+  // sage-green as the bushes.
+  const hillA = stormy ? "#857a62" : dusk ? "#7ba06d" : "#a9d99a";
+  const hillB = stormy ? "#665a44" : dusk ? "#67905d" : "#92c882";
+  const bush1 = stormy ? "#5e8078" : dusk ? "#5e8d56" : "#7cc46f";
+  const bush2 = stormy ? "#7a958c" : dusk ? "#6d9d62" : "#8ed07f";
+  const bush3 = stormy ? "#4d6e66" : dusk ? "#547d4d" : "#6fb862";
   const tapStyle = (id: string): React.CSSProperties => ({
     cursor: interactive ? "pointer" : "default",
     transformBox: "fill-box",
@@ -535,6 +568,13 @@ function RoomBackdrop({
           <stop offset="55%" stopColor="#9a6a9e" stopOpacity="0.2" />
           <stop offset="100%" stopColor="#3a3470" stopOpacity="0.32" />
         </linearGradient>
+        {/* Stormy night sky — deep indigo at the top, slightly warmer
+            (rain-haze) toward the horizon. */}
+        <linearGradient id="hs-sky-storm" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#171a36" />
+          <stop offset="55%" stopColor="#262a52" />
+          <stop offset="100%" stopColor="#3b3a6a" />
+        </linearGradient>
       </defs>
 
       {/* Wall + subtle grid */}
@@ -576,7 +616,49 @@ function RoomBackdrop({
         <line x1="200" y1="144" x2="200" y2="158" stroke="#cf9a78" strokeWidth="2" />
         <circle cx="200" cy="160" r="3" fill="#cf9a78" />
         <rect x="112" y="146" width="176" height="232" rx="6" fill={skyFill} />
-        {dusk ? (
+        {stormy ? (
+          <>
+            {/* Heavy storm clouds */}
+            <ellipse cx="158" cy="178" rx="40" ry="14" fill="#2a2e4a" opacity="0.92" />
+            <ellipse cx="200" cy="170" rx="44" ry="15" fill="#3a3e5e" opacity="0.92" />
+            <ellipse cx="252" cy="186" rx="38" ry="13" fill="#252849" opacity="0.92" />
+            {/* Steady (dim) lightning bolt in the window — the screen-
+                level flash overlay handles the bright strike moments. */}
+            <path
+              d="M214 196 L184 282 L212 282 L196 360 L246 264 L218 264 L246 196 Z"
+              fill="#fffbe0"
+              opacity="0.32"
+              stroke="#ffe27a"
+              strokeWidth="1.4"
+              strokeLinejoin="round"
+            />
+            {/* Rain — slanted streaks falling through the window */}
+            {[120, 138, 156, 174, 192, 210, 228, 246, 264, 282].map((x, i) => (
+              <line
+                key={`rain-${i}`}
+                x1={x}
+                y1={186 + (i % 3) * 10}
+                x2={x - 10}
+                y2={186 + (i % 3) * 10 + 28}
+                stroke="rgba(190,210,235,0.55)"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+              />
+            ))}
+            {[130, 168, 206, 244, 274].map((x, i) => (
+              <line
+                key={`rain-b-${i}`}
+                x1={x + 4}
+                y1={244 + (i % 2) * 14}
+                x2={x - 6}
+                y2={244 + (i % 2) * 14 + 32}
+                stroke="rgba(190,210,235,0.5)"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+              />
+            ))}
+          </>
+        ) : dusk ? (
           <>
             {/* low setting sun + a couple of early stars */}
             <circle cx="236" cy="300" r="22" fill="#ff9d5c" opacity="0.9" />
@@ -587,8 +669,12 @@ function RoomBackdrop({
         ) : (
           <circle cx="250" cy="186" r="20" fill="#ffe9a8" />
         )}
-        <ellipse cx="160" cy="200" rx="30" ry="13" fill={cloud} opacity="0.8" />
-        <ellipse cx="186" cy="194" rx="20" ry="11" fill={cloud} opacity="0.8" />
+        {!stormy && (
+          <>
+            <ellipse cx="160" cy="200" rx="30" ry="13" fill={cloud} opacity="0.8" />
+            <ellipse cx="186" cy="194" rx="20" ry="11" fill={cloud} opacity="0.8" />
+          </>
+        )}
         <ellipse cx="150" cy="392" rx="120" ry="70" fill={hillA} />
         <ellipse cx="270" cy="400" rx="120" ry="74" fill={hillB} />
         <circle cx="150" cy="338" r="30" fill={bush1} />
@@ -1179,7 +1265,7 @@ export function ChildHideSeek({
 // ── Shared full-bleed football park ───────────────────────────
 // Backdrop for the playground (kick-the-ball) screen and the
 // "how long do you want to practice" daily-goal screen.
-export function ParkBackdrop() {
+export function ParkBackdrop({ goal = true }: { goal?: boolean } = {}) {
   return (
     <svg
       viewBox="0 0 400 800"
@@ -1271,20 +1357,22 @@ export function ParkBackdrop() {
         ))}
       </g>
 
-      {/* ── Soccer goal (centre) ── */}
-      <g>
-        <ellipse cx="220" cy="552" rx="92" ry="12" fill="rgba(80,60,30,0.14)" />
-        <rect x="160" y="458" width="120" height="92" rx="3" fill="#eef6ff" opacity="0.7" />
-        {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
-          <line key={`v${i}`} x1={168 + i * 14} y1="460" x2={168 + i * 14} y2="550" stroke="#9fb8cf" strokeWidth="1.4" opacity="0.8" />
-        ))}
-        {[0, 1, 2, 3, 4, 5].map((i) => (
-          <line key={`h${i}`} x1="160" y1={472 + i * 14} x2="280" y2={472 + i * 14} stroke="#9fb8cf" strokeWidth="1.4" opacity="0.8" />
-        ))}
-        <rect x="150" y="450" width="12" height="102" rx="6" fill="#ffffff" stroke="#7e96a8" strokeWidth="3" />
-        <rect x="280" y="450" width="12" height="102" rx="6" fill="#ffffff" stroke="#7e96a8" strokeWidth="3" />
-        <rect x="150" y="446" width="142" height="12" rx="6" fill="#ffffff" stroke="#7e96a8" strokeWidth="3" />
-      </g>
+      {/* ── Soccer goal (centre) — only when the football game lives here ── */}
+      {goal && (
+        <g>
+          <ellipse cx="220" cy="552" rx="92" ry="12" fill="rgba(80,60,30,0.14)" />
+          <rect x="160" y="458" width="120" height="92" rx="3" fill="#eef6ff" opacity="0.7" />
+          {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+            <line key={`v${i}`} x1={168 + i * 14} y1="460" x2={168 + i * 14} y2="550" stroke="#9fb8cf" strokeWidth="1.4" opacity="0.8" />
+          ))}
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <line key={`h${i}`} x1="160" y1={472 + i * 14} x2="280" y2={472 + i * 14} stroke="#9fb8cf" strokeWidth="1.4" opacity="0.8" />
+          ))}
+          <rect x="150" y="450" width="12" height="102" rx="6" fill="#ffffff" stroke="#7e96a8" strokeWidth="3" />
+          <rect x="280" y="450" width="12" height="102" rx="6" fill="#ffffff" stroke="#7e96a8" strokeWidth="3" />
+          <rect x="150" y="446" width="142" height="12" rx="6" fill="#ffffff" stroke="#7e96a8" strokeWidth="3" />
+        </g>
+      )}
 
       {/* ── Bench (foreground) ── */}
       <g>
@@ -1836,70 +1924,77 @@ export function ChildFirstContact({ tint, onNext, onBack }: Common) {
   );
 }
 
-// ── SCREEN 4 — Pet interaction ────────────────────────────────
+
+// ── SCREEN 4 — Cuddle the belly, then off on an adventure ─────
 type Heart = { id: number; x: number };
 
 export function ChildPetMeet({
   tint,
   childName,
-  childAge,
-  setChildAge,
   onNext,
   onBack,
-  gameNext = false,
 }: Common & {
-  childAge: number | null;
-  setChildAge: (n: number) => void;
-  /** When true, finish with "wanna play one more game?" → onNext (which
-   *  the parent routes to Bird Spike). Off for the handover path. */
+  // Legacy props kept so page.tsx callers don't have to change.
+  childAge?: number | null;
+  setChildAge?: (n: number) => void;
   gameNext?: boolean;
 }) {
-  const friend = childName.trim() || "friend";
-  // Only ask for the age if we don't already know it (e.g. the parent
-  // gave it during their onboarding → handover path skips the question).
-  const [askAge] = useState(childAge === null);
+  void childName;
   const [pets, setPets] = useState(0);
   const [hearts, setHearts] = useState<Heart[]>([]);
-  const [wiggleKey, setWiggleKey] = useState(0);
   const [wagging, setWagging] = useState(false);
-  const [phase, setPhase] = useState<"cuddle" | "age" | "invite">("cuddle");
-  const [ageReady, setAgeReady] = useState(false);
-  const [inviteReady, setInviteReady] = useState(false);
+  const [eating, setEating] = useState(false);
+  const [phase, setPhase] = useState<"belly" | "rising" | "adventure">("belly");
+  const [adventureStep, setAdventureStep] = useState<0 | 1>(0);
+  const [bubbleDone, setBubbleDone] = useState(false);
   const { purr } = useCatSounds();
-  const enough = pets >= 3;
-  // After two cuddles he's so happy his tail keeps swishing and he
-  // does little zoomies left and right across the rug.
-  const happy = pets >= 2;
-  const ages = Array.from({ length: AGE_MAX - AGE_MIN + 1 }, (_, i) => AGE_MIN + i);
 
-  // Bond grows with each cuddle: happy → smitten → in love.
-  const cuddleMood: Mood = enough ? "cheer" : pets >= 1 ? "excited" : "happy";
+  const PETS_TO_RISE = 3;
+  // How long the whole eat sequence takes (matches bugsy-eats keyframe).
+  const EAT_MS = 1000;
+
+  // Reset the typewriter "done" flag whenever the bubble's text changes.
+  useEffect(() => {
+    setBubbleDone(false);
+  }, [phase, adventureStep]);
 
   const pet = () => {
-    if (phase !== "cuddle") return;
-    purr();
-    setWiggleKey((k) => k + 1);
+    if (phase !== "belly" || eating) return;
+    setEating(true);
     setWagging(true);
-    window.setTimeout(() => setWagging(false), 900);
-    setPets((p) => p + 1);
-    const id = Date.now() + Math.random();
-    const x = (Math.random() - 0.5) * 80;
-    setHearts((h) => [...h, { id, x }]);
-    window.setTimeout(() => setHearts((h) => h.filter((he) => he.id !== id)), 1000);
+    // When the eat animation finishes, count the feed and re-mount a
+    // fresh burger (via the `key={pets}` on the burger div).
+    window.setTimeout(() => {
+      setEating(false);
+      purr();
+      const id = Date.now() + Math.random();
+      const x = (Math.random() - 0.5) * 80;
+      setHearts((h) => [...h, { id, x }]);
+      window.setTimeout(
+        () => setHearts((h) => h.filter((he) => he.id !== id)),
+        1000,
+      );
+      setPets((p) => {
+        const n = p + 1;
+        if (n >= PETS_TO_RISE) {
+          window.setTimeout(() => setPhase("rising"), 600);
+          window.setTimeout(() => setPhase("adventure"), 1600);
+        }
+        return n;
+      });
+    }, EAT_MS);
+    window.setTimeout(() => setWagging(false), 1600);
   };
 
-  const heading =
-    phase === "age" || phase === "invite"
-      ? ""
-      : enough
-      ? "He loves you already! 💕"
-      : pets > 0
-      ? "Aww… he's purring 💓"
-      : "Tap Bugsy to give him a cuddle";
+  const adventureLines: [string, string] = [
+    "I love adventures! And they're way more fun with a friend.",
+    "Do you want to come with me on a mission?",
+  ];
+
+  const heading = phase === "belly" ? "Tap Bugsy to feed him!" : "";
 
   return (
     <div style={{ position: "absolute", inset: 0, overflow: "hidden", background: "#f6d2bd" }}>
-      {/* Back home in Bugsy's room (chairs cleared so Bugsy has the floor) */}
       <RoomBackdrop chairs={false} />
 
       {/* back button */}
@@ -1940,7 +2035,9 @@ export function ChildPetMeet({
           padding: "56px 20px 26px",
           textAlign: "center",
           pointerEvents: "none",
-          background: "linear-gradient(180deg, rgba(252,234,221,0.98) 0%, rgba(252,234,221,0.98) 55%, rgba(252,234,221,0))",
+          background: heading
+            ? "linear-gradient(180deg, rgba(252,234,221,0.98) 0%, rgba(252,234,221,0.98) 55%, rgba(252,234,221,0))"
+            : "transparent",
           zIndex: 4,
         }}
       >
@@ -1948,7 +2045,7 @@ export function ChildPetMeet({
           style={{
             minHeight: 28,
             fontFamily: "var(--font-nunito), system-ui",
-            fontSize: 24,
+            fontSize: 22,
             fontWeight: 900,
             letterSpacing: "-0.3px",
             color: "#5e3f2d",
@@ -1959,120 +2056,284 @@ export function ChildPetMeet({
         </div>
       </div>
 
-      {phase === "cuddle" && (
-        <>
-          {/* ── Pettable Bugsy on the rug ── */}
-          <div
-            style={{
-              position: "absolute",
-              left: 0,
-              right: 0,
-              bottom: 150,
-              display: "flex",
-              justifyContent: "center",
-              zIndex: 3,
-            }}
-          >
-            <div
-              onPointerDown={pet}
-              role="button"
-              aria-label="Pet Bugsy"
-              style={{
-                position: "relative",
-                cursor: "pointer",
-                touchAction: "manipulation",
-                filter: "drop-shadow(0 12px 12px rgba(90,60,40,0.22))",
-              }}
-            >
-              {/* Outer wrapper does the left-right happy zoomies once
-                  Bugsy is in love. Inner wrapper still does the wiggle
-                  on each tap — the two animations compose cleanly. */}
-              <div
-                style={{
-                  animation: happy ? "bugsy-happy-run 1.7s ease-in-out infinite" : undefined,
-                  transformOrigin: "bottom center",
-                }}
-              >
-                <div
-                  key={wiggleKey}
-                  style={{
-                    animation: wiggleKey > 0 ? "bugsy-wiggle 0.6s ease-in-out" : undefined,
-                    transformOrigin: "bottom center",
-                  }}
-                >
-                  <Bobo
-                    mood={cuddleMood}
-                    tint={tint}
-                    size={184}
-                    tailWag={wagging || happy}
-                  />
-                </div>
-              </div>
-              {hearts.map((h) => (
-                <span
-                  key={h.id}
-                  aria-hidden
-                  style={{
-                    position: "absolute",
-                    top: 20,
-                    left: `calc(50% + ${h.x}px)`,
-                    fontSize: 24,
-                    animation: "pet-heart 1s ease-out forwards",
-                    pointerEvents: "none",
-                  }}
-                >
-                  💗
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* CTA → ask the age (if unknown) → invite to the next game */}
-          <div style={{ position: "absolute", left: 20, right: 20, bottom: 28, zIndex: 6 }}>
-            <BigCTA
-              onClick={() =>
-                askAge ? setPhase("age") : gameNext ? setPhase("invite") : onNext()
-              }
-              disabled={!enough}
-            >
-              {enough ? "Continue 💕" : `Cuddle me ${3 - pets} more`}
-            </BigCTA>
-          </div>
-        </>
+      {/* Bugsy's snack — sits on the floor and flies up into his mouth
+          when he eats. Centered via `left: calc(...)` so the animation
+          can own the transform without fighting a translate centering.
+          Keyed by `pets` so each new bite gets a fresh burger that
+          starts the animation from rest. */}
+      {phase === "belly" && (
+        <div
+          key={pets}
+          aria-hidden
+          style={{
+            position: "absolute",
+            left: "calc(50% - 46px)",
+            bottom: 92,
+            width: 92,
+            pointerEvents: "none",
+            filter: "drop-shadow(0 6px 8px rgba(80,40,20,0.32))",
+            zIndex: 4,
+            transformOrigin: "center",
+            animation: eating ? `burger-eats ${EAT_MS}ms ease-in forwards` : undefined,
+          }}
+        >
+          {pets === 0 ? (
+            // ── Burger (first bite) ──
+            <svg viewBox="0 0 200 170" width="100%" style={{ display: "block" }}>
+              <path d="M14 86 Q100 0 186 86 Q186 100 100 100 Q14 100 14 86 Z" fill="#f7bc53" />
+              <path d="M14 86 Q100 0 186 86" fill="none" stroke="#e08f3a" strokeWidth="3" opacity="0.5" />
+              <ellipse cx="62" cy="60" rx="6" ry="3.4" fill="#fff" opacity="0.9" transform="rotate(-22 62 60)" />
+              <ellipse cx="100" cy="44" rx="6" ry="3.4" fill="#fff" opacity="0.9" />
+              <ellipse cx="138" cy="60" rx="6" ry="3.4" fill="#fff" opacity="0.9" transform="rotate(22 138 60)" />
+              <rect x="8" y="98" width="184" height="14" rx="6" fill="#f8766f" />
+              <path d="M4 110 Q30 122 60 110 Q90 122 120 110 Q150 122 180 110 L196 110 L196 124 L4 124 Z" fill="#81debb" />
+              <path d="M8 124 L192 124 L184 134 Q140 140 100 140 Q60 140 16 134 Z" fill="#ffdc69" />
+              <rect x="12" y="138" width="176" height="14" rx="4" fill="#8795a2" />
+              <path d="M14 152 Q100 180 186 152 L184 162 Q100 170 16 162 Z" fill="#e4954b" />
+            </svg>
+          ) : pets === 1 ? (
+            // ── Loaf of bread (second bite) ──
+            <svg viewBox="0 0 200 140" width="100%" style={{ display: "block" }}>
+              {/* pale interior bottom */}
+              <path d="M22 96 Q100 132 178 96 L178 116 Q100 132 22 116 Z" fill="#edc89c" />
+              {/* brown crust dome */}
+              <path d="M22 96 Q34 24 100 24 Q166 24 178 96 L178 100 Q100 116 22 100 Z" fill="#c36f2e" />
+              {/* diagonal score line on the crust */}
+              <path d="M44 68 Q100 50 156 72" stroke="#9d5828" strokeWidth="3" fill="none" opacity="0.55" strokeLinecap="round" />
+              {/* seeds */}
+              <ellipse cx="74" cy="52" rx="4.5" ry="2.8" fill="#fce6ca" transform="rotate(-14 74 52)" />
+              <ellipse cx="104" cy="44" rx="4.5" ry="2.8" fill="#fce6ca" />
+              <ellipse cx="134" cy="54" rx="4.5" ry="2.8" fill="#fce6ca" transform="rotate(14 134 54)" />
+              <ellipse cx="58" cy="76" rx="4.5" ry="2.8" fill="#fce6ca" />
+              <ellipse cx="150" cy="78" rx="4.5" ry="2.8" fill="#fce6ca" />
+            </svg>
+          ) : (
+            // ── Cake (third bite) ──
+            <svg viewBox="0 0 200 180" width="100%" style={{ display: "block" }}>
+              {/* plate shadow */}
+              <ellipse cx="100" cy="168" rx="84" ry="6" fill="rgba(60,30,20,0.22)" />
+              {/* bottom tier */}
+              <rect x="18" y="104" width="164" height="58" rx="5" fill="#8b3f33" />
+              <rect x="18" y="104" width="164" height="8" fill="#a85a4a" />
+              {/* middle filling */}
+              <rect x="18" y="92" width="164" height="12" fill="#fcb8b0" />
+              {/* top tier */}
+              <rect x="42" y="48" width="116" height="44" rx="5" fill="#8b3f33" />
+              <rect x="42" y="48" width="116" height="7" fill="#a85a4a" />
+              {/* pink frosting on top, with drips down the sides */}
+              <path d="M42 48 Q46 34 100 34 Q154 34 158 48 L158 56 Q150 62 132 58 Q116 64 100 58 Q84 64 68 58 Q50 62 42 56 Z" fill="#f6958b" />
+              {/* cherry */}
+              <circle cx="100" cy="24" r="11" fill="#e63333" />
+              <circle cx="96" cy="20" r="3" fill="#ffffff" opacity="0.55" />
+              {/* leaf */}
+              <path d="M100 14 q6 -6 10 -2 q-2 6 -10 4 z" fill="#67a256" />
+            </svg>
+          )}
+        </div>
       )}
 
-      {phase === "age" && (
-        <>
-          {/* ── Age question — Bugsy asks, child taps their age ── */}
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 16,
-              padding: "120px 24px 104px",
-              zIndex: 3,
+      {/* Bugsy area — runs around the room, settles when the adventure starts */}
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 140,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 14,
+          padding: "0 20px",
+          zIndex: 3,
+        }}
+      >
+        {/* Adventure bubble sits above Bugsy, tail pointing down to him */}
+        {phase === "adventure" && (
+          <RoomBubble
+            key={`adv-${adventureStep}`}
+            tail="down"
+            text={adventureLines[adventureStep]}
+            onDone={() => {
+              if (adventureStep === 0) {
+                window.setTimeout(() => setAdventureStep(1), 1200);
+              } else {
+                setBubbleDone(true);
+              }
             }}
-          >
-            <div style={{ filter: "drop-shadow(0 10px 10px rgba(90,60,40,0.2))" }}>
-              <Bobo mood="cheer" tint={tint} size={130} tailWag />
-            </div>
+          />
+        )}
+
+        <div
+          onPointerDown={phase === "belly" && !eating ? pet : undefined}
+          role={phase === "belly" ? "button" : undefined}
+          aria-label={phase === "belly" ? "Tap Bugsy to feed him" : undefined}
+          style={{
+            position: "relative",
+            cursor: phase === "belly" && !eating ? "pointer" : "default",
+            touchAction: "manipulation",
+            filter: "drop-shadow(0 12px 12px rgba(90,60,40,0.22))",
+            // While hungry he darts around; on tap he runs down to the
+            // burger and chomps it; once he's standing up he settles.
+            animation: eating
+              ? `bugsy-eats ${EAT_MS}ms ease-in-out forwards`
+              : phase === "belly"
+              ? "bugsy-running 5.2s ease-in-out infinite"
+              : undefined,
+            transformOrigin: "center bottom",
+          }}
+        >
+          <Bobo
+            mood={eating ? "happy" : phase === "belly" ? "hungry" : "thinking"}
+            tint={tint}
+            size={150}
+            tailWag={wagging || phase === "belly"}
+            walking={phase === "belly" && !eating}
+            mouthOpen={eating}
+          />
+          {hearts.map((h) => (
+            <span
+              key={h.id}
+              aria-hidden
+              style={{
+                position: "absolute",
+                top: 20,
+                left: `calc(50% + ${h.x}px)`,
+                fontSize: 28,
+                animation: "pet-heart 1s ease-out forwards",
+                pointerEvents: "none",
+              }}
+            >
+              ✨
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* CTA: only on the second adventure line, after it finishes typing */}
+      {phase === "adventure" && adventureStep === 1 && (
+        <div
+          style={{
+            position: "absolute",
+            left: 20,
+            right: 20,
+            bottom: 28,
+            opacity: bubbleDone ? 1 : 0,
+            transform: bubbleDone ? "translateY(0)" : "translateY(10px)",
+            transition: "opacity 0.4s ease, transform 0.4s ease",
+            pointerEvents: bubbleDone ? "auto" : "none",
+            zIndex: 6,
+          }}
+        >
+          <BigCTA onClick={onNext}>Yes, of course!</BigCTA>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── SCREEN 5 — Age question on the football park (no football) ─
+export function ChildAgeQuestion({
+  tint,
+  childName,
+  childAge,
+  setChildAge,
+  onNext,
+  onBack,
+}: Common & {
+  childAge: number | null;
+  setChildAge: (n: number) => void;
+}) {
+  const friend = childName.trim() || "friend";
+  const [phase, setPhase] = useState<"ask" | "reveal">(
+    childAge === null ? "ask" : "reveal",
+  );
+  const [bubbleDone, setBubbleDone] = useState(false);
+  const ages = Array.from({ length: AGE_MAX - AGE_MIN + 1 }, (_, i) => AGE_MIN + i);
+  const { purr } = useCatSounds();
+
+  useEffect(() => {
+    setBubbleDone(false);
+  }, [phase]);
+
+  return (
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden", background: "#bfe6ff" }}>
+      <ParkBackdrop goal={false} />
+
+      {/* back button */}
+      {onBack && (
+        <button
+          onClick={onBack}
+          aria-label="Back"
+          style={{
+            position: "absolute",
+            top: 14,
+            left: 14,
+            width: 40,
+            height: 40,
+            borderRadius: 12,
+            border: "2px solid rgba(0,0,0,0.12)",
+            background: "rgba(255,255,255,0.8)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            color: "#3b6a86",
+            zIndex: 8,
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14">
+            <path d="M9 1L3 7l6 6" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      )}
+
+      {/* Bugsy + dialogue, centred on the park */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 16,
+          padding: "80px 24px 110px",
+          overflowY: "auto",
+          zIndex: 3,
+        }}
+      >
+        <div
+          style={{
+            filter: "drop-shadow(0 10px 12px rgba(40,70,40,0.22))",
+            // While revealing, Bugsy morphs kitten → cat → kitten.
+            animation:
+              phase === "reveal" ? "kitten-morph 3.6s ease-in-out both" : undefined,
+            transformOrigin: "bottom center",
+          }}
+        >
+          <Bobo
+            mood={phase === "reveal" ? "cheer" : "thinking"}
+            tint={tint}
+            size={130}
+            tailWag={phase === "reveal"}
+          />
+        </div>
+
+        {phase === "ask" ? (
+          <>
             <RoomBubble
               tail="up"
-              text={`I love you already, ${friend}! …How old are you?`}
-              onDone={() => setAgeReady(true)}
+              text="First, how old are you?"
+              onDone={() => setBubbleDone(true)}
             />
             <div
               style={{
                 width: "100%",
                 maxWidth: 300,
-                opacity: ageReady ? 1 : 0,
-                transform: ageReady ? "translateY(0)" : "translateY(8px)",
+                opacity: bubbleDone ? 1 : 0,
+                transform: bubbleDone ? "translateY(0)" : "translateY(8px)",
                 transition: "opacity 0.4s ease, transform 0.4s ease",
-                pointerEvents: ageReady ? "auto" : "none",
+                pointerEvents: bubbleDone ? "auto" : "none",
               }}
             >
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 }}>
@@ -2107,69 +2368,1084 @@ export function ChildPetMeet({
                 })}
               </div>
             </div>
-          </div>
+          </>
+        ) : (
+          <RoomBubble
+            tail="up"
+            text={`You're a kitten just like me, ${friend}! If you take care of me daily, I will grow up to be a strong cat!`}
+            onDone={() => setBubbleDone(true)}
+          />
+        )}
+      </div>
 
-          {/* CTA → next stop is the play-another-game invite (or onNext) */}
-          <div style={{ position: "absolute", left: 20, right: 20, bottom: 28, zIndex: 6 }}>
-            <BigCTA
-              onClick={() => (gameNext ? setPhase("invite") : onNext())}
-              disabled={childAge === null}
-            >
-              Continue →
-            </BigCTA>
-          </div>
-        </>
-      )}
-
-      {phase === "invite" && (
-        <>
-          {/* ── "Play one more game with me?" — Bugsy bouncing happy ── */}
+      {/* CTA */}
+      <div style={{ position: "absolute", left: 20, right: 20, bottom: 28, zIndex: 6 }}>
+        {phase === "ask" ? (
+          <BigCTA
+            onClick={() => setPhase("reveal")}
+            disabled={childAge === null || !bubbleDone}
+          >
+            That&apos;s me! →
+          </BigCTA>
+        ) : (
           <div
             style={{
-              position: "absolute",
-              inset: 0,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 14,
-              padding: "120px 24px 104px",
-              zIndex: 3,
+              opacity: bubbleDone ? 1 : 0,
+              transform: bubbleDone ? "translateY(0)" : "translateY(10px)",
+              transition: "opacity 0.4s ease, transform 0.4s ease",
+              pointerEvents: bubbleDone ? "auto" : "none",
             }}
           >
-            <div
+            <BigCTA onClick={onNext}>Continue →</BigCTA>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Shared full-bleed kitchen backdrop ────────────────────────
+export function KitchenBackdrop() {
+  return (
+    <svg
+      viewBox="0 0 400 800"
+      width="100%"
+      height="100%"
+      preserveAspectRatio="xMidYMid slice"
+      style={{ position: "absolute", inset: 0, display: "block" }}
+    >
+      <defs>
+        <linearGradient id="kt-wall" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#ffe9b8" />
+          <stop offset="100%" stopColor="#fcd286" />
+        </linearGradient>
+        <linearGradient id="kt-floor" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#cf8b43" />
+          <stop offset="100%" stopColor="#a87038" />
+        </linearGradient>
+        <linearGradient id="kt-window" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#cdebff" />
+          <stop offset="100%" stopColor="#a9ddff" />
+        </linearGradient>
+        {/* Subtle tile pattern on the wall for design polish */}
+        <pattern id="kt-tiles" width="44" height="44" patternUnits="userSpaceOnUse">
+          <path d="M44 0H0V44" fill="none" stroke="rgba(180,130,60,0.10)" strokeWidth="1" />
+        </pattern>
+      </defs>
+
+      {/* wall + floor — floor line raised to y=600 so the floor reads as
+          a tile band rather than dominating the lower third. */}
+      <rect x="0" y="0" width="400" height="600" fill="url(#kt-wall)" />
+      {/* subtle tile grid over the wall */}
+      <rect x="0" y="0" width="400" height="600" fill="url(#kt-tiles)" />
+      <rect x="0" y="600" width="400" height="200" fill="url(#kt-floor)" />
+      {/* skirting */}
+      <rect x="0" y="598" width="400" height="6" fill="#7f5b30" />
+      {/* floor planks — vertical seams */}
+      {[60, 140, 220, 300, 380].map((px) => (
+        <line key={`pk${px}`} x1={px} y1="606" x2={px} y2="800" stroke="#8a5e30" strokeWidth="2" opacity="0.55" />
+      ))}
+      {/* floor planks — staggered horizontal seams */}
+      <line x1="0" y1="690" x2="140" y2="690" stroke="#8a5e30" strokeWidth="1.6" opacity="0.45" />
+      <line x1="220" y1="690" x2="400" y2="690" stroke="#8a5e30" strokeWidth="1.6" opacity="0.45" />
+      <line x1="60" y1="760" x2="300" y2="760" stroke="#8a5e30" strokeWidth="1.6" opacity="0.45" />
+      <line x1="380" y1="760" x2="400" y2="760" stroke="#8a5e30" strokeWidth="1.6" opacity="0.45" />
+      <line x1="0" y1="760" x2="60" y2="760" stroke="#8a5e30" strokeWidth="1.6" opacity="0.45" />
+
+      {/* ── Wall cabinets (upper left) ── */}
+      <g>
+        <rect x="32" y="120" width="140" height="120" rx="6" fill="#fff6e0" stroke="#cf8b43" strokeWidth="4" />
+        <line x1="102" y1="124" x2="102" y2="236" stroke="#cf8b43" strokeWidth="3" />
+        <circle cx="92" cy="180" r="4" fill="#cf8b43" />
+        <circle cx="112" cy="180" r="4" fill="#cf8b43" />
+        {/* open shelf below with jars */}
+        <rect x="32" y="248" width="140" height="60" fill="#fff6e0" stroke="#cf8b43" strokeWidth="4" />
+        <line x1="32" y1="276" x2="172" y2="276" stroke="#cf8b43" strokeWidth="2" />
+        {/* jars */}
+        <rect x="44" y="254" width="18" height="18" rx="3" fill="#e8788f" />
+        <rect x="66" y="254" width="18" height="18" rx="3" fill="#7cb6e8" />
+        <rect x="88" y="254" width="18" height="18" rx="3" fill="#f4c542" />
+        <rect x="110" y="254" width="18" height="18" rx="3" fill="#8fd08a" />
+        <rect x="132" y="254" width="18" height="18" rx="3" fill="#c89bf0" />
+        <circle cx="50" cy="290" r="9" fill="#fbe0a8" stroke="#cf8b43" strokeWidth="1.5" />
+        <circle cx="74" cy="290" r="9" fill="#f7c8d4" stroke="#cf8b43" strokeWidth="1.5" />
+        <circle cx="98" cy="290" r="9" fill="#cee3f5" stroke="#cf8b43" strokeWidth="1.5" />
+        <circle cx="122" cy="290" r="9" fill="#d8e6c8" stroke="#cf8b43" strokeWidth="1.5" />
+        <circle cx="146" cy="290" r="9" fill="#f4c542" stroke="#cf8b43" strokeWidth="1.5" />
+      </g>
+
+      {/* ── Wall clock (between the cabinet and window) ── */}
+      <g>
+        <circle cx="188" cy="170" r="22" fill="#fff" stroke="#cf8b43" strokeWidth="3" />
+        <circle cx="188" cy="170" r="22" fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="1.5" transform="translate(1 2)" />
+        {/* tick marks at 12/3/6/9 */}
+        <line x1="188" y1="153" x2="188" y2="157" stroke="#5b3a1f" strokeWidth="2" strokeLinecap="round" />
+        <line x1="205" y1="170" x2="201" y2="170" stroke="#5b3a1f" strokeWidth="2" strokeLinecap="round" />
+        <line x1="188" y1="187" x2="188" y2="183" stroke="#5b3a1f" strokeWidth="2" strokeLinecap="round" />
+        <line x1="171" y1="170" x2="175" y2="170" stroke="#5b3a1f" strokeWidth="2" strokeLinecap="round" />
+        {/* hands */}
+        <line x1="188" y1="170" x2="188" y2="158" stroke="#5b3a1f" strokeWidth="2.5" strokeLinecap="round" />
+        <line x1="188" y1="170" x2="199" y2="174" stroke="#5b3a1f" strokeWidth="2" strokeLinecap="round" />
+        <circle cx="188" cy="170" r="2" fill="#5b3a1f" />
+      </g>
+
+      {/* ── Framed fish art (below the cabinet, above the counter) ── */}
+      <g>
+        <rect x="74" y="340" width="68" height="58" rx="4" fill="#fff6e0" stroke="#cf8b43" strokeWidth="3" />
+        {/* fish body */}
+        <ellipse cx="100" cy="368" rx="18" ry="11" fill="#7cb6e8" />
+        {/* tail */}
+        <path d="M118 368 l10 -8 l0 16 z" fill="#7cb6e8" />
+        {/* eye */}
+        <circle cx="93" cy="365" r="2.4" fill="#1a1420" />
+        <circle cx="93.8" cy="364.3" r="0.8" fill="#fff" />
+        {/* bubbles */}
+        <circle cx="80" cy="356" r="2" fill="#bfe3ff" opacity="0.9" />
+        <circle cx="84" cy="350" r="1.5" fill="#bfe3ff" opacity="0.9" />
+        {/* mat caption line */}
+        <line x1="80" y1="388" x2="136" y2="388" stroke="#cf8b43" strokeWidth="1.5" opacity="0.5" />
+      </g>
+
+      {/* ── Sunny window (centre, above the counter) ── */}
+      <g>
+        <rect x="200" y="150" width="120" height="140" rx="4" fill="url(#kt-window)" stroke="#fff3e6" strokeWidth="10" />
+        <line x1="260" y1="150" x2="260" y2="290" stroke="#fff3e6" strokeWidth="5" />
+        <line x1="200" y1="220" x2="320" y2="220" stroke="#fff3e6" strokeWidth="5" />
+        {/* sun + cloud */}
+        <circle cx="296" cy="178" r="14" fill="#ffe27a" />
+        <ellipse cx="226" cy="200" rx="20" ry="9" fill="#fff" opacity="0.9" />
+        <ellipse cx="240" cy="194" rx="14" ry="7" fill="#fff" opacity="0.9" />
+        {/* sill */}
+        <rect x="192" y="288" width="136" height="10" rx="2" fill="#cf8b43" />
+      </g>
+
+      {/* ── Fridge (right) — extended to reach the new floor line. ── */}
+      <g>
+        <rect x="324" y="180" width="64" height="420" rx="8" fill="#fafafa" stroke="#b5b5b5" strokeWidth="3" />
+        <line x1="324" y1="290" x2="388" y2="290" stroke="#b5b5b5" strokeWidth="2" />
+        {/* freezer handle (upper) */}
+        <rect x="380" y="220" width="4" height="22" rx="2" fill="#b5b5b5" />
+        {/* fridge handle (lower) */}
+        <rect x="380" y="320" width="4" height="28" rx="2" fill="#b5b5b5" />
+      </g>
+
+      {/* ── Counter + stove (centre, sitting on the new floor line) ── */}
+      <g>
+        {/* counter top */}
+        <rect x="80" y="528" width="240" height="14" rx="3" fill="#f7c8a0" />
+        {/* counter cabinets */}
+        <rect x="80" y="542" width="240" height="58" rx="0" fill="#fff6e0" stroke="#cf8b43" strokeWidth="3" />
+        <line x1="200" y1="542" x2="200" y2="600" stroke="#cf8b43" strokeWidth="2" />
+        <circle cx="140" cy="572" r="3" fill="#cf8b43" />
+        <circle cx="260" cy="572" r="3" fill="#cf8b43" />
+        {/* stove */}
+        <rect x="140" y="472" width="120" height="56" rx="6" fill="#e2e2e2" stroke="#9a9a9a" strokeWidth="2" />
+        {/* knobs */}
+        <circle cx="156" cy="486" r="5" fill="#7e96a8" />
+        <circle cx="178" cy="486" r="5" fill="#7e96a8" />
+        <circle cx="222" cy="486" r="5" fill="#7e96a8" />
+        <circle cx="244" cy="486" r="5" fill="#7e96a8" />
+        {/* burners */}
+        <circle cx="170" cy="510" r="9" fill="#444" />
+        <circle cx="230" cy="510" r="9" fill="#444" />
+        {/* pot */}
+        <rect x="186" y="438" width="34" height="22" rx="4" fill="#7cb6e8" />
+        <rect x="178" y="432" width="50" height="8" rx="3" fill="#9cc3ee" />
+        {/* steam wisps */}
+        <path d="M196 424 q4 -8 0 -16" fill="none" stroke="#ffffff" strokeWidth="2.5" opacity="0.8" strokeLinecap="round" />
+        <path d="M204 420 q-4 -8 0 -16" fill="none" stroke="#ffffff" strokeWidth="2.5" opacity="0.8" strokeLinecap="round" />
+        <path d="M212 424 q4 -8 0 -16" fill="none" stroke="#ffffff" strokeWidth="2.5" opacity="0.8" strokeLinecap="round" />
+      </g>
+
+      {/* ── Cat food bowl (right foreground on the floor) ── */}
+      <g>
+        <ellipse cx="60" cy="694" rx="36" ry="8" fill="rgba(60,40,20,0.18)" />
+        <ellipse cx="60" cy="688" rx="32" ry="9" fill="#e8788f" />
+        <ellipse cx="60" cy="684" rx="28" ry="7" fill="#fce0e8" />
+        {/* a few kibbles in the bowl */}
+        <circle cx="52" cy="681" r="2.4" fill="#cf8b43" />
+        <circle cx="60" cy="680" r="2.4" fill="#cf8b43" />
+        <circle cx="68" cy="681" r="2.4" fill="#cf8b43" />
+        <circle cx="56" cy="685" r="2.4" fill="#cf8b43" />
+        <circle cx="64" cy="685" r="2.4" fill="#cf8b43" />
+      </g>
+    </svg>
+  );
+}
+
+// ── SCREEN 6 — Kitchen mission ────────────────────────────────
+export function ChildKitchen({ tint, onNext, onBack }: Common) {
+  // Beat 1: dramatic tummy growl + meow. Beat 2: Bugsy freezes and asks
+  // the child to help find food.
+  const [phase, setPhase] = useState<"growl" | "talk">("growl");
+  const [done, setDone] = useState(false);
+  const { meow } = useCatSounds();
+
+  useEffect(() => {
+    meow();
+    const t = window.setTimeout(() => setPhase("talk"), 1100);
+    return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden", background: "#fcd286" }}>
+      <KitchenBackdrop />
+
+      {/* back button */}
+      {onBack && (
+        <button
+          onClick={onBack}
+          aria-label="Back"
+          style={{
+            position: "absolute",
+            top: 14,
+            left: 14,
+            width: 40,
+            height: 40,
+            borderRadius: 12,
+            border: "2px solid rgba(0,0,0,0.12)",
+            background: "rgba(255,255,255,0.8)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            color: "#7a5a44",
+            zIndex: 8,
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14">
+            <path d="M9 1L3 7l6 6" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      )}
+
+      {/* Bugsy + (growl indicator | dialogue bubble) on the kitchen floor */}
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 150,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 14,
+          padding: "0 24px",
+          zIndex: 3,
+        }}
+      >
+        {phase === "talk" && (
+          <RoomBubble
+            tail="down"
+            text="Exploring makes me REALLY hungry. Can you find me food?"
+            onDone={() => setDone(true)}
+          />
+        )}
+        <div
+          style={{
+            position: "relative",
+            filter: "drop-shadow(0 12px 12px rgba(80,50,20,0.28))",
+            animation: phase === "growl" ? "bobo-growl 1s ease-in-out" : undefined,
+            transformOrigin: "center bottom",
+          }}
+        >
+          <Bobo
+            mood={phase === "growl" ? "worried" : "hungry"}
+            tint={tint}
+            size={160}
+          />
+          {/* "GRRR…" tummy-growl indicator floats next to Bugsy during the growl beat */}
+          {phase === "growl" && (
+            <span
+              aria-hidden
               style={{
-                filter: "drop-shadow(0 12px 12px rgba(90,60,40,0.22))",
-                animation: "bugsy-happy-run 1.7s ease-in-out infinite",
-                transformOrigin: "bottom center",
+                position: "absolute",
+                top: 22,
+                right: -30,
+                background: "#fff5d8",
+                border: "2px solid #b9772f",
+                borderRadius: 12,
+                padding: "4px 9px",
+                fontFamily: "var(--font-nunito), system-ui",
+                fontWeight: 900,
+                fontSize: 14,
+                color: "#7a4a18",
+                boxShadow: "0 3px 0 #8a5b22",
+                animation: "goal-pop 0.9s ease both",
+                pointerEvents: "none",
+                letterSpacing: 0.3,
               }}
             >
-              <Bobo mood="cheer" tint={tint} size={156} tailWag />
-            </div>
-            <RoomBubble
-              tail="up"
-              text={`Wanna play one more game with me, ${friend}? 🐦`}
-              onDone={() => setInviteReady(true)}
+              GRRR…
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* CTA */}
+      <div
+        style={{
+          position: "absolute",
+          left: 20,
+          right: 20,
+          bottom: 28,
+          opacity: done ? 1 : 0,
+          transform: done ? "translateY(0)" : "translateY(10px)",
+          transition: "opacity 0.4s ease, transform 0.4s ease",
+          pointerEvents: done ? "auto" : "none",
+          zIndex: 6,
+        }}
+      >
+        <BigCTA onClick={onNext}>Start the first mission</BigCTA>
+      </div>
+    </div>
+  );
+}
+
+// ── SCREEN — Calm Bugsy through box breathing ─────────────────
+// Bond beat: a thunderstorm rolls in outside the window. Bugsy
+// freaks out — tremor, desaturated, "raised fur" feel. The kid
+// learns they can comfort him with guided box breathing
+// (in-3 / hold-3 / out-3 × 3 rounds). With every round Bugsy
+// settles a little; at the end he curls up safely.
+//
+// Phases:
+//   "agitated"  — dialogue + "Show me how" CTA
+//   "breathing" — guided box breathing loop (3 rounds)
+//   "calm"      — Bugsy curled up, soft "thank you" line, Continue
+export function ChildCalmBugsy({ tint, onNext, onBack }: Common) {
+  type Phase = "agitated" | "breathing" | "calm";
+  type Step = "in" | "hold" | "out";
+
+  const [phase, setPhase] = useState<Phase>("agitated");
+  const [step, setStep] = useState<Step>("in");
+  const [count, setCount] = useState(1); // 1..3 inside the step
+  const [round, setRound] = useState(0); // 0..2
+  const [bubbleDone, setBubbleDone] = useState(false);
+  // Calm phase plays two dialogue beats: "thanks" → pause → "invite".
+  const [calmStep, setCalmStep] = useState<"thanks" | "invite">("thanks");
+  const [thanksDone, setThanksDone] = useState(false);
+  const [inviteDone, setInviteDone] = useState(false);
+  const [flashKey, setFlashKey] = useState(0); // bumps to retrigger the flash anim
+
+  // After Bugsy's "Phew" line lands, hold a beat, then move into the
+  // "come visit me daily" invite + activity list.
+  useEffect(() => {
+    if (phase !== "calm" || calmStep !== "thanks" || !thanksDone) return;
+    const t = window.setTimeout(() => setCalmStep("invite"), 1200);
+    return () => window.clearTimeout(t);
+  }, [phase, calmStep, thanksDone]);
+
+  // Lightning strikes — fast during agitated, fewer during breathing,
+  // none once Bugsy is calm.
+  useEffect(() => {
+    if (phase === "calm") return;
+    const gap = phase === "breathing" ? 6500 : 2800;
+    const id = window.setInterval(() => {
+      setFlashKey((k) => k + 1);
+    }, gap + Math.random() * 1200);
+    return () => window.clearInterval(id);
+  }, [phase]);
+
+  // First strike fires immediately when entering the screen / phase.
+  useEffect(() => {
+    if (phase === "calm") return;
+    const t = window.setTimeout(() => setFlashKey((k) => k + 1), 500);
+    return () => window.clearTimeout(t);
+  }, [phase]);
+
+  // Box-breathing 1-Hz tick. Counts up 1..3, then advances the step
+  // (in → hold → out → next round). After 3 rounds, phase = "calm".
+  useEffect(() => {
+    if (phase !== "breathing") return;
+    const id = window.setInterval(() => {
+      setCount((c) => {
+        if (c < 3) return c + 1;
+        // Wrap to 1 and advance the step.
+        setStep((s) => {
+          if (s === "in") return "hold";
+          if (s === "hold") return "out";
+          // Finishing an "out" closes a round.
+          setRound((r) => {
+            if (r >= 2) {
+              setPhase("calm");
+              return r;
+            }
+            return r + 1;
+          });
+          return "in";
+        });
+        return 1;
+      });
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [phase]);
+
+  // 0..1 calmness progress — drives Bugsy's tint/shake intensity.
+  const calmProgress =
+    phase === "calm"
+      ? 1
+      : phase === "breathing"
+        ? Math.min(
+            1,
+            (round * 3 +
+              (step === "in" ? 0 : step === "hold" ? 1 : 2) +
+              count / 3) /
+              9,
+          )
+        : 0;
+
+  const tremorIntensity = phase === "calm" ? 0 : 1 - calmProgress * 0.85;
+
+  // Bugsy mood ladder — agitated worried while nervous, settles to
+  // happy mid-breathing, then full cheer once he's safe again.
+  const mood: Mood =
+    phase === "calm"
+      ? "cheer"
+      : phase === "breathing" && calmProgress > 0.6
+        ? "happy"
+        : "worried";
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        overflow: "hidden",
+        background: "#fceadd",
+      }}
+    >
+      <RoomBackdrop chairs={false} stormy />
+
+      {/* Stormy night wash over the room — fades away as Bugsy calms.
+          Cooler/darker while agitated; gone once curled up. */}
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: `linear-gradient(180deg,
+            rgba(28, 38, 68, ${0.42 - calmProgress * 0.4}) 0%,
+            rgba(46, 38, 78, ${0.22 - calmProgress * 0.22}) 60%,
+            rgba(46, 38, 78, ${0.05 - calmProgress * 0.05}) 100%)`,
+          transition: "background 1.2s ease",
+          pointerEvents: "none",
+          zIndex: 1,
+        }}
+      />
+
+      {/* Lightning flash — fires on flashKey bump. Re-mounted via key so
+          the animation restarts cleanly each time. */}
+      {phase !== "calm" && (
+        <div
+          key={`flash-${flashKey}`}
+          aria-hidden
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "rgba(255, 250, 220, 0.85)",
+            mixBlendMode: "screen",
+            opacity: 0,
+            animation: "thunder-flash 0.55s ease-out",
+            pointerEvents: "none",
+            zIndex: 2,
+          }}
+        />
+      )}
+
+      {/* A jagged lightning bolt drawn over the window — only visible
+          on the flash itself, then fades with the same key. */}
+      {phase !== "calm" && (
+        <svg
+          key={`bolt-${flashKey}`}
+          aria-hidden
+          viewBox="0 0 100 240"
+          style={{
+            position: "absolute",
+            top: 110,
+            left: 220,
+            width: 50,
+            height: 170,
+            opacity: 0,
+            animation: "thunder-flash 0.55s ease-out",
+            zIndex: 3,
+            filter: "drop-shadow(0 0 12px rgba(255,240,160,0.9))",
+            pointerEvents: "none",
+          }}
+        >
+          <path
+            d="M58 0 L18 110 L46 110 L24 240 L80 100 L52 100 L82 0 Z"
+            fill="#fffbe0"
+            stroke="#ffe27a"
+            strokeWidth="2.5"
+            strokeLinejoin="round"
+          />
+        </svg>
+      )}
+
+      {/* Back button */}
+      {onBack && (
+        <button
+          onClick={onBack}
+          aria-label="Back"
+          style={{
+            position: "absolute",
+            top: 14,
+            left: 14,
+            width: 40,
+            height: 40,
+            borderRadius: 12,
+            border: "2px solid rgba(0,0,0,0.12)",
+            background: "rgba(255,255,255,0.85)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            color: "#7a5a44",
+            zIndex: 8,
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14">
+            <path
+              d="M9 1L3 7l6 6"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             />
-          </div>
+          </svg>
+        </button>
+      )}
+
+      {/* Bugsy + dialogue / breathing guide stack */}
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 150,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 18,
+          padding: "0 24px",
+          zIndex: 4,
+        }}
+      >
+        {phase === "agitated" && (
+          <RoomBubble
+            tail="down"
+            text="Sometimes I feel nervous and want to be comforted! Can you calm me down?"
+            onDone={() => setBubbleDone(true)}
+          />
+        )}
+        {phase === "breathing" && (
+          <BreathingGuide step={step} count={count} round={round} />
+        )}
+
+        {/* Bugsy himself — tremor + cooler tint while nervous; belly-
+            breathes during the exercise; bursts into a happy, tail-
+            wagging jump once he's safe. In the calm phase he sits on
+            the right with the speech bubble next to him (tail pointing
+            at him), so it reads as Bugsy speaking. */}
+        {phase === "calm" ? (
           <div
             style={{
-              position: "absolute",
-              left: 20,
-              right: 20,
-              bottom: 28,
-              opacity: inviteReady ? 1 : 0,
-              transform: inviteReady ? "translateY(0)" : "translateY(10px)",
-              transition: "opacity 0.4s ease, transform 0.4s ease",
-              pointerEvents: inviteReady ? "auto" : "none",
-              zIndex: 6,
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 4,
+              width: "100%",
             }}
           >
-            <BigCTA onClick={onNext}>Let&apos;s play! 🐦</BigCTA>
+            <RoomBubble
+              key={`calm-${calmStep}`}
+              tail="right"
+              maxWidth={200}
+              text={
+                calmStep === "thanks"
+                  ? "Phew, I feel much better now."
+                  : "Come visit me daily. You can:"
+              }
+              onDone={() =>
+                calmStep === "thanks"
+                  ? setThanksDone(true)
+                  : setInviteDone(true)
+              }
+            />
+            <BugsyAvatar
+              phase={phase}
+              step={step}
+              tremorIntensity={tremorIntensity}
+              mood={mood}
+              tint={tint}
+              startleKey={flashKey}
+            />
           </div>
-        </>
-      )}
+        ) : (
+          <BugsyAvatar
+            phase={phase}
+            step={step}
+            tremorIntensity={tremorIntensity}
+            mood={mood}
+            tint={tint}
+            startleKey={flashKey}
+          />
+        )}
+
+        {/* Activity list — only in the invite sub-step, drops in below
+            the bubble + Bugsy row. */}
+        {phase === "calm" && calmStep === "invite" && (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+              width: "100%",
+              maxWidth: 320,
+              opacity: inviteDone ? 1 : 0,
+              transform: inviteDone ? "translateY(0)" : "translateY(8px)",
+              transition: "opacity 0.45s ease, transform 0.45s ease",
+            }}
+          >
+            <ActivityRow icon={<MissionsIcon />} text="Go on missions with me" />
+            <ActivityRow icon="🍓" text="Feed me daily" />
+            <ActivityRow icon={<CuddleIcon />} text="Cuddle" />
+          </div>
+        )}
+      </div>
+
+      {/* CTA bar — "Show me how" → start breathing, then Continue. */}
+      <div
+        style={{
+          position: "absolute",
+          left: 20,
+          right: 20,
+          bottom: 28,
+          opacity:
+            (phase === "agitated" && bubbleDone) ||
+            (phase === "calm" && calmStep === "invite" && inviteDone)
+              ? 1
+              : 0,
+          transform:
+            (phase === "agitated" && bubbleDone) ||
+            (phase === "calm" && calmStep === "invite" && inviteDone)
+              ? "translateY(0)"
+              : "translateY(10px)",
+          transition: "opacity 0.4s ease, transform 0.4s ease",
+          pointerEvents:
+            (phase === "agitated" && bubbleDone) ||
+            (phase === "calm" && calmStep === "invite" && inviteDone)
+              ? "auto"
+              : "none",
+          zIndex: 6,
+        }}
+      >
+        {phase === "agitated" && (
+          <BigCTA
+            onClick={() => {
+              setPhase("breathing");
+              setStep("in");
+              setCount(1);
+              setRound(0);
+            }}
+          >
+            Show me how
+          </BigCTA>
+        )}
+        {phase === "calm" && <BigCTA onClick={onNext}>Continue</BigCTA>}
+      </div>
     </div>
+  );
+}
+
+// Guided box-breathing visual: a circle that inflates over "in",
+// holds during "hold", and deflates on "out". Count and round are
+// labelled around it so the kid always knows where they are.
+function BreathingGuide({
+  step,
+  count,
+  round,
+}: {
+  step: "in" | "hold" | "out";
+  count: number;
+  round: number;
+}) {
+  // Target diameter of the breathing ring. CSS transition handles the
+  // smooth 3 s travel between sizes — quick "snap" when we re-enter
+  // a step at the start of a new round is intentional and barely
+  // noticeable because the value matches the previous "out" exit.
+  const targetScale = step === "out" ? 0.62 : 1;
+  const label =
+    step === "in"
+      ? "Breathe in"
+      : step === "hold"
+        ? "Hold your breath"
+        : "Breathe out";
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 14,
+      }}
+    >
+      <div
+        style={{
+          position: "relative",
+          width: 140,
+          height: 140,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {/* The expanding/contracting ring */}
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            inset: 0,
+            borderRadius: "50%",
+            background:
+              "radial-gradient(circle at 35% 30%, rgba(255,255,255,0.85), rgba(255, 220, 200, 0.55) 70%, rgba(255, 180, 160, 0.45))",
+            border: "3px solid rgba(255, 255, 255, 0.9)",
+            transform: `scale(${targetScale})`,
+            transition: "transform 3s ease-in-out",
+            boxShadow:
+              "0 0 32px rgba(255, 240, 220, 0.55), inset 0 4px 12px rgba(255,255,255,0.55)",
+          }}
+        />
+        {/* Count digit centred in the ring */}
+        <div
+          style={{
+            position: "relative",
+            fontFamily: "var(--font-nunito), system-ui",
+            fontWeight: 900,
+            fontSize: 56,
+            lineHeight: 1,
+            color: "#5b3a1f",
+            textShadow: "0 2px 0 rgba(255,255,255,0.55)",
+          }}
+        >
+          {count}
+        </div>
+      </div>
+
+      <div
+        style={{
+          fontFamily: "var(--font-nunito), system-ui",
+          fontWeight: 900,
+          fontSize: 22,
+          color: "#fff",
+          textShadow: "0 2px 8px rgba(0, 0, 0, 0.45)",
+          letterSpacing: 0.4,
+        }}
+      >
+        {label}
+      </div>
+
+      <div
+        style={{
+          fontFamily: "var(--font-nunito), system-ui",
+          fontWeight: 800,
+          fontSize: 12,
+          color: "rgba(255, 255, 255, 0.88)",
+          letterSpacing: 1.6,
+          textTransform: "uppercase",
+          textShadow: "0 1px 4px rgba(0,0,0,0.4)",
+        }}
+      >
+        Round {round + 1} of 3
+      </div>
+    </div>
+  );
+}
+
+// Bugsy mascot block used inside ChildCalmBugsy. Lives outside the
+// screen body so the calm-phase row layout can place a speech bubble
+// next to him without re-declaring the transform / tremor / bounce /
+// breathing-belly stack inline twice.
+function BugsyAvatar({
+  phase,
+  step,
+  tremorIntensity,
+  mood,
+  tint,
+  startleKey,
+}: {
+  phase: "agitated" | "breathing" | "calm";
+  step: "in" | "hold" | "out";
+  tremorIntensity: number;
+  mood: Mood;
+  tint: number;
+  // Bumps every time a lightning strike happens. We imperatively
+  // restart the bobo-startle animation on each bump so Bugsy reacts
+  // naturalistically to each thunder rather than vibrating non-stop.
+  startleKey: number;
+}) {
+  const startleRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (phase === "calm" || startleKey === 0) return;
+    const el = startleRef.current;
+    if (!el) return;
+    el.style.animation = "none";
+    // Force reflow so the next assignment restarts the animation
+    // even if the same animation value was set last time.
+    void el.offsetWidth;
+    el.style.animation = "bobo-startle 0.7s ease-out";
+  }, [startleKey, phase]);
+
+  return (
+    <div
+      style={{
+        // Outer transform: trim him down a touch in calm so the
+        // tail wag + activity list fit cleanly.
+        transform: phase === "calm" ? "scale(0.9)" : "none",
+        transition: "transform 1.6s cubic-bezier(0.22, 1, 0.36, 1)",
+        filter:
+          phase === "calm"
+            ? "saturate(1) brightness(1)"
+            : `saturate(${1 - tremorIntensity * 0.45}) brightness(${1 - tremorIntensity * 0.12}) hue-rotate(${tremorIntensity * 6}deg)`,
+      }}
+    >
+      {/* Breathing belly — only animates while in the breathing phase.
+          scaleX grows a touch more than scaleY so it reads as a "puff
+          out" rather than a vertical stretch, and the transform-origin
+          sits near the belly so the head barely moves. */}
+      <div
+        style={{
+          transform:
+            phase === "breathing" && step !== "out"
+              ? "scale(1.07, 1.04)"
+              : "scale(1, 1)",
+          transformOrigin: "50% 72%",
+          transition: "transform 3s ease-in-out",
+        }}
+      >
+        {/* In calm phase: inline `bobo-calm-idle` plays continuously.
+            In non-calm phases: animation is left blank in JSX so React
+            never resets it, and a startle is fired imperatively on
+            each flashKey bump (see useEffect above). */}
+        <div
+          ref={startleRef}
+          style={
+            phase === "calm"
+              ? {
+                  filter: "drop-shadow(0 12px 12px rgba(20,20,40,0.32))",
+                  animation: "bobo-calm-idle 3.6s ease-in-out infinite",
+                }
+              : {
+                  filter: "drop-shadow(0 12px 12px rgba(20,20,40,0.32))",
+                }
+          }
+        >
+          <Bobo
+            mood={mood}
+            tint={tint}
+            size={160}
+            tailWag={phase === "calm"}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Cream/amber activity pill used in the "Come visit me daily" list.
+// Matches the warm onboarding palette (same border + drop-shadow as
+// the rest of Bugsy's room). `icon` can be a string emoji or any JSX
+// element (SVG icon).
+function ActivityRow({ icon, text }: { icon: React.ReactNode; text: string }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        padding: "9px 14px",
+        background: "rgba(255, 246, 224, 0.96)",
+        border: "2px solid #cf8b43",
+        borderRadius: 14,
+        fontFamily: "var(--font-nunito), system-ui",
+        fontWeight: 800,
+        fontSize: 14.5,
+        color: "#5b3a1f",
+        boxShadow: "0 2px 0 #8a5b22",
+      }}
+    >
+      <span
+        style={{
+          width: 30,
+          height: 30,
+          flexShrink: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 22,
+          lineHeight: 1,
+        }}
+      >
+        {icon}
+      </span>
+      <span>{text}</span>
+    </div>
+  );
+}
+
+// Game-console icon used for the "Go on missions with me" row.
+function MissionsIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 512 512"
+      width="30"
+      height="30"
+      aria-hidden
+    >
+      <path
+        d="M255,142.13a14,14,0,0,1-14-14,172.68,172.68,0,0,1,24.16-88.2,14,14,0,0,1,24.07,14.3A144.78,144.78,0,0,0,269,128.13,14,14,0,0,1,255,142.13Z"
+        fill="#34344f"
+      />
+      <path
+        d="M170.69,393.19Q152.81,419.82,135,446.27a73.32,73.32,0,0,1-60.81,32.65h0A74.34,74.34,0,0,1,0,404.78v-24.3c.05-116.27,16.41-231,136.21-241.57,13.21-.89,66.49-3.17,119.77-3,53.28-.16,106.56,2.12,119.77,3C495.58,149.52,512,264.24,512,380.53v24.25a74.33,74.33,0,0,1-74.14,74.14h0a73.31,73.31,0,0,1-60.81-32.65q-17.87-26.44-35.74-53.08c-13.86-20.64-36.58-33.13-60.83-33.2q-24.48-.08-49,0C207.27,360.06,184.55,372.55,170.69,393.19Z"
+        fill="#f9973e"
+      />
+      <path
+        d="M398,142.33a170.41,170.41,0,0,0-22.27-3.42c-13.21-.89-66.49-3.17-119.77-3-53.28-.16-106.56,2.12-119.77,3C18.83,149.31.76,259.61,0,373.42a277,277,0,0,0,120.53,27.4,279.31,279.31,0,0,0,47.75-4.1l2.38-3.53c13.86-20.64,36.58-33.13,60.83-33.2q17.11-.06,34.22,0A278.06,278.06,0,0,0,398,142.33Z"
+        fill="#fca84c"
+      />
+      <circle cx="132.33" cy="251.05" r="72.74" fill="#e8f5f9" />
+      <path
+        d="M170.45,234.05H149.33V212.93a17,17,0,1,0-34,0v21.12H94.21a17,17,0,1,0,0,34h21.12v21.13a17,17,0,1,0,34,0V268.05h21.12a17,17,0,0,0,0-34Z"
+        fill="#34344f"
+      />
+      <circle cx="379.67" cy="251.05" r="72.74" fill="#e8f5f9" />
+      <circle cx="379.67" cy="215.43" r="18.43" fill="#34344f" />
+      <circle cx="379.67" cy="286.67" r="18.43" fill="#34344f" />
+      <circle cx="344.05" cy="251.05" r="18.43" fill="#34344f" />
+      <circle cx="415.29" cy="251.05" r="18.43" fill="#34344f" />
+      <path
+        d="M325.72 404.41a49.82 49.82 0 1 1 49.83-49.82A49.88 49.88 0 0 1 325.72 404.41ZM186.28 404.41a49.82 49.82 0 1 1 49.82-49.82A49.88 49.88 0 0 1 186.28 404.41Z"
+        fill="#34344f"
+      />
+      <path
+        d="M256,135.9c8.67,0,17.34,0,25.84.1l-.62-4.74A13.32,13.32,0,0,0,268,119.69H244a13.32,13.32,0,0,0-13.2,11.57l-.62,4.74C238.66,135.91,247.32,135.87,256,135.9Z"
+        fill="#3d3d59"
+      />
+      <path
+        d="M347.55 354.59a21.83 21.83 0 1 0-21.83 21.82A21.85 21.85 0 0 0 347.55 354.59ZM186.28 332.77a21.82 21.82 0 1 0 21.82 21.82A21.85 21.85 0 0 0 186.28 332.77Z"
+        fill="#4b4b6b"
+      />
+    </svg>
+  );
+}
+
+// Cat illustration used for the "Cuddle" row.
+function CuddleIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 697.03 694.31"
+      width="30"
+      height="30"
+      aria-hidden
+    >
+      <path
+        d="M70.02,470.25s-12.48,211.5,195.56,223.15c208.04,11.65,204.68-92.92,291.81-94.59,79.69-1.53,62.03,35.09,116,35.09,36.78,0,49.74-79.68-107.34-79.68-119.82,0-99.9,94.72-313.48,88.03-91.09-2.85-105.45-73.66-114.18-136.86s-68.38-35.16-68.38-35.16Z"
+        fill="#ff855d"
+      />
+      <path
+        d="M113.52,519.9c-220.61-31.21-63.56-314.87,4.21-421.74l.04-.08c2.28-3.58,4.43-6.94,6.49-10.1-.81.99-1.52,1.94-2.15,2.86l22.17-37.07c11.84-19.79,32.29-32.84,55.23-35.2C274.46,10.86,441.9-5.13,480.3,1.62c49.81,8.77,56.75,49.05,56.75,49.05,88.84,69.13,115.07,156.48,119.9,250.54,0,0,16.43,297.95-543.44,218.68Z"
+        fill="#02bed1"
+      />
+      <path
+        d="M584.21,221.94s-79.55-137.83-182.39-132.79c-102.85,5.05-317.41,102.23-341.39,233.49-23.98,131.26,9.76,238.54,84.23,257.47,74.47,18.93,105.95,0,105.95,0,0,0,71.08,71.94,156.91-5.05,85.82-76.99,104.76-109.81,87.09-116.12-17.67-6.31-76.99,49.22-76.99,49.22,0,0,31.55-97.18-8.83-100.97-40.39-3.79,175.44-185.27,175.44-185.27Z"
+        fill="#ff855d"
+      />
+      <path
+        d="M250.61,584.6c-1.42,0-2.81-.67-3.68-1.93-1.41-2.03-.9-4.82,1.13-6.23,32.59-22.61,83.33-65.72,80.73-85.16-.19-1.45-.78-5.84-9.36-8.88-19.37-6.86-50.36,3.43-89.61,29.77-30.29,20.32-54.72,43.09-54.96,43.31-1.77,1.65-4.53,1.6-6.23-.11-1.7-1.71-1.74-4.47-.08-6.23,40.37-42.68,47.61-87.19,19.84-122.11-1.54-1.94-1.22-4.75.72-6.29,1.93-1.54,4.75-1.22,6.29.72,23.72,29.84,24.8,65.58,4.13,101.55,33.88-26.3,88.03-61.39,122.89-49.04,11.36,4.02,14.56,10.99,15.25,16.13,4.18,31.23-75.41,87.4-84.5,93.71-.78.54-1.67.8-2.55.8Z"
+        fill="#424242"
+      />
+      <path
+        d="M563.3,225.07s-159.58,65.05-284.86,71.92c-51.64,2.83-66.3-41.11-87.52-63.65-21.22-22.54-39.78,5.3-27.85,31.82s17.41,31.82,17.41,31.82c0,0-45.26-9.98-66.72-28.32-21.46-18.34-33.55-46.04-49.55-19.9-16,26.14,12.88,54.23,12.88,54.23,0,0-18.73-23.8-28.09-8.19-9.36,15.61,3.12,40.58,9.75,46.04,0,0-11.7,2.73-10.53,16,1.17,13.27,24.57,68.82,130.06,79.17s415.46-35.67,415.46-35.67c44.27-9.67,136.38-205.31-30.43-175.29Z"
+        fill="#f7dbb5"
+      />
+      <path
+        d="M163.03 354.61c-.46 0-.93-.07-1.39-.22-36.76-11.96-74.88-27.04-101.43-67.73-1.35-2.07-.77-4.84 1.3-6.19 2.07-1.35 4.84-.77 6.19 1.3 24.96 38.25 61.46 52.65 96.7 64.11 2.35.76 3.64 3.29 2.87 5.64-.62 1.89-2.37 3.09-4.26 3.09ZM144.66 393.02c-.46 0-.93-.07-1.39-.22-33.51-10.9-62.44-20.31-87.87-48.37-1.66-1.83-1.52-4.66.31-6.32 1.83-1.66 4.66-1.52 6.32.31 23.83 26.3 51.72 35.37 84.01 45.87 2.35.76 3.64 3.29 2.87 5.64-.62 1.89-2.37 3.09-4.26 3.09ZM377.8 548.76c-1.22 0-2.43-.49-3.32-1.47-1.66-1.83-1.52-4.66.31-6.32l39.81-36.11c1.83-1.66 4.66-1.52 6.32.31 1.66 1.83 1.52 4.66-.31 6.32l-39.81 36.11c-.86.78-1.93 1.16-3.01 1.16Z"
+        fill="#424242"
+      />
+      <path
+        d="M605.31,347.12c-1.25,38.18-6.76,72.37-17.54,81.77-25.91,22.69-37.37,0-39.74-60.15-.22-5.77-.63-11.68-1.12-17.72-4.74-56.98-20.41-122.28-20.41-122.28,0,0,39.65-28.73,61.27-8.77,12.67,11.68,19.38,73.4,17.54,127.16Z"
+        fill="#ff855d"
+      />
+      <path
+        d="M377.8,109.43c50.92-27.39,82.82-42.07,118.94-29.23,10.69-23.38,30.52-41.19,52.17-57.9,5.82,24.23,7.94,47.2,0,66.72l75.93,44.06,48.54,12.45-38.59,9.96,24.46,18.67h-29.44s15.59,72.19-104.23,105.8c-119.82,33.61-179.57-33.61-179.57-33.61l-23.65,8.71,10.98-47.3-29.65,21.16,29.65-64.73c-9.32-21.55-23.12-56.98-40.85-104.56,33.25,12.42,62.15,28.61,85.3,49.79Z"
+        fill="#ff855d"
+      />
+      <path
+        d="M401.39 284.24c-.48 0-.97-.08-1.45-.24-30.88-10.6-49.12-26.58-55.09-32.44l-20.92 7.71c-1.54.57-3.28.25-4.51-.84-1.23-1.09-1.77-2.77-1.4-4.37l8.3-35.77-20.01 14.28c-1.65 1.18-3.89 1.1-5.45-.19-1.56-1.29-2.06-3.47-1.22-5.32l28.82-62.92c-5.43-12.67-12.44-30.13-20.86-51.96-.89-2.31.26-4.9 2.57-5.79 2.3-.89 4.9.26 5.79 2.57 8.79 22.78 16.03 40.77 21.51 53.46.5 1.16.49 2.49-.04 3.64l-22.66 49.47 15.99-11.41c1.52-1.08 3.54-1.11 5.09-.08 1.55 1.03 2.29 2.92 1.87 4.73l-9.1 39.22 15.87-5.85c1.73-.64 3.67-.15 4.89 1.23.17.19 18.23 20.06 53.47 32.16 2.34.8 3.58 3.35 2.78 5.69-.64 1.86-2.37 3.02-4.23 3.02ZM377.8 113.9c-1.09 0-2.18-.4-3.02-1.17-5.57-5.1-11.64-10.03-18.02-14.64-2-1.45-2.45-4.25-1-6.25 1.45-2 4.25-2.45 6.25-1 5.77 4.17 11.29 8.59 16.45 13.16 12.31-6.6 25.15-13.31 36.94-18.62 2.26-1.02 4.9-.02 5.92 2.24 1.02 2.25.02 4.9-2.24 5.92-12.43 5.61-26.16 12.85-39.16 19.84-.67.36-1.4.53-2.12.53Z"
+        fill="#424242"
+      />
+      <path
+        d="M601.25,196.11c0,22.73-44.45,48.68-78.25,48.68s-52.74-11.27-52.74-34,15.04-54.96,48.85-54.96,82.15,17.55,82.15,40.29Z"
+        fill="#fefefe"
+      />
+      <path
+        d="M377.81,484.39c-25.91,22.69-37.37,0-39.74-60.15-.31-7.79-.89-15.89-1.7-24.12-5.33-55.36-19.83-115.92-19.83-115.92,0,0,39.66-28.69,61.27-8.77,10.83,10.03,17.32,56.98,17.81,104.11.49,46.68-4.92,93.59-17.81,104.87Z"
+        fill="#ff855d"
+      />
+      <path
+        d="M377.81,484.39c-25.91,22.69-37.37,0-39.74-60.15-.31-7.79-.89-15.89-1.7-24.12,7.03-4.21,28.21,3.22,25.87-11.59-5.58-35.27,25.34-24.96,33.39-9,.49,46.68-4.92,93.59-17.81,104.87Z"
+        fill="#fefefe"
+      />
+      <path
+        d="M445.51 179.6c2.08 8.33-.46 16.13-5.66 17.43-5.2 1.3-11.11-4.4-13.18-12.73-2.08-8.33.46-16.13 5.66-17.43 5.2-1.3 11.11 4.4 13.18 12.73ZM554.47 135.82c4.2 7.49 3.81 15.68-.87 18.3s-11.87-1.32-16.07-8.8c-4.2-7.49-3.81-15.68.87-18.3s11.87 1.32 16.07 8.8Z"
+        fill="#0a0a0a"
+      />
+      <path
+        d="M534.55,207.94c-.23,0-.46-.02-.69-.05-2.44-.38-4.11-2.67-3.73-5.11.98-6.26-3.31-21.15-9.04-27.8-1.61-1.87-1.4-4.7.47-6.31,1.87-1.61,4.7-1.4,6.31.47,7.07,8.22,12.57,25.57,11.1,35.02-.34,2.21-2.25,3.79-4.42,3.79Z"
+        fill="#424242"
+      />
+      <path
+        d="M526.87,210.33c-8.84,0-18.76-3.78-29.6-11.31-2.03-1.41-2.53-4.2-1.12-6.23,1.41-2.03,4.2-2.53,6.23-1.12,12.05,8.37,22.24,11.36,30.28,8.87,7.93-2.45,14.53-10.48,19.61-23.85.88-2.31,3.46-3.47,5.77-2.59,2.31.88,3.47,3.46,2.59,5.77-6.11,16.08-14.63,25.91-25.33,29.22-2.69.83-5.5,1.25-8.43,1.25Z"
+        fill="#424242"
+      />
+      <path
+        d="M528.35,162.08c-4.08,1.16-11.59,3.35-16.6,4.82-2.26.66-2.89,3.56-1.1,5.09,5.19,4.46,14.18,11.31,19.13,9.98,5.44-1.46,3.53-12.39,2.25-17.75-.39-1.64-2.05-2.61-3.68-2.15Z"
+        fill="#bf3d38"
+      />
+      <path
+        d="m312.18 85.81 29.51 62.51 13.96-43.73-37.73-23.85c-3.37-2.13-7.43 1.46-5.73 5.07ZM503 82.51c6.69-15.53 19.51-29.73 37.06-42.93 3.73 13.77 4.13 28.86-.01 45.75-11.66-6.41-24.08-6.8-37.04-2.82Z"
+        fill="#ffb5bf"
+      />
+      <path
+        d="M536.46,281.16c-2.23,0-4.16-1.67-4.44-3.94-.3-2.45,1.45-4.69,3.9-4.98,27.98-3.4,46.55-12.94,58.45-30.01,1.42-2.03,4.21-2.52,6.23-1.11,2.03,1.41,2.52,4.2,1.11,6.23-13.47,19.31-34.03,30.04-64.72,33.77-.18.02-.37.03-.55.03Z"
+        fill="#424242"
+      />
+      <path
+        d="M298.63,511.1c9.49,12.73-9.85,33.29-30.52,8.74-11.58-13.75,19.64-23.34,30.52-8.74Z"
+        fill="#ffb5bf"
+      />
+      <path
+        d="M304.25 492.19c-4.7 7.98-19.83 15.14-11.28-.65 4.79-8.84 16.67-8.51 11.28.65ZM317.13 496.66c-4.7 7.98-19.83 15.14-11.28-.65 4.79-8.84 16.67-8.51 11.28.65ZM316.5 512.59c-4.7 3.72-15.51 4.5-6.66-3.03 4.96-4.22 12.05-1.24 6.66 3.03Z"
+        fill="#ffb5bf"
+      />
+      <path
+        d="M605.31,347.12c-1.25,38.18-6.76,72.37-17.54,81.77-25.91,22.69-37.37,0-39.74-60.15-.22-5.77-.63-11.68-1.12-17.72,9-4.88,19.16-9.58,19.16-9.58,16.52,1.52,30.48.49,39.25,5.68Z"
+        fill="#fefefe"
+      />
+      <path
+        d="M493.68,470.26c4.46-.5-11.7,37.38-24.09,37.27-12.39-.11,11.7-35.89,24.09-37.27Z"
+        fill="#ffb5bf"
+      />
+    </svg>
   );
 }
 

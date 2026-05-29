@@ -35,14 +35,17 @@ import { Welcome } from "./components/onboarding/Welcome";
 import { PinkyPromise } from "./components/onboarding/Handover";
 import {
   ChildAlmostDone,
+  ChildCalmBugsy,
   ChildDailyGoal,
+  ChildAgeQuestion,
   ChildDoorway,
-  ChildFirstContact,
   ChildHideSeek,
+  ChildKitchen,
   ChildPetMeet,
   ChildPromise,
 } from "./components/onboarding/ChildMeet";
 import { BirdSpikeGame } from "./components/BirdSpikeGame";
+import { SnackCatchGame } from "./components/SnackCatchGame";
 import { TourOverlay, type TourStep } from "./components/TourOverlay";
 import { ProgressContext } from "./components/onboarding/ConvoUI";
 import { VoiceProvider } from "./lib/voice";
@@ -72,7 +75,7 @@ type Stage =
 // 4: pinky promise → app. (Screens 5-10 of the spec — age,
 // adventure explainer, snacks mini-game, box breathing, home
 // unlock — are the next installment.)
-const HANDOVER_STEPS = 5;
+const HANDOVER_STEPS = 4;
 
 // Stored in localStorage so users can resume their place across
 // sessions — important when a parent does half the setup, exits,
@@ -508,8 +511,6 @@ export default function Home() {
             />
           );
         case 2:
-          return <ChildFirstContact tint={TINT} childName={friend} onNext={advanceChild} onBack={backChild} />;
-        case 3:
           // Cuddle Bugsy → age → "play one more game with me?" invite.
           return (
             <ChildPetMeet
@@ -522,11 +523,36 @@ export default function Home() {
               onBack={backChild}
             />
           );
-        // ── Bird Spike — the "one more game" promised on cuddle ──
+        // ── Age question on the football park (no football) ──
+        case 3:
+          return (
+            <ChildAgeQuestion
+              tint={TINT}
+              childName={childName}
+              childAge={childAge}
+              setChildAge={setChildAge}
+              onNext={advanceChild}
+              onBack={backChild}
+            />
+          );
+        // ── First mission location — the kitchen ──
         case 4:
-          return <BirdSpikeGame tint={TINT} onExit={advanceChild} />;
-        // ── A little about them ──
+          return (
+            <ChildKitchen
+              tint={TINT}
+              childName={childName}
+              onNext={advanceChild}
+              onBack={backChild}
+            />
+          );
+        // ── First mission: Snack Catch (drag the cat, catch good food) ──
         case 5:
+          return <SnackCatchGame tint={TINT} onExit={advanceChild} />;
+        // ── Thunderstorm: box-breathing soothe beat ──
+        case 6:
+          return <ChildCalmBugsy tint={TINT} childName={childName} onNext={advanceChild} onBack={backChild} />;
+        // ── A little about them ──
+        case 7:
           return (
             <ChildDailyGoal
               tint={TINT}
@@ -538,9 +564,9 @@ export default function Home() {
             />
           );
         // ── Promise, grown-up consent ──
-        case 6:
+        case 8:
           return <ChildPromise tint={TINT} childName={childName} onNext={advanceChild} onBack={backChild} />;
-        case 7:
+        case 9:
           return (
             <ChildAlmostDone
               tint={TINT}
@@ -549,7 +575,7 @@ export default function Home() {
               onBack={backChild}
             />
           );
-        case 8:
+        case 10:
           return (
             <ChildAdultLogin
               tint={TINT}
@@ -558,7 +584,7 @@ export default function Home() {
               onBack={backChild}
             />
           );
-        case 9:
+        case 11:
           return (
             <ChildParentDetails
               tint={TINT}
@@ -573,7 +599,7 @@ export default function Home() {
           );
         // ── Grown-up shares what they're noticing, then Bugsy's
         // response (same beats as the parent flow) ──
-        case 10:
+        case 12:
           return (
             <ParentNoticing
               tint={TINT}
@@ -584,7 +610,7 @@ export default function Home() {
               onBack={backChild}
             />
           );
-        case 11:
+        case 13:
           return <ParentAchieve tint={TINT} onNext={advanceChild} onBack={backChild} />;
       }
       return null;
@@ -599,8 +625,6 @@ export default function Home() {
         case 1:
           return <ChildHideSeek tint={TINT} childName={friend} onNext={advanceHandover} />;
         case 2:
-          return <ChildFirstContact tint={TINT} childName={friend} onNext={advanceHandover} />;
-        case 3:
           return (
             <ChildPetMeet
               tint={TINT}
@@ -611,7 +635,7 @@ export default function Home() {
             />
           );
         // ── Daily commitment → app home ──
-        case 4:
+        case 3:
           return (
             <PinkyPromise
               tint={TINT}
