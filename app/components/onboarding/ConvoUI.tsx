@@ -27,15 +27,87 @@ export const GRADIENTS = STEP_WASHES;
 export function ConvoStage({
   step,
   children,
+  backdrop,
 }: {
   step: number;
   children: ReactNode;
+  // Optional full-bleed scene rendered behind the content (e.g. the
+  // cosy-room backdrop on the parent flow). When provided we layer a
+  // soft scrim + ambient motes over it so forms stay legible. When
+  // omitted the stage keeps its original plain-canvas look so existing
+  // child / handover / login callers are unaffected.
+  backdrop?: ReactNode;
 }) {
   const wash = STEP_WASHES[step % STEP_WASHES.length];
   const progress = useContext(ProgressContext);
   // Add headroom for the progress bar so it doesn't collide with
   // Bugsy on tightly packed screens.
   const paddingTop = progress !== null ? 68 : 56;
+
+  // ── Scene variant: backdrop behind a scrim, content floated on top ──
+  if (backdrop) {
+    return (
+      <div
+        className="child-flow"
+        style={{
+          position: "absolute",
+          inset: 0,
+          overflow: "hidden",
+          color: "var(--ink)",
+          background: "var(--canvas)",
+        }}
+      >
+        {/* Scene — gently "breathes" so it feels alive without distracting. */}
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 0,
+            transformOrigin: "center",
+            animation: "parent-scene-drift 20s ease-in-out infinite",
+          }}
+        >
+          {backdrop}
+        </div>
+        {/* Readability scrim — light up top (scene shows through behind
+            Bugsy), heavier toward the bottom where inputs + buttons sit. */}
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 0,
+            pointerEvents: "none",
+            background:
+              "linear-gradient(180deg, rgba(255,251,245,0.30) 0%, rgba(255,250,244,0.42) 38%, rgba(255,249,242,0.66) 70%, rgba(255,248,240,0.82) 100%)",
+          }}
+        />
+        <ParentMotes />
+        {/* Content layer — same bounds + padding as the plain variant so
+            the progress bar, back chevron and voice toggle land identically. */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 2,
+            display: "flex",
+            flexDirection: "column",
+            paddingTop,
+            paddingBottom: 32,
+            paddingLeft: 20,
+            paddingRight: 20,
+            boxSizing: "border-box",
+          }}
+        >
+          {progress !== null && <ProgressBar value={progress} />}
+          <VoiceToggle />
+          {children}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="child-flow"
@@ -58,6 +130,48 @@ export function ConvoStage({
       {/* Voice toggle — top-right, present on every conversational screen */}
       <VoiceToggle />
       {children}
+    </div>
+  );
+}
+
+// Ambient warm motes that drift behind the parent scenes — pure polish,
+// no interactivity. Sits above the scrim (zIndex 1) but below content.
+function ParentMotes() {
+  const motes = [
+    { left: "14%", top: "20%", size: 10, dur: 9, delay: 0, c: "rgba(255,212,128,0.55)" },
+    { left: "80%", top: "26%", size: 7, dur: 11, delay: 1.4, c: "rgba(255,180,200,0.5)" },
+    { left: "30%", top: "44%", size: 6, dur: 10, delay: 2.6, c: "rgba(255,225,150,0.5)" },
+    { left: "68%", top: "52%", size: 9, dur: 12, delay: 0.8, c: "rgba(200,160,255,0.42)" },
+    { left: "50%", top: "16%", size: 5, dur: 8.5, delay: 3.2, c: "rgba(255,255,255,0.6)" },
+    { left: "88%", top: "62%", size: 6, dur: 10.5, delay: 1.9, c: "rgba(255,200,140,0.48)" },
+  ];
+  return (
+    <div
+      aria-hidden
+      style={{
+        position: "absolute",
+        inset: 0,
+        zIndex: 1,
+        pointerEvents: "none",
+        overflow: "hidden",
+      }}
+    >
+      {motes.map((m, i) => (
+        <span
+          key={i}
+          style={{
+            position: "absolute",
+            left: m.left,
+            top: m.top,
+            width: m.size,
+            height: m.size,
+            borderRadius: "50%",
+            background: m.c,
+            filter: "blur(1px)",
+            animation: `parent-mote ${m.dur}s ease-in-out ${m.delay}s infinite`,
+          }}
+        />
+      ))}
     </div>
   );
 }

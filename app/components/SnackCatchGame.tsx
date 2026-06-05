@@ -78,9 +78,13 @@ const BOMB_SPRITE_SIZE = 88;
 export function SnackCatchGame({
   tint,
   onExit,
+  onEarnXp,
 }: {
   tint: number;
   onExit: () => void;
+  // Credits earned XP (mission + bomb-quiz bonus) to the app's balance.
+  // Optional so the game can still be rendered standalone in dev.
+  onEarnXp?: (amount: number) => void;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -91,6 +95,10 @@ export function SnackCatchGame({
   );
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(START_LIVES);
+  // How many bombs appeared during the current play — latched into state
+  // on a win so the post-mission "how many bombs did you spot?" quiz can
+  // grade the child's guess.
+  const [bombsSeen, setBombsSeen] = useState(0);
   // Tracks when the intro speech bubble has finished typing.
   const [introDone, setIntroDone] = useState(false);
 
@@ -108,6 +116,8 @@ export function SnackCatchGame({
   const catXRef = useRef(GAME_W / 2);
   const lastTimeRef = useRef(0);
   const spawnTimerRef = useRef(SPAWN_MIN);
+  // Running tally of bombs spawned this play (drives the post-win quiz).
+  const bombsRef = useRef(0);
   // rAF timestamp of the first frame in the current play session, used to
   // ramp difficulty (spawn rate, gravity, vy) over RAMP_MS.
   const playStartRef = useRef(0);
@@ -184,6 +194,7 @@ export function SnackCatchGame({
     snacksRef.current = [];
     catXRef.current = GAME_W / 2;
     spawnTimerRef.current = SPAWN_MIN;
+    bombsRef.current = 0;
     lastTimeRef.current = 0;
     playStartRef.current = 0; // will latch on the first rAF frame
     flashRef.current = null;
@@ -221,6 +232,7 @@ export function SnackCatchGame({
         spawnTimerRef.current =
           (SPAWN_MIN + Math.random() * SPAWN_VAR) / (0.75 + ramp * 0.55);
         const isBad = Math.random() < 0.32;
+        if (isBad) bombsRef.current += 1;
         const pool = isBad ? BAD_SNACKS : GOOD_SNACKS;
         snacksRef.current.push({
           id: Date.now() + Math.random(),
@@ -462,7 +474,10 @@ export function SnackCatchGame({
 
   // ── Win / lose detection ───────────────────────────────────
   useEffect(() => {
-    if (state === "playing" && score >= TARGET_SCORE) setState("won");
+    if (state === "playing" && score >= TARGET_SCORE) {
+      setBombsSeen(bombsRef.current);
+      setState("won");
+    }
   }, [score, state]);
   useEffect(() => {
     if (state === "playing" && lives <= 0) setState("lost");
@@ -720,11 +735,14 @@ export function SnackCatchGame({
           {/* Confetti burst behind the card — same shapes + palette as the
               Lottie file (crosses, diamonds, stars, circles, zigzags). */}
           <Confetti />
-          <AchievementCard
+          <BombQuizCard
             score={score}
             stars={Math.max(1, lives)}
+            bombsSeen={bombsSeen}
             tint={tint}
+            onEarnXp={onEarnXp}
             onContinue={onExit}
+            onReplay={startGame}
           />
         </div>
       )}
@@ -779,21 +797,53 @@ export function SnackCatchGame({
   );
 }
 
-// Achievement card — Lesson-Complete-style summary modal. Bugsy cheers
-// with sparkles up top, then headline + subtitle, then a row of three
-// stat tiles (Snacks / Stars / Hearts), then the continue CTA. Sized to
-// sit centred in the viewport without filling the whole screen.
-// Persists the play to localStorage so the score is actually saved.
-function AchievementCard({
+// XP awarded just for finishing the mission, plus the bonus the child
+// earns by correctly remembering how many bombs flew past.
+const MISSION_XP = 50;
+const BOMB_QUIZ_BONUS_XP = 10;
+
+// Builds 4 distinct, non-negative multiple-choice options that always
+// include the true bomb count, then shuffles so the answer isn't always
+// in the same slot.
+function buildBombOptions(answer: number): number[] {
+  const opts = new Set<number>([answer]);
+  // Plausible near-misses first, then wider spread if we need more.
+  for (const d of [-2, -1, 1, 2, 3, -3, 4]) {
+    if (opts.size >= 4) break;
+    const v = answer + d;
+    if (v >= 0) opts.add(v);
+  }
+  // Top up when the answer sits near zero and the negatives were dropped.
+  for (let n = answer + 1; opts.size < 4; n++) opts.add(n);
+  const arr = Array.from(opts);
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// Bomb-count quiz — the post-mission reward. Instead of a plain
+// "achievement" summary, Bugsy quizzes the child: "how many bombs did you
+// spot?" A correct guess earns a +10 XP bonus on top of the mission XP.
+// We show clear right/wrong feedback, then offer Continue / Play again.
+// Persists the play to localStorage so the score is still saved.
+function BombQuizCard({
   score,
   stars,
+  bombsSeen,
   tint,
+  onEarnXp,
   onContinue,
+  onReplay,
 }: {
   score: number;
   stars: number; // 0..3
+  bombsSeen: number;
   tint: number;
+  onEarnXp?: (amount: number) => void;
   onContinue: () => void;
+  onReplay: () => void;
 }) {
   useEffect(() => {
     try {
@@ -808,9 +858,19 @@ function AchievementCard({
     }
   }, [score, stars]);
 
-  // Hearts left = stars (we compute stars = max(1, lives) on win, so this
-  // mirrors what the player saw on the HUD when they won).
-  const hearts = Math.min(3, stars);
+  const options = useMemo(() => buildBombOptions(bombsSeen), [bombsSeen]);
+  const [picked, setPicked] = useState<number | null>(null);
+  const answered = picked !== null;
+  const correct = picked === bombsSeen;
+  const earnedXp = MISSION_XP + (correct ? BOMB_QUIZ_BONUS_XP : 0);
+
+  // Lock in the answer and credit XP. Options disable after the first pick,
+  // so this fires exactly once per play (a replay mounts a fresh card).
+  const handlePick = (opt: number) => {
+    if (answered) return;
+    setPicked(opt);
+    onEarnXp?.(MISSION_XP + (opt === bombsSeen ? BOMB_QUIZ_BONUS_XP : 0));
+  };
 
   return (
     <div
@@ -821,7 +881,7 @@ function AchievementCard({
         borderRadius: 28,
         boxShadow:
           "0 8px 0 #8a5b22, 0 16px 32px rgba(80,50,20,0.28), inset 0 2px 0 rgba(255,255,255,0.7)",
-        padding: "24px 22px 22px",
+        padding: "22px 22px 22px",
         width: "100%",
         maxWidth: 340,
         textAlign: "center",
@@ -830,23 +890,28 @@ function AchievementCard({
         animation: "bubble-pop 0.5s cubic-bezier(0.22, 1.5, 0.36, 1)",
       }}
     >
-      {/* ── Mascot ── */}
+      {/* ── Mascot — mood reacts to the answer ── */}
       <div
         style={{
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          margin: "0 auto 8px",
+          margin: "0 auto 6px",
           filter: "drop-shadow(0 6px 6px rgba(80,50,20,0.25))",
         }}
       >
-        <Bobo mood="cheer" tint={tint} size={108} tailWag />
+        <Bobo
+          mood={answered ? (correct ? "cheer" : "sad") : "thinking"}
+          tint={tint}
+          size={96}
+          tailWag={!answered || correct}
+        />
       </div>
 
-      {/* ── Headline + subtitle ── */}
+      {/* ── Headline ── */}
       <div
         style={{
-          fontSize: 24,
+          fontSize: 23,
           fontWeight: 900,
           lineHeight: 1.15,
           letterSpacing: 0.2,
@@ -854,43 +919,160 @@ function AchievementCard({
       >
         Mission complete!
       </div>
+
+      {/* ── XP pill — base mission XP, glows up when the bonus lands ── */}
       <div
+        key={answered ? "xp-final" : "xp-base"}
         style={{
-          fontSize: 14,
-          fontWeight: 600,
-          opacity: 0.75,
-          lineHeight: 1.35,
-          marginTop: 6,
-          padding: "0 6px",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          marginTop: 8,
+          padding: "5px 14px",
+          borderRadius: 999,
+          background: correct
+            ? "linear-gradient(180deg, #ffe9a8 0%, #ffd45e 100%)"
+            : "linear-gradient(180deg, #fffdf5 0%, #fdeccb 100%)",
+          border: `2px solid ${correct ? "#e0942a" : "#ead7b6"}`,
+          boxShadow: "0 2px 0 #d8c098",
+          fontWeight: 900,
+          fontSize: 16,
+          color: "#a35a00",
+          animation: answered
+            ? "hud-pop 0.4s cubic-bezier(0.22, 1.5, 0.36, 1)"
+            : undefined,
         }}
       >
-        You fed Bugsy! You&apos;re one step closer to being best friends.
+        <span style={{ fontSize: 16 }}>⚡</span>
+        +{earnedXp} XP
+        {correct && (
+          <span style={{ fontSize: 12, fontWeight: 800, opacity: 0.85 }}>
+            (+{BOMB_QUIZ_BONUS_XP} bonus!)
+          </span>
+        )}
       </div>
 
-      {/* ── Three stat tiles ── */}
+      {/* ── Quiz prompt ── */}
+      <div
+        style={{
+          fontSize: 15,
+          fontWeight: 800,
+          lineHeight: 1.3,
+          marginTop: 14,
+          padding: "0 4px",
+        }}
+      >
+        {answered ? (
+          correct ? (
+            <span style={{ color: "#2f9e44" }}>
+              Yes! You spotted {bombsSeen} bomb{bombsSeen === 1 ? "" : "s"} 🎉
+            </span>
+          ) : (
+            <span style={{ color: "#d23b3b" }}>
+              Oops! It was {bombsSeen} bomb{bombsSeen === 1 ? "" : "s"}. Try again?
+            </span>
+          )
+        ) : (
+          <>How many 💣 bombs flew past? Get it right for +{BOMB_QUIZ_BONUS_XP} XP!</>
+        )}
+      </div>
+
+      {/* ── Answer options ── */}
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "1fr 1fr 1fr",
-          gap: 8,
-          marginTop: 18,
+          gridTemplateColumns: "1fr 1fr",
+          gap: 10,
+          marginTop: 14,
         }}
       >
-        <StatTile icon="🍇" value={score} label="Snacks" tint="#7a3aa8" />
-        <StatTile icon="⭐" value={`${hearts}/3`} label="Stars" tint="#cf8b43" />
-        <StatTile icon="❤️" value={hearts} label="Hearts" tint="#e6334b" />
+        {options.map((opt) => {
+          const isAnswer = opt === bombsSeen;
+          const isPicked = opt === picked;
+          // After answering: green for the right number, red for a wrong
+          // pick, muted for the rest. Before answering: warm cream chips.
+          let bg = "linear-gradient(180deg, #fffdf5 0%, #fde0b2 100%)";
+          let border = "#cf8b43";
+          let shadow = "#8a5b22";
+          let color = "#5b3a1f";
+          if (answered) {
+            if (isAnswer) {
+              bg = "linear-gradient(180deg, #b6f0c2 0%, #6fd98a 100%)";
+              border = "#2f9e44";
+              shadow = "#1f7a32";
+              color = "#0f5a23";
+            } else if (isPicked) {
+              bg = "linear-gradient(180deg, #ffc2c2 0%, #f08a8a 100%)";
+              border = "#d23b3b";
+              shadow = "#a02525";
+              color = "#7a1414";
+            } else {
+              bg = "#f3ead8";
+              border = "#e0d2b4";
+              shadow = "#d8c79f";
+              color = "#9a8367";
+            }
+          }
+          return (
+            <button
+              key={opt}
+              onClick={() => handlePick(opt)}
+              disabled={answered}
+              style={{
+                minHeight: 52,
+                borderRadius: 16,
+                border: `2px solid ${border}`,
+                background: bg,
+                color,
+                fontFamily: "var(--font-nunito), system-ui",
+                fontWeight: 900,
+                fontSize: 22,
+                cursor: answered ? "default" : "pointer",
+                boxShadow: `0 4px 0 ${shadow}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+                transition: "background 0.2s ease",
+              }}
+            >
+              {opt}
+              {answered && isAnswer && <span style={{ fontSize: 18 }}>✓</span>}
+              {answered && isPicked && !isAnswer && (
+                <span style={{ fontSize: 18 }}>✕</span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
-      {/* ── Continue CTA ── */}
-      <button
-        onClick={onContinue}
-        style={{
-          ...ctaStyle("--primary", "var(--primary-shadow)"),
-          marginTop: 18,
-        }}
-      >
-        Continue →
-      </button>
+      {/* ── Footer CTAs — appear once the child has answered ── */}
+      {answered && (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
+            marginTop: 18,
+          }}
+        >
+          <button
+            onClick={onContinue}
+            style={ctaStyle("--primary", "var(--primary-shadow)")}
+          >
+            Continue →
+          </button>
+          <button
+            onClick={onReplay}
+            style={{
+              ...ctaStyle("var(--surface)", "var(--border)"),
+              color: "var(--ink)",
+            }}
+          >
+            Play once more
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -1101,79 +1283,6 @@ function ConfettiShape({ kind, size }: { kind: ConfettiShapeKind; size: number }
         </svg>
       );
   }
-}
-
-// Compact stat tile used inside AchievementCard. Cream tile with a 2 px
-// amber border; the icon sits next to a chunky number on the top row,
-// label sits underneath in muted text — mirrors the "12 / Exercises"
-// pattern from the lesson-complete screenshot.
-function StatTile({
-  icon,
-  value,
-  label,
-  tint,
-}: {
-  icon: string;
-  value: number | string;
-  label: string;
-  tint: string;
-}) {
-  return (
-    <div
-      style={{
-        background: "#fffdf5",
-        border: "2px solid #ead7b6",
-        borderRadius: 14,
-        padding: "10px 6px",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 2,
-        boxShadow: "0 2px 0 #d8c098",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 4,
-        }}
-      >
-        <span
-          style={{
-            fontSize: 17,
-            lineHeight: 1,
-            filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.18))",
-          }}
-        >
-          {icon}
-        </span>
-        <span
-          style={{
-            fontSize: 22,
-            fontWeight: 900,
-            lineHeight: 1,
-            color: tint,
-          }}
-        >
-          {value}
-        </span>
-      </div>
-      <div
-        style={{
-          fontSize: 11,
-          fontWeight: 700,
-          color: "#5b3a1f",
-          opacity: 0.65,
-          letterSpacing: 0.3,
-        }}
-      >
-        {label}
-      </div>
-    </div>
-  );
 }
 
 // Stat pill — tactile cream/amber button chip that matches the rest of

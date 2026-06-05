@@ -14,7 +14,6 @@ import {
 } from "./lib/data";
 import {
   PARENT_STEPS,
-  ParentAchieve,
   ParentChildSetup,
   ParentDone,
   ParentGoals,
@@ -32,10 +31,11 @@ import {
 import { LoginScreen } from "./components/onboarding/LoginScreen";
 import { WhoAreYou } from "./components/onboarding/WhoAreYou";
 import { Welcome } from "./components/onboarding/Welcome";
-import { PinkyPromise } from "./components/onboarding/Handover";
 import {
   ChildAlmostDone,
   ChildCalmBugsy,
+  ChildClanIntro,
+  ChildGrowPlan,
   ChildDailyGoal,
   ChildAgeQuestion,
   ChildDoorway,
@@ -69,13 +69,16 @@ type Stage =
   | { kind: "project"; projectId: string }
   | { kind: "reward"; projectId: string; unlockedHatKey: string | null };
 
-// Handover (parent → child) — the child's "meet Bugsy in his room"
-// experience. 0: walk through the doorway, 1: hide-and-seek find
-// Bugsy, 2: coax him out with toys + become friends, 3: pet him,
-// 4: pinky promise → app. (Screens 5-10 of the spec — age,
-// adventure explainer, snacks mini-game, box breathing, home
-// unlock — are the next installment.)
-const HANDOVER_STEPS = 4;
+// Handover (parent → child) — once the grown-up finishes setup they
+// pass the phone over and the child runs the SAME interactive
+// onboarding as the direct "child" path, just without the steps the
+// parent already completed (name, age, parent details, login,
+// noticing/achieve). 0: doorway, 1: hide-and-seek (Bugsy already knows
+// their name), 2: meet + pet Bugsy, 3: kitchen, 4: first mission
+// (Snack Catch + bomb quiz), 5: dark force + calm-Bugsy storm,
+// 6: the plan (train me, earn XP, rewards), 7: meet the clan,
+// 8: pinky promise → app.
+const HANDOVER_STEPS = 9;
 
 // Stored in localStorage so users can resume their place across
 // sessions — important when a parent does half the setup, exits,
@@ -307,6 +310,14 @@ export default function Home() {
     setStage({ kind: "reward", projectId, unlockedHatKey: unlocked?.key ?? null });
   };
 
+  // Add XP to the running balance without the full project-completion flow.
+  // Used by the onboarding first mission so the snack-catch quiz can credit
+  // real XP (mission + bomb-quiz bonus) toward the child's total.
+  const awardXp = (amount: number) => {
+    if (amount <= 0) return;
+    setTotalPoints((p) => p + amount);
+  };
+
   // ── Onboarding navigation ──
   const advanceParent = () => {
     if (stage.kind !== "parent") return;
@@ -467,10 +478,8 @@ export default function Home() {
               onBack={back}
             />
           );
-        // ── Bugsy's answer — what they'll work on together ──
+        // ── Sign in, then hand over to the child ──
         case 6:
-          return <ParentAchieve tint={TINT} onNext={advanceParent} onBack={back} />;
-        case 7:
           return (
             <ParentLogin
               tint={TINT}
@@ -479,7 +488,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 8:
+        case 7:
           return (
             <ParentDone
               tint={TINT}
@@ -547,12 +556,18 @@ export default function Home() {
           );
         // ── First mission: Snack Catch (drag the cat, catch good food) ──
         case 5:
-          return <SnackCatchGame tint={TINT} onExit={advanceChild} />;
-        // ── Thunderstorm: box-breathing soothe beat ──
+          return <SnackCatchGame tint={TINT} onExit={advanceChild} onEarnXp={awardXp} />;
+        // ── Dark force arrives → calm Bugsy through the storm ──
         case 6:
           return <ChildCalmBugsy tint={TINT} childName={childName} onNext={advanceChild} onBack={backChild} />;
-        // ── A little about them ──
+        // ── The plan: train me, earn XP, unlock rewards ──
         case 7:
+          return <ChildGrowPlan tint={TINT} childName={childName} onNext={advanceChild} onBack={backChild} />;
+        // ── Meet the clan ──
+        case 8:
+          return <ChildClanIntro tint={TINT} childName={childName} onNext={advanceChild} onBack={backChild} />;
+        // ── A little about them ──
+        case 9:
           return (
             <ChildDailyGoal
               tint={TINT}
@@ -564,9 +579,9 @@ export default function Home() {
             />
           );
         // ── Promise, grown-up consent ──
-        case 8:
+        case 10:
           return <ChildPromise tint={TINT} childName={childName} onNext={advanceChild} onBack={backChild} />;
-        case 9:
+        case 11:
           return (
             <ChildAlmostDone
               tint={TINT}
@@ -575,7 +590,7 @@ export default function Home() {
               onBack={backChild}
             />
           );
-        case 10:
+        case 12:
           return (
             <ChildAdultLogin
               tint={TINT}
@@ -584,7 +599,7 @@ export default function Home() {
               onBack={backChild}
             />
           );
-        case 11:
+        case 13:
           return (
             <ChildParentDetails
               tint={TINT}
@@ -599,7 +614,7 @@ export default function Home() {
           );
         // ── Grown-up shares what they're noticing, then Bugsy's
         // response (same beats as the parent flow) ──
-        case 12:
+        case 14:
           return (
             <ParentNoticing
               tint={TINT}
@@ -610,39 +625,54 @@ export default function Home() {
               onBack={backChild}
             />
           );
-        case 13:
-          return <ParentAchieve tint={TINT} onNext={advanceChild} onBack={backChild} />;
       }
       return null;
     }
 
     if (stage.kind === "handover") {
       const friend = childName || "friend";
+      // The child runs the same interactive flow as the direct "child"
+      // path, minus the data-collection beats the parent already did
+      // (name / age / parent details / login / noticing / achieve).
       switch (stage.step) {
         // ── Meet Bugsy in his room ──
         case 0:
           return <ChildDoorway tint={TINT} childName={friend} onNext={advanceHandover} />;
         case 1:
+          // No setChildName → Bugsy already knows them (parent set the
+          // name), so hide-and-seek skips the name-asking phase.
           return <ChildHideSeek tint={TINT} childName={friend} onNext={advanceHandover} />;
         case 2:
           return (
             <ChildPetMeet
               tint={TINT}
               childName={friend}
-              childAge={childAge}
-              setChildAge={setChildAge}
               onNext={advanceHandover}
             />
           );
-        // ── Daily commitment → app home ──
+        // ── First mission: the kitchen, then Snack Catch + bomb quiz ──
         case 3:
           return (
-            <PinkyPromise
+            <ChildKitchen
               tint={TINT}
               childName={friend}
               onNext={advanceHandover}
             />
           );
+        case 4:
+          return <SnackCatchGame tint={TINT} onExit={advanceHandover} onEarnXp={awardXp} />;
+        // ── Dark force arrives → calm Bugsy through the storm ──
+        case 5:
+          return <ChildCalmBugsy tint={TINT} childName={friend} onNext={advanceHandover} />;
+        // ── The plan: train me, earn XP, unlock rewards ──
+        case 6:
+          return <ChildGrowPlan tint={TINT} childName={friend} onNext={advanceHandover} />;
+        // ── Meet the clan ──
+        case 7:
+          return <ChildClanIntro tint={TINT} childName={friend} onNext={advanceHandover} />;
+        // ── Daily commitment → app home ──
+        case 8:
+          return <ChildPromise tint={TINT} childName={friend} onNext={advanceHandover} />;
       }
       return null;
     }

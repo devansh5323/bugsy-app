@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { BackChevron, BugsyStage, ChunkyButton, ConvoStage, SpeechBubble } from "./ConvoUI";
+import { RoomBackdrop, FamilyBackdrop } from "./ChildMeet";
 import { BoboHead } from "../Mascot";
 import { Typewriter } from "../Typewriter";
 import { LoginScreen } from "./LoginScreen";
@@ -19,17 +20,16 @@ import {
   type Relationship,
 } from "../../lib/data";
 
-// 9 screens after the shared "Who are you?" branch:
+// 8 screens after the shared "Who are you?" branch:
 //   0 ParentWelcome   — Bugsy greets the grown-up + pet beat
 //   1 WhoIsBugsy       — missions / growth / emotional support
 //   2 ParentName       — "Tell me about you" (name + relationship)
 //   3 ParentChildSetup — child name → age
 //   4 ParentNoticing   — what they're noticing
 //   5 ParentGoals      — what they'd love to improve
-//   6 ParentAchieve    — "here's what we'll do together"
-//   7 ParentLogin      — sign in
-//   8 ParentDone       — handoff to the child
-export const PARENT_STEPS = 9;
+//   6 ParentLogin      — sign in
+//   7 ParentDone       — handoff to the child
+export const PARENT_STEPS = 8;
 
 type Common = { tint: number; onBack?: () => void };
 
@@ -68,7 +68,7 @@ export function ParentName({
       : `Lovely to meet you, ${parentName.trim()}.`;
 
   return (
-    <ConvoStage step={5}>
+    <ConvoStage step={5} backdrop={<RoomBackdrop chairs />}>
       {onBack && <BackChevron onBack={onBack} />}
       <BugsyStage
         mood={phase === "react" ? "cheer" : "happy"}
@@ -237,7 +237,7 @@ export function ParentWelcome({
   };
 
   return (
-    <ConvoStage step={2 /* sky */}>
+    <ConvoStage step={2 /* sky */} backdrop={<RoomBackdrop chairs />}>
       {onBack && <BackChevron onBack={onBack} />}
       <div
         onPointerDown={pet}
@@ -347,7 +347,7 @@ export function WhoIsBugsy({
   };
 
   return (
-    <ConvoStage step={1 /* lavender */}>
+    <ConvoStage step={1 /* lavender */} backdrop={<RoomBackdrop chairs />}>
       {onBack && <BackChevron onBack={onBack} />}
 
       {/* Bugsy + dialogue side by side — reads as him speaking */}
@@ -517,7 +517,7 @@ export function ParentAchieve({
 }: Common & { onNext: () => void }) {
   const [done, setDone] = useState(false);
   return (
-    <ConvoStage step={3 /* purple wash */}>
+    <ConvoStage step={3 /* purple wash */} backdrop={<RoomBackdrop chairs dusk />}>
       {onBack && <BackChevron onBack={onBack} />}
       <BugsyStage mood="cheer" tint={tint} size={140} animationKey="p-achieve" />
       <div style={{ marginTop: 8 }} />
@@ -531,6 +531,12 @@ export function ParentAchieve({
           marginTop: 24,
           display: "flex",
           flexDirection: "column",
+          // Solid card so the rows stay legible over the room scene.
+          background: "var(--surface)",
+          border: "1px solid var(--border-strong)",
+          borderRadius: 20,
+          padding: "8px 16px",
+          boxShadow: "0 6px 20px rgba(80,50,20,0.10)",
           opacity: done ? 1 : 0,
           transition: "opacity 0.4s ease",
         }}
@@ -868,7 +874,7 @@ export function ParentChildSetup({
       : `How old is ${childName.trim()}?`;
 
   return (
-    <ConvoStage step={3 /* mint */}>
+    <ConvoStage step={3 /* mint */} backdrop={<RoomBackdrop chairs />}>
       {onBack && <BackChevron onBack={onBack} />}
       <BugsyStage
         mood={phase === "age" ? "cheer" : "happy"}
@@ -1218,7 +1224,7 @@ export function ParentNoticing({
   };
 
   return (
-    <ConvoStage step={1}>
+    <ConvoStage step={1} backdrop={<RoomBackdrop chairs dusk />}>
       {onBack && <BackChevron onBack={onBack} />}
       <BugsyStage mood="thinking" tint={tint} size={130} animationKey="p-notice" />
       <div style={{ marginTop: 8 }} />
@@ -1349,7 +1355,7 @@ export function ParentGoals({
   };
 
   return (
-    <ConvoStage step={2 /* yellow — hopeful */}>
+    <ConvoStage step={2 /* yellow — hopeful */} backdrop={<RoomBackdrop chairs dusk />}>
       {onBack && <BackChevron onBack={onBack} />}
       <BugsyStage mood="cheer" tint={tint} size={130} animationKey="p-goals" />
       <div style={{ marginTop: 8 }} />
@@ -1434,7 +1440,7 @@ export function ParentDone({
       : "Hand me over whenever you're ready — I'll take great care of them.";
 
   return (
-    <ConvoStage step={4 /* rainbow finale */}>
+    <ConvoStage step={4 /* rainbow finale */} backdrop={<FamilyBackdrop />}>
       {onBack && <BackChevron onBack={onBack} />}
       <BugsyStage
         mood="cheer"

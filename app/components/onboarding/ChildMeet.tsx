@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Bobo } from "../Mascot";
+import { Bobo, BoboHead } from "../Mascot";
 import { ChunkyButton } from "./ConvoUI";
 import { Typewriter } from "../Typewriter";
 import type { Mood } from "../../lib/data";
@@ -463,7 +463,7 @@ const poly = (...ps: [number, number][]) =>
 // Used as the backdrop for both Hide & Seek and Pet Bugsy so the
 // child stays "home" across screens. Pass interaction props for the
 // hide-and-seek game; omit them for a purely decorative backdrop.
-function RoomBackdrop({
+export function RoomBackdrop({
   tap,
   shake = null,
   onReveal,
@@ -2703,17 +2703,333 @@ export function ChildKitchen({ tint, onNext, onBack }: Common) {
   );
 }
 
-// ── SCREEN — Calm Bugsy through box breathing ─────────────────
-// Bond beat: a thunderstorm rolls in outside the window. Bugsy
-// freaks out — tremor, desaturated, "raised fur" feel. The kid
-// learns they can comfort him with guided box breathing
-// (in-3 / hold-3 / out-3 × 3 rounds). With every round Bugsy
-// settles a little; at the end he curls up safely.
+// ── SCREEN — The growth plan (train me) ───────────────────────
+// Plays right after the child has calmed Bugsy through the storm. Now
+// that they've faced the dark force's first scare together, Bugsy lays
+// out the simple loop: do missions to train him, earn XP, unlock
+// rewards. Kept to JUST the training idea — the clan is introduced on
+// its own screen next so it's not dumped on the child all at once.
+export function ChildGrowPlan({ tint, childName, onNext, onBack }: Common) {
+  const friend = childName.trim() || "friend";
+  type Phase = "win" | "loop";
+  const ORDER: Phase[] = ["win", "loop"];
+  const [phase, setPhase] = useState<Phase>("win");
+  const [bubbleDone, setBubbleDone] = useState(false);
+
+  // Reset the typewriter "done" flag each time the line changes.
+  useEffect(() => {
+    setBubbleDone(false);
+  }, [phase]);
+
+  const idx = ORDER.indexOf(phase);
+  const advance = () => {
+    const next = ORDER[idx + 1];
+    if (next) setPhase(next);
+    else onNext();
+  };
+
+  const text =
+    phase === "win"
+      ? `You helped me feel brave, ${friend}! Now let's get stronger together. 💪`
+      : "Here's how we grow: do missions to train me, earn XP, and unlock cool rewards!";
+
+  const cta = phase === "win" ? "How?" : "Got it!";
+
+  return (
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden", background: "#e7c3bd" }}>
+      <RoomBackdrop chairs={false} dusk />
+
+      {/* back button */}
+      {onBack && (
+        <button
+          onClick={onBack}
+          aria-label="Back"
+          style={{
+            position: "absolute",
+            top: 14,
+            left: 14,
+            width: 40,
+            height: 40,
+            borderRadius: 12,
+            border: "2px solid rgba(0,0,0,0.12)",
+            background: "rgba(255,255,255,0.7)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            color: "#6a4a52",
+            zIndex: 8,
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14">
+            <path d="M9 1L3 7l6 6" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      )}
+
+      {/* Bugsy + dialogue (+ the loop list on the "loop" beat) */}
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 150,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 16,
+          padding: "0 24px",
+          zIndex: 4,
+        }}
+      >
+        <RoomBubble key={phase} tail="down" text={text} onDone={() => setBubbleDone(true)} />
+
+        <div style={{ filter: "drop-shadow(0 12px 14px rgba(50,35,70,0.3))" }}>
+          <Bobo mood="cheer" tint={tint} size={150} tailWag />
+        </div>
+
+        {phase === "loop" && (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+              width: "100%",
+              maxWidth: 300,
+              opacity: bubbleDone ? 1 : 0,
+              transform: bubbleDone ? "translateY(0)" : "translateY(8px)",
+              transition: "opacity 0.45s ease, transform 0.45s ease",
+            }}
+          >
+            <ActivityRow icon={<MissionsIcon />} text="Do missions to train me" />
+            <ActivityRow icon="⚡" text="Earn XP & unlock rewards" />
+          </div>
+        )}
+      </div>
+
+      {/* CTA — appears once the line finishes typing. */}
+      <div
+        style={{
+          position: "absolute",
+          left: 20,
+          right: 20,
+          bottom: 28,
+          opacity: bubbleDone ? 1 : 0,
+          transform: bubbleDone ? "translateY(0)" : "translateY(10px)",
+          transition: "opacity 0.4s ease, transform 0.4s ease",
+          pointerEvents: bubbleDone ? "auto" : "none",
+          zIndex: 6,
+        }}
+      >
+        <BigCTA onClick={advance}>{cta}</BigCTA>
+      </div>
+    </div>
+  );
+}
+
+// ── SCREEN — Meet the clan ────────────────────────────────────
+// Introduces the "clan" idea on its own, gently, so it doesn't land out
+// of nowhere: first Bugsy explains what a clan is (a team of cats + their
+// humans), with a little line-up of clan cats to make it concrete, then
+// the goal — once strong, they join one to face the dark force together.
+export function ChildClanIntro({ tint, childName, onNext, onBack }: Common) {
+  const friend = childName.trim() || "friend";
+  type Phase = "what" | "join";
+  const ORDER: Phase[] = ["what", "join"];
+  const [phase, setPhase] = useState<Phase>("what");
+  const [bubbleDone, setBubbleDone] = useState(false);
+
+  useEffect(() => {
+    setBubbleDone(false);
+  }, [phase]);
+
+  const idx = ORDER.indexOf(phase);
+  const advance = () => {
+    const next = ORDER[idx + 1];
+    if (next) setPhase(next);
+    else onNext();
+  };
+
+  const text =
+    phase === "what"
+      ? "Oh — have you heard of a CLAN? It's a team of cats and their humans, all training together."
+      : `Once I'm strong, we'll join one — and our whole clan faces the dark force together. Stronger as a team, ${friend}!`;
+
+  const cta = phase === "what" ? "Whoa, cool!" : "Join the clan! 🛡️";
+
+  // A little line-up of clan cats (varied colours, a couple with hats)
+  // so "clan" reads as a group, not just Bugsy.
+  const CLAN: { tint: number; hat?: string }[] = [
+    { tint: 200 },
+    { tint: 320, hat: "crown" },
+    { tint: 95 },
+    { tint: 45, hat: "party" },
+  ];
+
+  return (
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden", background: "#e7c3bd" }}>
+      <RoomBackdrop chairs={false} dusk />
+
+      {/* back button */}
+      {onBack && (
+        <button
+          onClick={onBack}
+          aria-label="Back"
+          style={{
+            position: "absolute",
+            top: 14,
+            left: 14,
+            width: 40,
+            height: 40,
+            borderRadius: 12,
+            border: "2px solid rgba(0,0,0,0.12)",
+            background: "rgba(255,255,255,0.7)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            color: "#6a4a52",
+            zIndex: 8,
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14">
+            <path d="M9 1L3 7l6 6" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      )}
+
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 150,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 16,
+          padding: "0 24px",
+          zIndex: 4,
+        }}
+      >
+        <RoomBubble key={phase} tail="down" text={text} onDone={() => setBubbleDone(true)} />
+
+        <div style={{ filter: "drop-shadow(0 12px 14px rgba(50,35,70,0.3))" }}>
+          <Bobo mood="excited" tint={tint} size={132} tailWag />
+        </div>
+
+        {/* The clan line-up — appears once the line finishes typing. */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-end",
+            justifyContent: "center",
+            gap: 4,
+            opacity: bubbleDone ? 1 : 0,
+            transform: bubbleDone ? "translateY(0)" : "translateY(8px)",
+            transition: "opacity 0.45s ease, transform 0.45s ease",
+          }}
+        >
+          {CLAN.map((c, i) => (
+            <div
+              key={i}
+              style={{
+                filter: "drop-shadow(0 6px 6px rgba(50,35,70,0.25))",
+                animation: `bugsy-pop 0.45s cubic-bezier(0.22, 1.5, 0.36, 1) ${i * 0.09}s backwards`,
+              }}
+            >
+              <BoboHead mood="happy" tint={c.tint} size={50} hat={c.hat} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* CTA — appears once the line finishes typing. */}
+      <div
+        style={{
+          position: "absolute",
+          left: 20,
+          right: 20,
+          bottom: 28,
+          opacity: bubbleDone ? 1 : 0,
+          transform: bubbleDone ? "translateY(0)" : "translateY(10px)",
+          transition: "opacity 0.4s ease, transform 0.4s ease",
+          pointerEvents: bubbleDone ? "auto" : "none",
+          zIndex: 6,
+        }}
+      >
+        <BigCTA onClick={advance}>{cta}</BigCTA>
+      </div>
+    </div>
+  );
+}
+
+// The looming dark force: a soft smoky cloud across the top of the
+// scene with two slowly-glowing eyes. Kept gently eerie (curious, not
+// scary) and purely decorative — fades/raises in via the `show` flag.
+function DarkForce({ show, intense }: { show: boolean; intense: boolean }) {
+  return (
+    <div
+      aria-hidden
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        height: "48%",
+        zIndex: 2,
+        pointerEvents: "none",
+        opacity: show ? 1 : 0,
+        transform: show ? "translateY(0)" : "translateY(-30px)",
+        transition: "opacity 1.1s ease, transform 1.1s ease",
+      }}
+    >
+      <svg width="100%" height="100%" viewBox="0 0 400 360" preserveAspectRatio="xMidYMin slice">
+        <defs>
+          <radialGradient id="df-smoke" cx="0.5" cy="0.28" r="0.75">
+            <stop offset="0%" stopColor="#241634" stopOpacity={intense ? 0.92 : 0.7} />
+            <stop offset="60%" stopColor="#1c1430" stopOpacity={intense ? 0.6 : 0.4} />
+            <stop offset="100%" stopColor="#1c1430" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id="df-eye" cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0%" stopColor="#d9b3ff" />
+            <stop offset="55%" stopColor="#9a5cff" />
+            <stop offset="100%" stopColor="#5a2eaa" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+
+        {/* Smoky body — a few overlapping blobs that drift gently. */}
+        <g style={{ transformBox: "fill-box", transformOrigin: "center", animation: "cloud-drift 11s ease-in-out infinite" }}>
+          <ellipse cx="200" cy="70" rx="240" ry="120" fill="url(#df-smoke)" />
+          <ellipse cx="110" cy="110" rx="120" ry="80" fill="url(#df-smoke)" />
+          <ellipse cx="300" cy="100" rx="130" ry="86" fill="url(#df-smoke)" />
+        </g>
+
+        {/* Two glowing eyes that pulse. */}
+        <g style={{ animation: "dark-eye-glow 2.6s ease-in-out infinite" }}>
+          <circle cx="168" cy="92" r="17" fill="url(#df-eye)" />
+          <circle cx="232" cy="92" r="17" fill="url(#df-eye)" />
+          <circle cx="168" cy="92" r="5.5" fill="#fbe9ff" />
+          <circle cx="232" cy="92" r="5.5" fill="#fbe9ff" />
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+// ── SCREEN — The dark force & calming Bugsy ───────────────────
+// One continuous storyline: a thunderstorm rolls in and Bugsy reveals
+// it's a mysterious dark force closing in on their world. It makes him
+// anxious — tremor, desaturated, "raised fur" feel, a looming shadow
+// with glowing eyes overhead — and he asks the child to calm him with
+// guided box breathing (in-3 / hold-3 / out-3 × 3 rounds). With every
+// round Bugsy settles and the force retreats; at the end he's brave
+// again and invites the child to train daily to ready the clan.
 //
 // Phases:
-//   "agitated"  — dialogue + "Show me how" CTA
+//   "agitated"  — dark-force story beats → "Show me how" CTA
 //   "breathing" — guided box breathing loop (3 rounds)
-//   "calm"      — Bugsy curled up, soft "thank you" line, Continue
+//   "calm"      — Bugsy safe, brave-together line, daily-training invite
 export function ChildCalmBugsy({ tint, onNext, onBack }: Common) {
   type Phase = "agitated" | "breathing" | "calm";
   type Step = "in" | "hold" | "out";
@@ -2723,19 +3039,23 @@ export function ChildCalmBugsy({ tint, onNext, onBack }: Common) {
   const [count, setCount] = useState(1); // 1..3 inside the step
   const [round, setRound] = useState(0); // 0..2
   const [bubbleDone, setBubbleDone] = useState(false);
-  // Calm phase plays two dialogue beats: "thanks" → pause → "invite".
-  const [calmStep, setCalmStep] = useState<"thanks" | "invite">("thanks");
+  // Calm phase shows a single reassurance line, then Continue.
   const [thanksDone, setThanksDone] = useState(false);
-  const [inviteDone, setInviteDone] = useState(false);
   const [flashKey, setFlashKey] = useState(0); // bumps to retrigger the flash anim
+  // The agitated phase opens with a short story: the dark force rolls in
+  // and that's what's making Bugsy anxious, before he asks to be calmed.
+  const [agitatedBeat, setAgitatedBeat] = useState(0);
+  const AGITATED_LINES = [
+    "Wait… do you feel that? A mysterious dark force is creeping toward our world. 🌑",
+    "It makes me SO anxious — my fur stands up and my heart goes thump-thump-thump.",
+    "Our clan has to be brave to face it. Can you help me feel calm again? Breathe with me?",
+  ];
+  const AGITATED_CTAS = ["What is it?", "It's okay, I'm here", "Show me how"];
 
-  // After Bugsy's "Phew" line lands, hold a beat, then move into the
-  // "come visit me daily" invite + activity list.
+  // Re-type the bubble each time the agitated story beat changes.
   useEffect(() => {
-    if (phase !== "calm" || calmStep !== "thanks" || !thanksDone) return;
-    const t = window.setTimeout(() => setCalmStep("invite"), 1200);
-    return () => window.clearTimeout(t);
-  }, [phase, calmStep, thanksDone]);
+    setBubbleDone(false);
+  }, [agitatedBeat]);
 
   // Lightning strikes — fast during agitated, fewer during breathing,
   // none once Bugsy is calm.
@@ -2834,6 +3154,10 @@ export function ChildCalmBugsy({ tint, onNext, onBack }: Common) {
           zIndex: 1,
         }}
       />
+
+      {/* The dark force itself — looms over the storm while Bugsy is
+          agitated, then retreats as the child breathes him calm. */}
+      <DarkForce show={phase === "agitated"} intense />
 
       {/* Lightning flash — fires on flashKey bump. Re-mounted via key so
           the animation restarts cleanly each time. */}
@@ -2936,8 +3260,9 @@ export function ChildCalmBugsy({ tint, onNext, onBack }: Common) {
       >
         {phase === "agitated" && (
           <RoomBubble
+            key={agitatedBeat}
             tail="down"
-            text="Sometimes I feel nervous and want to be comforted! Can you calm me down?"
+            text={AGITATED_LINES[agitatedBeat]}
             onDone={() => setBubbleDone(true)}
           />
         )}
@@ -2962,19 +3287,10 @@ export function ChildCalmBugsy({ tint, onNext, onBack }: Common) {
             }}
           >
             <RoomBubble
-              key={`calm-${calmStep}`}
               tail="right"
               maxWidth={200}
-              text={
-                calmStep === "thanks"
-                  ? "Phew, I feel much better now."
-                  : "Come visit me daily. You can:"
-              }
-              onDone={() =>
-                calmStep === "thanks"
-                  ? setThanksDone(true)
-                  : setInviteDone(true)
-              }
+              text="Phew… you make me brave. The dark force can't win when we're together."
+              onDone={() => setThanksDone(true)}
             />
             <BugsyAvatar
               phase={phase}
@@ -2996,26 +3312,6 @@ export function ChildCalmBugsy({ tint, onNext, onBack }: Common) {
           />
         )}
 
-        {/* Activity list — only in the invite sub-step, drops in below
-            the bubble + Bugsy row. */}
-        {phase === "calm" && calmStep === "invite" && (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 8,
-              width: "100%",
-              maxWidth: 320,
-              opacity: inviteDone ? 1 : 0,
-              transform: inviteDone ? "translateY(0)" : "translateY(8px)",
-              transition: "opacity 0.45s ease, transform 0.45s ease",
-            }}
-          >
-            <ActivityRow icon={<MissionsIcon />} text="Go on missions with me" />
-            <ActivityRow icon="🍓" text="Feed me daily" />
-            <ActivityRow icon={<CuddleIcon />} text="Cuddle" />
-          </div>
-        )}
       </div>
 
       {/* CTA bar — "Show me how" → start breathing, then Continue. */}
@@ -3027,18 +3323,18 @@ export function ChildCalmBugsy({ tint, onNext, onBack }: Common) {
           bottom: 28,
           opacity:
             (phase === "agitated" && bubbleDone) ||
-            (phase === "calm" && calmStep === "invite" && inviteDone)
+            (phase === "calm" && thanksDone)
               ? 1
               : 0,
           transform:
             (phase === "agitated" && bubbleDone) ||
-            (phase === "calm" && calmStep === "invite" && inviteDone)
+            (phase === "calm" && thanksDone)
               ? "translateY(0)"
               : "translateY(10px)",
           transition: "opacity 0.4s ease, transform 0.4s ease",
           pointerEvents:
             (phase === "agitated" && bubbleDone) ||
-            (phase === "calm" && calmStep === "invite" && inviteDone)
+            (phase === "calm" && thanksDone)
               ? "auto"
               : "none",
           zIndex: 6,
@@ -3047,13 +3343,19 @@ export function ChildCalmBugsy({ tint, onNext, onBack }: Common) {
         {phase === "agitated" && (
           <BigCTA
             onClick={() => {
+              // Step through the dark-force story first; the last beat is
+              // where Bugsy actually asks to be calmed → start breathing.
+              if (agitatedBeat < AGITATED_LINES.length - 1) {
+                setAgitatedBeat((b) => b + 1);
+                return;
+              }
               setPhase("breathing");
               setStep("in");
               setCount(1);
               setRound(0);
             }}
           >
-            Show me how
+            {AGITATED_CTAS[agitatedBeat]}
           </BigCTA>
         )}
         {phase === "calm" && <BigCTA onClick={onNext}>Continue</BigCTA>}
@@ -3251,6 +3553,7 @@ function BugsyAvatar({
             tint={tint}
             size={160}
             tailWag={phase === "calm"}
+            frazzled={phase === "calm" ? 0 : tremorIntensity}
           />
         </div>
       </div>
@@ -3342,108 +3645,6 @@ function MissionsIcon() {
       <path
         d="M347.55 354.59a21.83 21.83 0 1 0-21.83 21.82A21.85 21.85 0 0 0 347.55 354.59ZM186.28 332.77a21.82 21.82 0 1 0 21.82 21.82A21.85 21.85 0 0 0 186.28 332.77Z"
         fill="#4b4b6b"
-      />
-    </svg>
-  );
-}
-
-// Cat illustration used for the "Cuddle" row.
-function CuddleIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 697.03 694.31"
-      width="30"
-      height="30"
-      aria-hidden
-    >
-      <path
-        d="M70.02,470.25s-12.48,211.5,195.56,223.15c208.04,11.65,204.68-92.92,291.81-94.59,79.69-1.53,62.03,35.09,116,35.09,36.78,0,49.74-79.68-107.34-79.68-119.82,0-99.9,94.72-313.48,88.03-91.09-2.85-105.45-73.66-114.18-136.86s-68.38-35.16-68.38-35.16Z"
-        fill="#ff855d"
-      />
-      <path
-        d="M113.52,519.9c-220.61-31.21-63.56-314.87,4.21-421.74l.04-.08c2.28-3.58,4.43-6.94,6.49-10.1-.81.99-1.52,1.94-2.15,2.86l22.17-37.07c11.84-19.79,32.29-32.84,55.23-35.2C274.46,10.86,441.9-5.13,480.3,1.62c49.81,8.77,56.75,49.05,56.75,49.05,88.84,69.13,115.07,156.48,119.9,250.54,0,0,16.43,297.95-543.44,218.68Z"
-        fill="#02bed1"
-      />
-      <path
-        d="M584.21,221.94s-79.55-137.83-182.39-132.79c-102.85,5.05-317.41,102.23-341.39,233.49-23.98,131.26,9.76,238.54,84.23,257.47,74.47,18.93,105.95,0,105.95,0,0,0,71.08,71.94,156.91-5.05,85.82-76.99,104.76-109.81,87.09-116.12-17.67-6.31-76.99,49.22-76.99,49.22,0,0,31.55-97.18-8.83-100.97-40.39-3.79,175.44-185.27,175.44-185.27Z"
-        fill="#ff855d"
-      />
-      <path
-        d="M250.61,584.6c-1.42,0-2.81-.67-3.68-1.93-1.41-2.03-.9-4.82,1.13-6.23,32.59-22.61,83.33-65.72,80.73-85.16-.19-1.45-.78-5.84-9.36-8.88-19.37-6.86-50.36,3.43-89.61,29.77-30.29,20.32-54.72,43.09-54.96,43.31-1.77,1.65-4.53,1.6-6.23-.11-1.7-1.71-1.74-4.47-.08-6.23,40.37-42.68,47.61-87.19,19.84-122.11-1.54-1.94-1.22-4.75.72-6.29,1.93-1.54,4.75-1.22,6.29.72,23.72,29.84,24.8,65.58,4.13,101.55,33.88-26.3,88.03-61.39,122.89-49.04,11.36,4.02,14.56,10.99,15.25,16.13,4.18,31.23-75.41,87.4-84.5,93.71-.78.54-1.67.8-2.55.8Z"
-        fill="#424242"
-      />
-      <path
-        d="M563.3,225.07s-159.58,65.05-284.86,71.92c-51.64,2.83-66.3-41.11-87.52-63.65-21.22-22.54-39.78,5.3-27.85,31.82s17.41,31.82,17.41,31.82c0,0-45.26-9.98-66.72-28.32-21.46-18.34-33.55-46.04-49.55-19.9-16,26.14,12.88,54.23,12.88,54.23,0,0-18.73-23.8-28.09-8.19-9.36,15.61,3.12,40.58,9.75,46.04,0,0-11.7,2.73-10.53,16,1.17,13.27,24.57,68.82,130.06,79.17s415.46-35.67,415.46-35.67c44.27-9.67,136.38-205.31-30.43-175.29Z"
-        fill="#f7dbb5"
-      />
-      <path
-        d="M163.03 354.61c-.46 0-.93-.07-1.39-.22-36.76-11.96-74.88-27.04-101.43-67.73-1.35-2.07-.77-4.84 1.3-6.19 2.07-1.35 4.84-.77 6.19 1.3 24.96 38.25 61.46 52.65 96.7 64.11 2.35.76 3.64 3.29 2.87 5.64-.62 1.89-2.37 3.09-4.26 3.09ZM144.66 393.02c-.46 0-.93-.07-1.39-.22-33.51-10.9-62.44-20.31-87.87-48.37-1.66-1.83-1.52-4.66.31-6.32 1.83-1.66 4.66-1.52 6.32.31 23.83 26.3 51.72 35.37 84.01 45.87 2.35.76 3.64 3.29 2.87 5.64-.62 1.89-2.37 3.09-4.26 3.09ZM377.8 548.76c-1.22 0-2.43-.49-3.32-1.47-1.66-1.83-1.52-4.66.31-6.32l39.81-36.11c1.83-1.66 4.66-1.52 6.32.31 1.66 1.83 1.52 4.66-.31 6.32l-39.81 36.11c-.86.78-1.93 1.16-3.01 1.16Z"
-        fill="#424242"
-      />
-      <path
-        d="M605.31,347.12c-1.25,38.18-6.76,72.37-17.54,81.77-25.91,22.69-37.37,0-39.74-60.15-.22-5.77-.63-11.68-1.12-17.72-4.74-56.98-20.41-122.28-20.41-122.28,0,0,39.65-28.73,61.27-8.77,12.67,11.68,19.38,73.4,17.54,127.16Z"
-        fill="#ff855d"
-      />
-      <path
-        d="M377.8,109.43c50.92-27.39,82.82-42.07,118.94-29.23,10.69-23.38,30.52-41.19,52.17-57.9,5.82,24.23,7.94,47.2,0,66.72l75.93,44.06,48.54,12.45-38.59,9.96,24.46,18.67h-29.44s15.59,72.19-104.23,105.8c-119.82,33.61-179.57-33.61-179.57-33.61l-23.65,8.71,10.98-47.3-29.65,21.16,29.65-64.73c-9.32-21.55-23.12-56.98-40.85-104.56,33.25,12.42,62.15,28.61,85.3,49.79Z"
-        fill="#ff855d"
-      />
-      <path
-        d="M401.39 284.24c-.48 0-.97-.08-1.45-.24-30.88-10.6-49.12-26.58-55.09-32.44l-20.92 7.71c-1.54.57-3.28.25-4.51-.84-1.23-1.09-1.77-2.77-1.4-4.37l8.3-35.77-20.01 14.28c-1.65 1.18-3.89 1.1-5.45-.19-1.56-1.29-2.06-3.47-1.22-5.32l28.82-62.92c-5.43-12.67-12.44-30.13-20.86-51.96-.89-2.31.26-4.9 2.57-5.79 2.3-.89 4.9.26 5.79 2.57 8.79 22.78 16.03 40.77 21.51 53.46.5 1.16.49 2.49-.04 3.64l-22.66 49.47 15.99-11.41c1.52-1.08 3.54-1.11 5.09-.08 1.55 1.03 2.29 2.92 1.87 4.73l-9.1 39.22 15.87-5.85c1.73-.64 3.67-.15 4.89 1.23.17.19 18.23 20.06 53.47 32.16 2.34.8 3.58 3.35 2.78 5.69-.64 1.86-2.37 3.02-4.23 3.02ZM377.8 113.9c-1.09 0-2.18-.4-3.02-1.17-5.57-5.1-11.64-10.03-18.02-14.64-2-1.45-2.45-4.25-1-6.25 1.45-2 4.25-2.45 6.25-1 5.77 4.17 11.29 8.59 16.45 13.16 12.31-6.6 25.15-13.31 36.94-18.62 2.26-1.02 4.9-.02 5.92 2.24 1.02 2.25.02 4.9-2.24 5.92-12.43 5.61-26.16 12.85-39.16 19.84-.67.36-1.4.53-2.12.53Z"
-        fill="#424242"
-      />
-      <path
-        d="M601.25,196.11c0,22.73-44.45,48.68-78.25,48.68s-52.74-11.27-52.74-34,15.04-54.96,48.85-54.96,82.15,17.55,82.15,40.29Z"
-        fill="#fefefe"
-      />
-      <path
-        d="M377.81,484.39c-25.91,22.69-37.37,0-39.74-60.15-.31-7.79-.89-15.89-1.7-24.12-5.33-55.36-19.83-115.92-19.83-115.92,0,0,39.66-28.69,61.27-8.77,10.83,10.03,17.32,56.98,17.81,104.11.49,46.68-4.92,93.59-17.81,104.87Z"
-        fill="#ff855d"
-      />
-      <path
-        d="M377.81,484.39c-25.91,22.69-37.37,0-39.74-60.15-.31-7.79-.89-15.89-1.7-24.12,7.03-4.21,28.21,3.22,25.87-11.59-5.58-35.27,25.34-24.96,33.39-9,.49,46.68-4.92,93.59-17.81,104.87Z"
-        fill="#fefefe"
-      />
-      <path
-        d="M445.51 179.6c2.08 8.33-.46 16.13-5.66 17.43-5.2 1.3-11.11-4.4-13.18-12.73-2.08-8.33.46-16.13 5.66-17.43 5.2-1.3 11.11 4.4 13.18 12.73ZM554.47 135.82c4.2 7.49 3.81 15.68-.87 18.3s-11.87-1.32-16.07-8.8c-4.2-7.49-3.81-15.68.87-18.3s11.87 1.32 16.07 8.8Z"
-        fill="#0a0a0a"
-      />
-      <path
-        d="M534.55,207.94c-.23,0-.46-.02-.69-.05-2.44-.38-4.11-2.67-3.73-5.11.98-6.26-3.31-21.15-9.04-27.8-1.61-1.87-1.4-4.7.47-6.31,1.87-1.61,4.7-1.4,6.31.47,7.07,8.22,12.57,25.57,11.1,35.02-.34,2.21-2.25,3.79-4.42,3.79Z"
-        fill="#424242"
-      />
-      <path
-        d="M526.87,210.33c-8.84,0-18.76-3.78-29.6-11.31-2.03-1.41-2.53-4.2-1.12-6.23,1.41-2.03,4.2-2.53,6.23-1.12,12.05,8.37,22.24,11.36,30.28,8.87,7.93-2.45,14.53-10.48,19.61-23.85.88-2.31,3.46-3.47,5.77-2.59,2.31.88,3.47,3.46,2.59,5.77-6.11,16.08-14.63,25.91-25.33,29.22-2.69.83-5.5,1.25-8.43,1.25Z"
-        fill="#424242"
-      />
-      <path
-        d="M528.35,162.08c-4.08,1.16-11.59,3.35-16.6,4.82-2.26.66-2.89,3.56-1.1,5.09,5.19,4.46,14.18,11.31,19.13,9.98,5.44-1.46,3.53-12.39,2.25-17.75-.39-1.64-2.05-2.61-3.68-2.15Z"
-        fill="#bf3d38"
-      />
-      <path
-        d="m312.18 85.81 29.51 62.51 13.96-43.73-37.73-23.85c-3.37-2.13-7.43 1.46-5.73 5.07ZM503 82.51c6.69-15.53 19.51-29.73 37.06-42.93 3.73 13.77 4.13 28.86-.01 45.75-11.66-6.41-24.08-6.8-37.04-2.82Z"
-        fill="#ffb5bf"
-      />
-      <path
-        d="M536.46,281.16c-2.23,0-4.16-1.67-4.44-3.94-.3-2.45,1.45-4.69,3.9-4.98,27.98-3.4,46.55-12.94,58.45-30.01,1.42-2.03,4.21-2.52,6.23-1.11,2.03,1.41,2.52,4.2,1.11,6.23-13.47,19.31-34.03,30.04-64.72,33.77-.18.02-.37.03-.55.03Z"
-        fill="#424242"
-      />
-      <path
-        d="M298.63,511.1c9.49,12.73-9.85,33.29-30.52,8.74-11.58-13.75,19.64-23.34,30.52-8.74Z"
-        fill="#ffb5bf"
-      />
-      <path
-        d="M304.25 492.19c-4.7 7.98-19.83 15.14-11.28-.65 4.79-8.84 16.67-8.51 11.28.65ZM317.13 496.66c-4.7 7.98-19.83 15.14-11.28-.65 4.79-8.84 16.67-8.51 11.28.65ZM316.5 512.59c-4.7 3.72-15.51 4.5-6.66-3.03 4.96-4.22 12.05-1.24 6.66 3.03Z"
-        fill="#ffb5bf"
-      />
-      <path
-        d="M605.31,347.12c-1.25,38.18-6.76,72.37-17.54,81.77-25.91,22.69-37.37,0-39.74-60.15-.22-5.77-.63-11.68-1.12-17.72,9-4.88,19.16-9.58,19.16-9.58,16.52,1.52,30.48.49,39.25,5.68Z"
-        fill="#fefefe"
-      />
-      <path
-        d="M493.68,470.26c4.46-.5-11.7,37.38-24.09,37.27-12.39-.11,11.7-35.89,24.09-37.27Z"
-        fill="#ffb5bf"
       />
     </svg>
   );

@@ -665,6 +665,34 @@ textarea {
   100%     { transform: translateX(450%); opacity: 0; }
 }
 
+/* Parent-flow scene "breathing" — a very slow scale so the cosy-room
+   backdrop feels alive without pulling focus from the conversation.
+   Stays >1 throughout so the slice-scaled SVG never reveals an edge. */
+@keyframes parent-scene-drift {
+  0%, 100% { transform: scale(1.03); }
+  50%      { transform: scale(1.06); }
+}
+
+/* Scared fur quiver — tiny jitter so standing fur reads as "on edge". */
+@keyframes bobo-fur-quiver {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  25%      { transform: translate(-0.6px, -0.4px) rotate(-0.6deg); }
+  50%      { transform: translate(0.5px, 0) rotate(0.5deg); }
+  75%      { transform: translate(-0.4px, 0.4px) rotate(-0.3deg); }
+}
+
+/* Glowing eyes of the looming dark force on the story-bridge screen. */
+@keyframes dark-eye-glow {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 1; }
+}
+
+/* Ambient warm motes drifting behind the parent scenes. */
+@keyframes parent-mote {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0.35; }
+  50%      { transform: translateY(-18px) scale(1.15); opacity: 0.7; }
+}
+
 /* Berry falls from above into Bugsy's mouth */
 @keyframes berry-drop {
   0%   { opacity: 0; transform: translate(-50%, -120px) scale(0.6) rotate(-30deg); }

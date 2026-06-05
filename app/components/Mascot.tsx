@@ -35,6 +35,10 @@ type BoboProps = {
   walking?: boolean;
   // When true, render an open mouth (eating). Overrides the mood mouth.
   mouthOpen?: boolean;
+  // Continuous 0..1 "scared/anxious fur" — raises a messy crown of fur
+  // tufts off the head (in the calm body colour, NOT the angry-red rig),
+  // for frightened beats like the thunderstorm. Independent of anger.
+  frazzled?: number;
 };
 
 // Hats sit above the ears — y centred around -120
@@ -104,7 +108,7 @@ function Hat({ kind }: { kind: string }) {
   }
 }
 
-export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, hat, angerLevel, eyeOpen, tailWag, walking, mouthOpen }: BoboProps) {
+export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, hat, angerLevel, eyeOpen, tailWag, walking, mouthOpen, frazzled }: BoboProps) {
   const lidControlled = eyeOpen !== undefined;
   const eyeOpenClamped = Math.max(0, Math.min(1, eyeOpen ?? 1));
   // Continuous anger 0..1. mood="angry" implies 1 when angerLevel
@@ -131,6 +135,14 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
   const shadow = `oklch(28% 0.08 ${h} / 0.3)`;
   const nose = "oklch(68% 0.14 20)";
   const tummy = `oklch(93% 0.05 ${h})`;
+  // Scared-fur amount + colour. Uses the CALM body hue so frightened
+  // Bugsy keeps his blue coat (not the angry-red rig).
+  const safeFraz = Math.max(0, Math.min(1, frazzled ?? 0));
+  // Tufts sit at the top of the head, where the coat is at its lightest
+  // (≈ bodyTop), so matching that shade lets them blend instead of
+  // reading as dark stickers. A slightly darker tip adds soft depth.
+  const furColor = `oklch(86% 0.11 ${calmH})`;
+  const furColorTip = `oklch(80% 0.13 ${calmH})`;
 
   const id = useId().replace(/:/g, "_");
 
@@ -299,6 +311,12 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
             <stop offset="0%" stopColor={bodyTop}/>
             <stop offset="100%" stopColor={bodyMid}/>
           </radialGradient>
+          {/* Scared-fur tuft gradient: slightly defined tip → lighter
+              base so the standing fur melts into the light crown. */}
+          <linearGradient id={`${id}-fur`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={furColorTip}/>
+            <stop offset="100%" stopColor={furColor}/>
+          </linearGradient>
           <radialGradient id={`${id}-cheek`} cx="0.5" cy="0.5" r="0.5">
             <stop offset="0%" stopColor={cheek} stopOpacity="0.85"/>
             <stop offset="100%" stopColor={cheek} stopOpacity="0"/>
@@ -379,6 +397,32 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
             <path d="M 72 -52 L 88 -108 Q 88 -112 82 -110 L 44 -82 Z" fill={`url(#${id}-ear)`}/>
             <path d="M 72 -56 L 80 -96 Q 80 -98 76 -96 L 52 -78 Z" fill={earInner} opacity="0.75"/>
           </g>
+
+          {/* Scared/anxious fur — a messy crown of tufts that stand off
+              the head. Drawn BEFORE the body so the body occludes each
+              tuft's base and only the soft tips poke through the
+              silhouette, melting into the coat. Driven by `frazzled`
+              (opacity) so it raises + settles smoothly. */}
+          {safeFraz > 0.01 && (
+            <g
+              style={{
+                opacity: safeFraz,
+                transformOrigin: "center bottom",
+                animation:
+                  animate && !prefersReducedMotion()
+                    ? "bobo-fur-quiver 0.5s ease-in-out infinite"
+                    : "none",
+              }}
+              fill={`url(#${id}-fur)`}
+            >
+              <path d="M -42 -66 L -48 -98 L -26 -70 Z" />
+              <path d="M -28 -70 L -34 -110 L -14 -72 Z" />
+              <path d="M -14 -72 L -18 -118 L 2 -74 Z" />
+              <path d="M 0 -74 L 5 -121 L 16 -73 Z" />
+              <path d="M 14 -72 L 22 -115 L 30 -72 Z" />
+              <path d="M 28 -70 L 38 -107 L 44 -70 Z" />
+            </g>
+          )}
 
           <path
             d="M 0 -88
