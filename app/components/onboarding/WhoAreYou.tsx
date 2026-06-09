@@ -466,6 +466,10 @@ export function WhoAreYou({
         <ChunkyButton onClick={() => pick("child")} variant="secondary">
           I&apos;m a Child
         </ChunkyButton>
+        {/* Placeholder for now — the dedicated young-adult flow lands later. */}
+        <ChunkyButton onClick={() => {}} variant="ghost">
+          I&apos;m a Young Adult
+        </ChunkyButton>
       </div>
     </div>
   );

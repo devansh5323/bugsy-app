@@ -12,6 +12,7 @@
 // we don't redraw the mascot pixel-by-pixel.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import { Bobo } from "./Mascot";
 import { KitchenBackdrop } from "./onboarding/ChildMeet";
 import { Typewriter } from "./Typewriter";
@@ -101,10 +102,15 @@ export function SnackCatchGame({
   const [bombsSeen, setBombsSeen] = useState(0);
   // Tracks when the intro speech bubble has finished typing.
   const [introDone, setIntroDone] = useState(false);
+  // The intro plays two lines: 0 = what the goal is, 1 = how to play.
+  const [introStep, setIntroStep] = useState<0 | 1>(0);
 
   // Reset the intro typewriter every time we (re)land on the idle screen.
   useEffect(() => {
-    if (state === "idle") setIntroDone(false);
+    if (state === "idle") {
+      setIntroDone(false);
+      setIntroStep(0);
+    }
   }, [state]);
 
   // Triggers a brief shake animation on the whole stage on bad catches.
@@ -684,8 +690,20 @@ export function SnackCatchGame({
           }}
         >
           <IntroBubble
-            text="Feed me all the yummy snacks and avoid the bombs!"
-            onDone={() => setIntroDone(true)}
+            key={introStep}
+            text={
+              introStep === 0
+                ? "Feed me all the yummy snacks and avoid the bombs!"
+                : "Drag me left and right to move me. Collect yummy snacks."
+            }
+            onDone={() => {
+              if (introStep === 0) {
+                // brief pause, then explain how to play
+                window.setTimeout(() => setIntroStep(1), 900);
+              } else {
+                setIntroDone(true);
+              }
+            }}
           />
           <div style={{ filter: "drop-shadow(0 12px 12px rgba(80,50,20,0.28))" }}>
             <Bobo mood="happy" tint={tint} size={150} tailWag />
@@ -735,7 +753,7 @@ export function SnackCatchGame({
           {/* Confetti burst behind the card — same shapes + palette as the
               Lottie file (crosses, diamonds, stars, circles, zigzags). */}
           <Confetti />
-          <BombQuizCard
+          <MissionQuizCard
             score={score}
             stars={Math.max(1, lives)}
             bombsSeen={bombsSeen}
@@ -798,9 +816,19 @@ export function SnackCatchGame({
 }
 
 // XP awarded just for finishing the mission, plus the bonus the child
-// earns by correctly remembering how many bombs flew past.
+// earns for each quiz question they remember correctly.
 const MISSION_XP = 50;
-const BOMB_QUIZ_BONUS_XP = 10;
+const QUIZ_BONUS_XP = 10;
+
+// Second quiz question: "which snack did NOT fall?" Cheese / grape / fish
+// are all in GOOD_SNACKS; orange never spawns, so it's the answer.
+const SNACK_Q_OPTIONS: { label: string; emoji: string }[] = [
+  { label: "Cheese", emoji: "🧀" },
+  { label: "Grape", emoji: "🍇" },
+  { label: "Fish", emoji: "🐟" },
+  { label: "Orange", emoji: "🍊" },
+];
+const SNACK_Q_ANSWER = "Orange";
 
 // Builds 4 distinct, non-negative multiple-choice options that always
 // include the true bomb count, then shuffles so the answer isn't always
@@ -823,12 +851,13 @@ function buildBombOptions(answer: number): number[] {
   return arr;
 }
 
-// Bomb-count quiz — the post-mission reward. Instead of a plain
-// "achievement" summary, Bugsy quizzes the child: "how many bombs did you
-// spot?" A correct guess earns a +10 XP bonus on top of the mission XP.
-// We show clear right/wrong feedback, then offer Continue / Play again.
+// Post-mission reward card. Bugsy is full, the score is saved, and the
+// child plays a two-question "Mission Memory Check": how many bombs flew
+// past, and which snack never fell. Each correct answer earns a bonus on
+// top of the mission XP. Question 2 only appears once Q1 is answered, and
+// the Continue / Play again CTAs only appear once both are done.
 // Persists the play to localStorage so the score is still saved.
-function BombQuizCard({
+function MissionQuizCard({
   score,
   stars,
   bombsSeen,
@@ -858,18 +887,36 @@ function BombQuizCard({
     }
   }, [score, stars]);
 
-  const options = useMemo(() => buildBombOptions(bombsSeen), [bombsSeen]);
-  const [picked, setPicked] = useState<number | null>(null);
-  const answered = picked !== null;
-  const correct = picked === bombsSeen;
-  const earnedXp = MISSION_XP + (correct ? BOMB_QUIZ_BONUS_XP : 0);
+  // Ask just ONE memory question, picked at random per play. A replay
+  // mounts a fresh card, so a new question is rolled each time.
+  const [whichQ] = useState<"bombs" | "snack">(() =>
+    Math.random() < 0.5 ? "bombs" : "snack",
+  );
+  const bombOptions = useMemo(() => buildBombOptions(bombsSeen), [bombsSeen]);
+  const [bombPick, setBombPick] = useState<number | null>(null);
+  const [snackPick, setSnackPick] = useState<string | null>(null);
 
-  // Lock in the answer and credit XP. Options disable after the first pick,
-  // so this fires exactly once per play (a replay mounts a fresh card).
-  const handlePick = (opt: number) => {
-    if (answered) return;
-    setPicked(opt);
-    onEarnXp?.(MISSION_XP + (opt === bombsSeen ? BOMB_QUIZ_BONUS_XP : 0));
+  const answered = whichQ === "bombs" ? bombPick !== null : snackPick !== null;
+  const correct =
+    whichQ === "bombs" ? bombPick === bombsSeen : snackPick === SNACK_Q_ANSWER;
+  const done = answered;
+
+  const earnedXp = MISSION_XP + (answered && correct ? QUIZ_BONUS_XP : 0);
+
+  // Bugsy looks pleased until a wrong answer lands.
+  const mascotMood = !answered ? "thinking" : correct ? "cheer" : "sad";
+
+  // Mission XP + the quiz bonus (if correct) are credited on the single
+  // answer. A replay mounts a fresh card, so this fires once per play.
+  const pickBomb = (opt: number) => {
+    if (bombPick !== null) return;
+    setBombPick(opt);
+    onEarnXp?.(MISSION_XP + (opt === bombsSeen ? QUIZ_BONUS_XP : 0));
+  };
+  const pickSnack = (label: string) => {
+    if (snackPick !== null) return;
+    setSnackPick(label);
+    onEarnXp?.(MISSION_XP + (label === SNACK_Q_ANSWER ? QUIZ_BONUS_XP : 0));
   };
 
   return (
@@ -884,13 +931,15 @@ function BombQuizCard({
         padding: "22px 22px 22px",
         width: "100%",
         maxWidth: 340,
+        maxHeight: "88vh",
+        overflowY: "auto",
         textAlign: "center",
         fontFamily: "var(--font-nunito), system-ui",
         color: "#5b3a1f",
         animation: "bubble-pop 0.5s cubic-bezier(0.22, 1.5, 0.36, 1)",
       }}
     >
-      {/* ── Mascot — mood reacts to the answer ── */}
+      {/* ── Mascot — mood reacts to the answers ── */}
       <div
         style={{
           display: "flex",
@@ -900,15 +949,10 @@ function BombQuizCard({
           filter: "drop-shadow(0 6px 6px rgba(80,50,20,0.25))",
         }}
       >
-        <Bobo
-          mood={answered ? (correct ? "cheer" : "sad") : "thinking"}
-          tint={tint}
-          size={96}
-          tailWag={!answered || correct}
-        />
+        <Bobo mood={mascotMood} tint={tint} size={96} tailWag={!answered || correct} />
       </div>
 
-      {/* ── Headline ── */}
+      {/* ── Headline + score ── */}
       <div
         style={{
           fontSize: 23,
@@ -917,12 +961,18 @@ function BombQuizCard({
           letterSpacing: 0.2,
         }}
       >
-        Mission complete!
+        Bugsy is full!
+      </div>
+      <div style={{ fontSize: 14, fontWeight: 800, marginTop: 4, opacity: 0.85 }}>
+        You fed him {score} snack{score === 1 ? "" : "s"}
+      </div>
+      <div style={{ fontSize: 18, marginTop: 4, letterSpacing: 2 }}>
+        {"⭐".repeat(Math.max(1, Math.min(3, stars)))}
       </div>
 
-      {/* ── XP pill — base mission XP, glows up when the bonus lands ── */}
+      {/* ── XP pill — grows as bonuses land ── */}
       <div
-        key={answered ? "xp-final" : "xp-base"}
+        key={earnedXp}
         style={{
           display: "inline-flex",
           alignItems: "center",
@@ -930,10 +980,11 @@ function BombQuizCard({
           marginTop: 8,
           padding: "5px 14px",
           borderRadius: 999,
-          background: correct
-            ? "linear-gradient(180deg, #ffe9a8 0%, #ffd45e 100%)"
-            : "linear-gradient(180deg, #fffdf5 0%, #fdeccb 100%)",
-          border: `2px solid ${correct ? "#e0942a" : "#ead7b6"}`,
+          background:
+            earnedXp > MISSION_XP
+              ? "linear-gradient(180deg, #ffe9a8 0%, #ffd45e 100%)"
+              : "linear-gradient(180deg, #fffdf5 0%, #fdeccb 100%)",
+          border: `2px solid ${earnedXp > MISSION_XP ? "#e0942a" : "#ead7b6"}`,
           boxShadow: "0 2px 0 #d8c098",
           fontWeight: 900,
           fontSize: 16,
@@ -943,111 +994,96 @@ function BombQuizCard({
             : undefined,
         }}
       >
-        <span style={{ fontSize: 16 }}>⚡</span>
-        +{earnedXp} XP
-        {correct && (
+        <span style={{ fontSize: 16 }}>⚡</span>+{earnedXp} XP
+        {earnedXp > MISSION_XP && (
           <span style={{ fontSize: 12, fontWeight: 800, opacity: 0.85 }}>
-            (+{BOMB_QUIZ_BONUS_XP} bonus!)
+            (+{earnedXp - MISSION_XP} bonus!)
           </span>
         )}
       </div>
 
-      {/* ── Quiz prompt ── */}
+      {/* ── Quiz banner ── */}
       <div
         style={{
-          fontSize: 15,
-          fontWeight: 800,
-          lineHeight: 1.3,
-          marginTop: 14,
-          padding: "0 4px",
+          marginTop: 16,
+          fontSize: 16,
+          fontWeight: 900,
+          color: "#a35a00",
+          letterSpacing: 0.3,
         }}
       >
-        {answered ? (
-          correct ? (
-            <span style={{ color: "#2f9e44" }}>
-              Yes! You spotted {bombsSeen} bomb{bombsSeen === 1 ? "" : "s"} 🎉
-            </span>
-          ) : (
-            <span style={{ color: "#d23b3b" }}>
-              Oops! It was {bombsSeen} bomb{bombsSeen === 1 ? "" : "s"}. Try again?
-            </span>
-          )
-        ) : (
-          <>How many 💣 bombs flew past? Get it right for +{BOMB_QUIZ_BONUS_XP} XP!</>
-        )}
+        🧠 Mission Memory Check
+      </div>
+      <div style={{ fontSize: 12.5, fontWeight: 800, opacity: 0.8, marginTop: 2 }}>
+        +{QUIZ_BONUS_XP} XP if you remember!
       </div>
 
-      {/* ── Answer options ── */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 10,
-          marginTop: 14,
-        }}
-      >
-        {options.map((opt) => {
-          const isAnswer = opt === bombsSeen;
-          const isPicked = opt === picked;
-          // After answering: green for the right number, red for a wrong
-          // pick, muted for the rest. Before answering: warm cream chips.
-          let bg = "linear-gradient(180deg, #fffdf5 0%, #fde0b2 100%)";
-          let border = "#cf8b43";
-          let shadow = "#8a5b22";
-          let color = "#5b3a1f";
-          if (answered) {
-            if (isAnswer) {
-              bg = "linear-gradient(180deg, #b6f0c2 0%, #6fd98a 100%)";
-              border = "#2f9e44";
-              shadow = "#1f7a32";
-              color = "#0f5a23";
-            } else if (isPicked) {
-              bg = "linear-gradient(180deg, #ffc2c2 0%, #f08a8a 100%)";
-              border = "#d23b3b";
-              shadow = "#a02525";
-              color = "#7a1414";
-            } else {
-              bg = "#f3ead8";
-              border = "#e0d2b4";
-              shadow = "#d8c79f";
-              color = "#9a8367";
-            }
-          }
-          return (
-            <button
-              key={opt}
-              onClick={() => handlePick(opt)}
-              disabled={answered}
-              style={{
-                minHeight: 52,
-                borderRadius: 16,
-                border: `2px solid ${border}`,
-                background: bg,
-                color,
-                fontFamily: "var(--font-nunito), system-ui",
-                fontWeight: 900,
-                fontSize: 22,
-                cursor: answered ? "default" : "pointer",
-                boxShadow: `0 4px 0 ${shadow}`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 6,
-                transition: "background 0.2s ease",
-              }}
-            >
-              {opt}
-              {answered && isAnswer && <span style={{ fontSize: 18 }}>✓</span>}
-              {answered && isPicked && !isAnswer && (
-                <span style={{ fontSize: 18 }}>✕</span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+      {/* ── One random memory question ── */}
+      {whichQ === "bombs" ? (
+        <div key="q-bombs" style={{ animation: "bubble-pop 0.4s cubic-bezier(0.22, 1.5, 0.36, 1)" }}>
+          <QuizPrompt
+            prompt="How many 💣 bombs came on the screen?"
+            answered={answered}
+            correct={correct}
+            rightText={`Yes! ${bombsSeen} bomb${bombsSeen === 1 ? "" : "s"} flew past 🎉`}
+            wrongText={`It was ${bombsSeen} bomb${bombsSeen === 1 ? "" : "s"}.`}
+          />
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 10,
+              marginTop: 12,
+            }}
+          >
+            {bombOptions.map((opt) => (
+              <QuizChip
+                key={opt}
+                answered={answered}
+                isAnswer={opt === bombsSeen}
+                isPicked={opt === bombPick}
+                onClick={() => pickBomb(opt)}
+              >
+                {opt}
+              </QuizChip>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div key="q-snack" style={{ animation: "bubble-pop 0.4s cubic-bezier(0.22, 1.5, 0.36, 1)" }}>
+          <QuizPrompt
+            prompt="Which snack did NOT fall?"
+            answered={answered}
+            correct={correct}
+            rightText={`Right! ${SNACK_Q_ANSWER}s never dropped 🎉`}
+            wrongText={`Nope — it was the ${SNACK_Q_ANSWER.toLowerCase()}.`}
+          />
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 10,
+              marginTop: 12,
+            }}
+          >
+            {SNACK_Q_OPTIONS.map((o) => (
+              <QuizChip
+                key={o.label}
+                answered={answered}
+                isAnswer={o.label === SNACK_Q_ANSWER}
+                isPicked={o.label === snackPick}
+                onClick={() => pickSnack(o.label)}
+              >
+                <span style={{ fontSize: 22 }}>{o.emoji}</span>
+                <span style={{ fontSize: 15 }}>{o.label}</span>
+              </QuizChip>
+            ))}
+          </div>
+        </div>
+      )}
 
-      {/* ── Footer CTAs — appear once the child has answered ── */}
-      {answered && (
+      {/* ── Footer CTAs — only once both questions are answered ── */}
+      {done && (
         <div
           style={{
             display: "flex",
@@ -1074,6 +1110,108 @@ function BombQuizCard({
         </div>
       )}
     </div>
+  );
+}
+
+// One quiz question's prompt line — shows the question, or right/wrong
+// feedback once it's been answered.
+function QuizPrompt({
+  prompt,
+  answered,
+  correct,
+  rightText,
+  wrongText,
+}: {
+  prompt: string;
+  answered: boolean;
+  correct: boolean;
+  rightText: string;
+  wrongText: string;
+}) {
+  return (
+    <div
+      style={{
+        fontSize: 15,
+        fontWeight: 800,
+        lineHeight: 1.3,
+        marginTop: 16,
+        padding: "0 4px",
+      }}
+    >
+      {answered ? (
+        <span style={{ color: correct ? "#2f9e44" : "#d23b3b" }}>
+          {correct ? rightText : wrongText}
+        </span>
+      ) : (
+        prompt
+      )}
+    </div>
+  );
+}
+
+// A single answer chip. Cream before answering; green for the right
+// answer and red for a wrong pick afterward.
+function QuizChip({
+  children,
+  answered,
+  isAnswer,
+  isPicked,
+  onClick,
+}: {
+  children: ReactNode;
+  answered: boolean;
+  isAnswer: boolean;
+  isPicked: boolean;
+  onClick: () => void;
+}) {
+  let bg = "linear-gradient(180deg, #fffdf5 0%, #fde0b2 100%)";
+  let border = "#cf8b43";
+  let shadow = "#8a5b22";
+  let color = "#5b3a1f";
+  if (answered) {
+    if (isAnswer) {
+      bg = "linear-gradient(180deg, #b6f0c2 0%, #6fd98a 100%)";
+      border = "#2f9e44";
+      shadow = "#1f7a32";
+      color = "#0f5a23";
+    } else if (isPicked) {
+      bg = "linear-gradient(180deg, #ffc2c2 0%, #f08a8a 100%)";
+      border = "#d23b3b";
+      shadow = "#a02525";
+      color = "#7a1414";
+    } else {
+      bg = "#f3ead8";
+      border = "#e0d2b4";
+      shadow = "#d8c79f";
+      color = "#9a8367";
+    }
+  }
+  return (
+    <button
+      onClick={onClick}
+      disabled={answered}
+      style={{
+        minHeight: 52,
+        borderRadius: 16,
+        border: `2px solid ${border}`,
+        background: bg,
+        color,
+        fontFamily: "var(--font-nunito), system-ui",
+        fontWeight: 900,
+        fontSize: 22,
+        cursor: answered ? "default" : "pointer",
+        boxShadow: `0 4px 0 ${shadow}`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 6,
+        transition: "background 0.2s ease",
+      }}
+    >
+      {children}
+      {answered && isAnswer && <span style={{ fontSize: 18 }}>✓</span>}
+      {answered && isPicked && !isAnswer && <span style={{ fontSize: 18 }}>✕</span>}
+    </button>
   );
 }
 

@@ -787,6 +787,9 @@ export function ChildHideSeek({
   const [shake, setShake] = useState<string | null>(null);
   const [bubbleDone, setBubbleDone] = useState(false);
   const [peeking, setPeeking] = useState(false);
+  // askName plays two lines: 0 = "Yay, you found me!", then after a
+  // beat 1 = "I'm excited to meet you! What's your name?"
+  const [nameStep, setNameStep] = useState<0 | 1>(0);
   // 0 = "Hi [name]. I feel shy…", 1 = "But you seem nice. Can we play?"
   const [greetStep, setGreetStep] = useState<0 | 1>(0);
   const { meow } = useCatSounds();
@@ -805,6 +808,7 @@ export function ChildHideSeek({
   // changes (askName intro / first greeting / second greeting).
   useEffect(() => {
     setBubbleDone(false);
+    setNameStep(0);
   }, [phase, greetStep]);
 
   const submitName = () => {
@@ -818,7 +822,7 @@ export function ChildHideSeek({
 
   const greetLines: [string, string] = [
     `Hi ${friend}. I feel shy when I meet new people.`,
-    `But you seem nice. Can we play?`,
+    `But you seem nice. I'd love some pets.`,
   ];
 
   const wrong = (id: string) => {
@@ -1138,9 +1142,21 @@ export function ChildHideSeek({
             <Bobo mood="happy" tint={tint} size={156} />
           </div>
           <RoomBubble
+            key={nameStep}
             tail="up"
-            text="Who is in my room?"
-            onDone={() => setBubbleDone(true)}
+            text={
+              nameStep === 0
+                ? "Yay, you found me!"
+                : "I'm excited to meet you! What's your name?"
+            }
+            onDone={() => {
+              if (nameStep === 0) {
+                // brief pause before the next line begins
+                window.setTimeout(() => setNameStep(1), 700);
+              } else {
+                setBubbleDone(true);
+              }
+            }}
           />
           <div
             style={{
@@ -1943,15 +1959,12 @@ export function ChildPetMeet({
   const [pets, setPets] = useState(0);
   const [hearts, setHearts] = useState<Heart[]>([]);
   const [wagging, setWagging] = useState(false);
-  const [eating, setEating] = useState(false);
   const [phase, setPhase] = useState<"belly" | "rising" | "adventure">("belly");
-  const [adventureStep, setAdventureStep] = useState<0 | 1>(0);
+  const [adventureStep, setAdventureStep] = useState<0 | 1 | 2>(0);
   const [bubbleDone, setBubbleDone] = useState(false);
   const { purr } = useCatSounds();
 
   const PETS_TO_RISE = 3;
-  // How long the whole eat sequence takes (matches bugsy-eats keyframe).
-  const EAT_MS = 1000;
 
   // Reset the typewriter "done" flag whenever the bubble's text changes.
   useEffect(() => {
@@ -1959,39 +1972,36 @@ export function ChildPetMeet({
   }, [phase, adventureStep]);
 
   const pet = () => {
-    if (phase !== "belly" || eating) return;
-    setEating(true);
+    if (phase !== "belly") return;
+    // Each tap on the belly: purr, flick the tail, and float a sparkle.
+    purr();
     setWagging(true);
-    // When the eat animation finishes, count the feed and re-mount a
-    // fresh burger (via the `key={pets}` on the burger div).
-    window.setTimeout(() => {
-      setEating(false);
-      purr();
-      const id = Date.now() + Math.random();
-      const x = (Math.random() - 0.5) * 80;
-      setHearts((h) => [...h, { id, x }]);
-      window.setTimeout(
-        () => setHearts((h) => h.filter((he) => he.id !== id)),
-        1000,
-      );
-      setPets((p) => {
-        const n = p + 1;
-        if (n >= PETS_TO_RISE) {
-          window.setTimeout(() => setPhase("rising"), 600);
-          window.setTimeout(() => setPhase("adventure"), 1600);
-        }
-        return n;
-      });
-    }, EAT_MS);
-    window.setTimeout(() => setWagging(false), 1600);
+    window.setTimeout(() => setWagging(false), 900);
+    const id = Date.now() + Math.random();
+    const x = (Math.random() - 0.5) * 80;
+    setHearts((h) => [...h, { id, x }]);
+    window.setTimeout(
+      () => setHearts((h) => h.filter((he) => he.id !== id)),
+      1000,
+    );
+    setPets((p) => {
+      const n = p + 1;
+      if (n >= PETS_TO_RISE) {
+        // Bugsy gets up (curious), then the dialogue sequence begins.
+        window.setTimeout(() => setPhase("rising"), 600);
+        window.setTimeout(() => setPhase("adventure"), 1600);
+      }
+      return n;
+    });
   };
 
-  const adventureLines: [string, string] = [
+  const adventureLines: [string, string, string] = [
+    "You just completed your first care mission!",
     "I love adventures! And they're way more fun with a friend.",
-    "Do you want to come with me on a mission?",
+    "Do you want to come with me on missions?",
   ];
 
-  const heading = phase === "belly" ? "Tap Bugsy to feed him!" : "";
+  const heading = phase === "belly" ? "Tap on the belly to pet the cat" : "";
 
   return (
     <div style={{ position: "absolute", inset: 0, overflow: "hidden", background: "#f6d2bd" }}>
@@ -2056,83 +2066,7 @@ export function ChildPetMeet({
         </div>
       </div>
 
-      {/* Bugsy's snack — sits on the floor and flies up into his mouth
-          when he eats. Centered via `left: calc(...)` so the animation
-          can own the transform without fighting a translate centering.
-          Keyed by `pets` so each new bite gets a fresh burger that
-          starts the animation from rest. */}
-      {phase === "belly" && (
-        <div
-          key={pets}
-          aria-hidden
-          style={{
-            position: "absolute",
-            left: "calc(50% - 46px)",
-            bottom: 92,
-            width: 92,
-            pointerEvents: "none",
-            filter: "drop-shadow(0 6px 8px rgba(80,40,20,0.32))",
-            zIndex: 4,
-            transformOrigin: "center",
-            animation: eating ? `burger-eats ${EAT_MS}ms ease-in forwards` : undefined,
-          }}
-        >
-          {pets === 0 ? (
-            // ── Burger (first bite) ──
-            <svg viewBox="0 0 200 170" width="100%" style={{ display: "block" }}>
-              <path d="M14 86 Q100 0 186 86 Q186 100 100 100 Q14 100 14 86 Z" fill="#f7bc53" />
-              <path d="M14 86 Q100 0 186 86" fill="none" stroke="#e08f3a" strokeWidth="3" opacity="0.5" />
-              <ellipse cx="62" cy="60" rx="6" ry="3.4" fill="#fff" opacity="0.9" transform="rotate(-22 62 60)" />
-              <ellipse cx="100" cy="44" rx="6" ry="3.4" fill="#fff" opacity="0.9" />
-              <ellipse cx="138" cy="60" rx="6" ry="3.4" fill="#fff" opacity="0.9" transform="rotate(22 138 60)" />
-              <rect x="8" y="98" width="184" height="14" rx="6" fill="#f8766f" />
-              <path d="M4 110 Q30 122 60 110 Q90 122 120 110 Q150 122 180 110 L196 110 L196 124 L4 124 Z" fill="#81debb" />
-              <path d="M8 124 L192 124 L184 134 Q140 140 100 140 Q60 140 16 134 Z" fill="#ffdc69" />
-              <rect x="12" y="138" width="176" height="14" rx="4" fill="#8795a2" />
-              <path d="M14 152 Q100 180 186 152 L184 162 Q100 170 16 162 Z" fill="#e4954b" />
-            </svg>
-          ) : pets === 1 ? (
-            // ── Loaf of bread (second bite) ──
-            <svg viewBox="0 0 200 140" width="100%" style={{ display: "block" }}>
-              {/* pale interior bottom */}
-              <path d="M22 96 Q100 132 178 96 L178 116 Q100 132 22 116 Z" fill="#edc89c" />
-              {/* brown crust dome */}
-              <path d="M22 96 Q34 24 100 24 Q166 24 178 96 L178 100 Q100 116 22 100 Z" fill="#c36f2e" />
-              {/* diagonal score line on the crust */}
-              <path d="M44 68 Q100 50 156 72" stroke="#9d5828" strokeWidth="3" fill="none" opacity="0.55" strokeLinecap="round" />
-              {/* seeds */}
-              <ellipse cx="74" cy="52" rx="4.5" ry="2.8" fill="#fce6ca" transform="rotate(-14 74 52)" />
-              <ellipse cx="104" cy="44" rx="4.5" ry="2.8" fill="#fce6ca" />
-              <ellipse cx="134" cy="54" rx="4.5" ry="2.8" fill="#fce6ca" transform="rotate(14 134 54)" />
-              <ellipse cx="58" cy="76" rx="4.5" ry="2.8" fill="#fce6ca" />
-              <ellipse cx="150" cy="78" rx="4.5" ry="2.8" fill="#fce6ca" />
-            </svg>
-          ) : (
-            // ── Cake (third bite) ──
-            <svg viewBox="0 0 200 180" width="100%" style={{ display: "block" }}>
-              {/* plate shadow */}
-              <ellipse cx="100" cy="168" rx="84" ry="6" fill="rgba(60,30,20,0.22)" />
-              {/* bottom tier */}
-              <rect x="18" y="104" width="164" height="58" rx="5" fill="#8b3f33" />
-              <rect x="18" y="104" width="164" height="8" fill="#a85a4a" />
-              {/* middle filling */}
-              <rect x="18" y="92" width="164" height="12" fill="#fcb8b0" />
-              {/* top tier */}
-              <rect x="42" y="48" width="116" height="44" rx="5" fill="#8b3f33" />
-              <rect x="42" y="48" width="116" height="7" fill="#a85a4a" />
-              {/* pink frosting on top, with drips down the sides */}
-              <path d="M42 48 Q46 34 100 34 Q154 34 158 48 L158 56 Q150 62 132 58 Q116 64 100 58 Q84 64 68 58 Q50 62 42 56 Z" fill="#f6958b" />
-              {/* cherry */}
-              <circle cx="100" cy="24" r="11" fill="#e63333" />
-              <circle cx="96" cy="20" r="3" fill="#ffffff" opacity="0.55" />
-              {/* leaf */}
-              <path d="M100 14 q6 -6 10 -2 q-2 6 -10 4 z" fill="#67a256" />
-            </svg>
-          )}
-        </div>
-      )}
-
-      {/* Bugsy area — runs around the room, settles when the adventure starts */}
+      {/* Bugsy area — sits to be petted, gets up when the adventure starts */}
       <div
         style={{
           position: "absolute",
@@ -2154,8 +2088,11 @@ export function ChildPetMeet({
             tail="down"
             text={adventureLines[adventureStep]}
             onDone={() => {
-              if (adventureStep === 0) {
-                window.setTimeout(() => setAdventureStep(1), 1200);
+              if (adventureStep < 2) {
+                window.setTimeout(
+                  () => setAdventureStep((s) => (s + 1) as 0 | 1 | 2),
+                  1200,
+                );
               } else {
                 setBubbleDone(true);
               }
@@ -2164,31 +2101,28 @@ export function ChildPetMeet({
         )}
 
         <div
-          onPointerDown={phase === "belly" && !eating ? pet : undefined}
+          onPointerDown={phase === "belly" ? pet : undefined}
           role={phase === "belly" ? "button" : undefined}
-          aria-label={phase === "belly" ? "Tap Bugsy to feed him" : undefined}
+          aria-label={phase === "belly" ? "Tap Bugsy's belly to pet him" : undefined}
           style={{
             position: "relative",
-            cursor: phase === "belly" && !eating ? "pointer" : "default",
+            cursor: phase === "belly" ? "pointer" : "default",
             touchAction: "manipulation",
             filter: "drop-shadow(0 12px 12px rgba(90,60,40,0.22))",
-            // While hungry he darts around; on tap he runs down to the
-            // burger and chomps it; once he's standing up he settles.
-            animation: eating
-              ? `bugsy-eats ${EAT_MS}ms ease-in-out forwards`
-              : phase === "belly"
-              ? "bugsy-running 5.2s ease-in-out infinite"
+            // A little wiggle on each pet; a pop as he gets up.
+            animation: wagging
+              ? "bugsy-wiggle 0.5s ease-in-out"
+              : phase === "rising"
+              ? "bugsy-pop 0.6s cubic-bezier(0.22, 1.5, 0.36, 1)"
               : undefined,
             transformOrigin: "center bottom",
           }}
         >
           <Bobo
-            mood={eating ? "happy" : phase === "belly" ? "hungry" : "thinking"}
+            mood={phase === "belly" ? "happy" : "thinking"}
             tint={tint}
             size={150}
             tailWag={wagging || phase === "belly"}
-            walking={phase === "belly" && !eating}
-            mouthOpen={eating}
           />
           {hearts.map((h) => (
             <span
@@ -2209,8 +2143,8 @@ export function ChildPetMeet({
         </div>
       </div>
 
-      {/* CTA: only on the second adventure line, after it finishes typing */}
-      {phase === "adventure" && adventureStep === 1 && (
+      {/* CTA: only on the final adventure line, after it finishes typing */}
+      {phase === "adventure" && adventureStep === 2 && (
         <div
           style={{
             position: "absolute",
@@ -2638,7 +2572,7 @@ export function ChildKitchen({ tint, onNext, onBack }: Common) {
         {phase === "talk" && (
           <RoomBubble
             tail="down"
-            text="Exploring makes me REALLY hungry. Can you find me food?"
+            text="Yay! Our first mission is a snack hunt — let's collect yummy food!"
             onDone={() => setDone(true)}
           />
         )}
@@ -2704,9 +2638,9 @@ export function ChildKitchen({ tint, onNext, onBack }: Common) {
 }
 
 // ── SCREEN — The growth plan (train me) ───────────────────────
-// Plays right after the child has calmed Bugsy through the storm. Now
-// that they've faced the dark force's first scare together, Bugsy lays
-// out the simple loop: do missions to train him, earn XP, unlock
+// Plays right after the child has calmed Bugsy's zoomies. Now that
+// they've helped him settle with calm breaths, Bugsy lays out the
+// simple loop: do missions to train him, earn XP, unlock
 // rewards. Kept to JUST the training idea — the clan is introduced on
 // its own screen next so it's not dumped on the child all at once.
 export function ChildGrowPlan({ tint, childName, onNext, onBack }: Common) {
@@ -2730,7 +2664,7 @@ export function ChildGrowPlan({ tint, childName, onNext, onBack }: Common) {
 
   const text =
     phase === "win"
-      ? `You helped me feel brave, ${friend}! Now let's get stronger together. 💪`
+      ? `You helped me feel calm, ${friend}! Now let's get stronger together. 💪`
       : "Here's how we grow: do missions to train me, earn XP, and unlock cool rewards!";
 
   const cta = phase === "win" ? "How?" : "Got it!";
@@ -2831,7 +2765,7 @@ export function ChildGrowPlan({ tint, childName, onNext, onBack }: Common) {
 // Introduces the "clan" idea on its own, gently, so it doesn't land out
 // of nowhere: first Bugsy explains what a clan is (a team of cats + their
 // humans), with a little line-up of clan cats to make it concrete, then
-// the goal — once strong, they join one to face the dark force together.
+// the goal — once strong, they join one to take on big adventures together.
 export function ChildClanIntro({ tint, childName, onNext, onBack }: Common) {
   const friend = childName.trim() || "friend";
   type Phase = "what" | "join";
@@ -2853,7 +2787,7 @@ export function ChildClanIntro({ tint, childName, onNext, onBack }: Common) {
   const text =
     phase === "what"
       ? "Oh — have you heard of a CLAN? It's a team of cats and their humans, all training together."
-      : `Once I'm strong, we'll join one — and our whole clan faces the dark force together. Stronger as a team, ${friend}!`;
+      : `Once I'm strong, we'll join one — and our whole clan takes on big adventures together. Stronger as a team, ${friend}!`;
 
   const cta = phase === "what" ? "Whoa, cool!" : "Join the clan! 🛡️";
 
@@ -2964,116 +2898,56 @@ export function ChildClanIntro({ tint, childName, onNext, onBack }: Common) {
   );
 }
 
-// The looming dark force: a soft smoky cloud across the top of the
-// scene with two slowly-glowing eyes. Kept gently eerie (curious, not
-// scary) and purely decorative — fades/raises in via the `show` flag.
-function DarkForce({ show, intense }: { show: boolean; intense: boolean }) {
-  return (
-    <div
-      aria-hidden
-      style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        height: "48%",
-        zIndex: 2,
-        pointerEvents: "none",
-        opacity: show ? 1 : 0,
-        transform: show ? "translateY(0)" : "translateY(-30px)",
-        transition: "opacity 1.1s ease, transform 1.1s ease",
-      }}
-    >
-      <svg width="100%" height="100%" viewBox="0 0 400 360" preserveAspectRatio="xMidYMin slice">
-        <defs>
-          <radialGradient id="df-smoke" cx="0.5" cy="0.28" r="0.75">
-            <stop offset="0%" stopColor="#241634" stopOpacity={intense ? 0.92 : 0.7} />
-            <stop offset="60%" stopColor="#1c1430" stopOpacity={intense ? 0.6 : 0.4} />
-            <stop offset="100%" stopColor="#1c1430" stopOpacity="0" />
-          </radialGradient>
-          <radialGradient id="df-eye" cx="0.5" cy="0.5" r="0.5">
-            <stop offset="0%" stopColor="#d9b3ff" />
-            <stop offset="55%" stopColor="#9a5cff" />
-            <stop offset="100%" stopColor="#5a2eaa" stopOpacity="0" />
-          </radialGradient>
-        </defs>
-
-        {/* Smoky body — a few overlapping blobs that drift gently. */}
-        <g style={{ transformBox: "fill-box", transformOrigin: "center", animation: "cloud-drift 11s ease-in-out infinite" }}>
-          <ellipse cx="200" cy="70" rx="240" ry="120" fill="url(#df-smoke)" />
-          <ellipse cx="110" cy="110" rx="120" ry="80" fill="url(#df-smoke)" />
-          <ellipse cx="300" cy="100" rx="130" ry="86" fill="url(#df-smoke)" />
-        </g>
-
-        {/* Two glowing eyes that pulse. */}
-        <g style={{ animation: "dark-eye-glow 2.6s ease-in-out infinite" }}>
-          <circle cx="168" cy="92" r="17" fill="url(#df-eye)" />
-          <circle cx="232" cy="92" r="17" fill="url(#df-eye)" />
-          <circle cx="168" cy="92" r="5.5" fill="#fbe9ff" />
-          <circle cx="232" cy="92" r="5.5" fill="#fbe9ff" />
-        </g>
-      </svg>
-    </div>
-  );
-}
-
-// ── SCREEN — The dark force & calming Bugsy ───────────────────
-// One continuous storyline: a thunderstorm rolls in and Bugsy reveals
-// it's a mysterious dark force closing in on their world. It makes him
-// anxious — tremor, desaturated, "raised fur" feel, a looming shadow
-// with glowing eyes overhead — and he asks the child to calm him with
-// guided box breathing (in-3 / hold-3 / out-3 × 3 rounds). With every
-// round Bugsy settles and the force retreats; at the end he's brave
-// again and invites the child to train daily to ready the clan.
+// ── SCREEN — The zoomies & calming Bugsy ──────────────────────
+// The room stays bright and warm. A glowing "breathing bubble" appears
+// beside Bugsy as he suddenly gets the zoomies — wiggling with too much
+// energy and spiky fur. He asks the child to take calm breaths with him.
+// Guided box breathing (in-3 / hold-3 / out-3 × 3 rounds) gradually
+// slows him, softens his glow, and at the end he curls up calmly.
 //
 // Phases:
-//   "agitated"  — dark-force story beats → "Show me how" CTA
-//   "breathing" — guided box breathing loop (3 rounds)
-//   "calm"      — Bugsy safe, brave-together line, daily-training invite
+//   "zoomies"   — Bugsy bouncing with energy → "Start calm breathing"
+//   "breathing" — guided breathing loop (3 rounds)
+//   "calm"      — Bugsy curled up calm, reassurance line, Continue
 export function ChildCalmBugsy({ tint, onNext, onBack }: Common) {
-  type Phase = "agitated" | "breathing" | "calm";
+  type Phase = "zoomies" | "breathing" | "calm";
   type Step = "in" | "hold" | "out";
 
-  const [phase, setPhase] = useState<Phase>("agitated");
+  const [phase, setPhase] = useState<Phase>("zoomies");
   const [step, setStep] = useState<Step>("in");
   const [count, setCount] = useState(1); // 1..3 inside the step
   const [round, setRound] = useState(0); // 0..2
   const [bubbleDone, setBubbleDone] = useState(false);
-  // Calm phase shows a single reassurance line, then Continue.
+  // The calm wind-down plays a few beats: 0 = "how do you feel?", 1 =
+  // when to use calm breaths, 2 = daily-return invite (icons float in),
+  // 3 = the things we can do together. `thanksDone` = current line typed.
+  const [calmStep, setCalmStep] = useState(0);
   const [thanksDone, setThanksDone] = useState(false);
-  const [flashKey, setFlashKey] = useState(0); // bumps to retrigger the flash anim
-  // The agitated phase opens with a short story: the dark force rolls in
-  // and that's what's making Bugsy anxious, before he asks to be calmed.
-  const [agitatedBeat, setAgitatedBeat] = useState(0);
-  const AGITATED_LINES = [
-    "Wait… do you feel that? A mysterious dark force is creeping toward our world. 🌑",
-    "It makes me SO anxious — my fur stands up and my heart goes thump-thump-thump.",
-    "Our clan has to be brave to face it. Can you help me feel calm again? Breathe with me?",
+
+  // ── Calm wind-down script ──
+  const CALM_LINES = [
+    "Phew! I feel much calmer now. How do you feel?",
+    "We can use calm breaths when:",
+    "Come visit me every day to care for me and grow with me!",
+    "We can:",
   ];
-  const AGITATED_CTAS = ["What is it?", "It's okay, I'm here", "Show me how"];
-
-  // Re-type the bubble each time the agitated story beat changes.
-  useEffect(() => {
-    setBubbleDone(false);
-  }, [agitatedBeat]);
-
-  // Lightning strikes — fast during agitated, fewer during breathing,
-  // none once Bugsy is calm.
-  useEffect(() => {
-    if (phase === "calm") return;
-    const gap = phase === "breathing" ? 6500 : 2800;
-    const id = window.setInterval(() => {
-      setFlashKey((k) => k + 1);
-    }, gap + Math.random() * 1200);
-    return () => window.clearInterval(id);
-  }, [phase]);
-
-  // First strike fires immediately when entering the screen / phase.
-  useEffect(() => {
-    if (phase === "calm") return;
-    const t = window.setTimeout(() => setFlashKey((k) => k + 1), 500);
-    return () => window.clearTimeout(t);
-  }, [phase]);
+  const CALM_CTAS = ["I feel calm 😌", "Got it!", "What can we do?", "I'll come back!"];
+  // Situations where calm breaths help (calm beat 1).
+  const CALM_WHEN: { icon: React.ReactNode; text: string }[] = [
+    { icon: "🚀", text: "Before we start a mission" },
+    { icon: "🏁", text: "After we finish a mission" },
+    { icon: "😰", text: "When I get nervous" },
+    { icon: "🤩", text: "When I get excited" },
+  ];
+  // Things we do together (calm beat 3).
+  const CALM_CAN: { icon: React.ReactNode; text: string }[] = [
+    { icon: <MissionsIcon />, text: "Go on missions" },
+    { icon: "🍎", text: "Eat yummy food" },
+    { icon: "🧶", text: "Play together" },
+    { icon: "🤗", text: "Cuddle me" },
+    { icon: "🫧", text: "Practice calm breaths" },
+    { icon: "👋", text: "Socialise" },
+  ];
 
   // Box-breathing 1-Hz tick. Counts up 1..3, then advances the step
   // (in → hold → out → next round). After 3 rounds, phase = "calm".
@@ -3102,7 +2976,7 @@ export function ChildCalmBugsy({ tint, onNext, onBack }: Common) {
     return () => window.clearInterval(id);
   }, [phase]);
 
-  // 0..1 calmness progress — drives Bugsy's tint/shake intensity.
+  // 0..1 calmness progress — drives Bugsy's glow softness + wiggle speed.
   const calmProgress =
     phase === "calm"
       ? 1
@@ -3116,16 +2990,18 @@ export function ChildCalmBugsy({ tint, onNext, onBack }: Common) {
           )
         : 0;
 
-  const tremorIntensity = phase === "calm" ? 0 : 1 - calmProgress * 0.85;
+  // High while he has the zoomies, eases to 0 as the child breathes him
+  // calm — drives the spiky fur (frazzled) and the wiggle/glow intensity.
+  const energy = phase === "calm" ? 0 : 1 - calmProgress * 0.9;
 
-  // Bugsy mood ladder — agitated worried while nervous, settles to
-  // happy mid-breathing, then full cheer once he's safe again.
+  // Mood ladder — bouncy excited with the zoomies, settles to happy
+  // mid-breathing, content once curled up.
   const mood: Mood =
     phase === "calm"
-      ? "cheer"
+      ? "happy"
       : phase === "breathing" && calmProgress > 0.6
         ? "happy"
-        : "worried";
+        : "excited";
 
   return (
     <div
@@ -3136,77 +3012,7 @@ export function ChildCalmBugsy({ tint, onNext, onBack }: Common) {
         background: "#fceadd",
       }}
     >
-      <RoomBackdrop chairs={false} stormy />
-
-      {/* Stormy night wash over the room — fades away as Bugsy calms.
-          Cooler/darker while agitated; gone once curled up. */}
-      <div
-        aria-hidden
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: `linear-gradient(180deg,
-            rgba(28, 38, 68, ${0.42 - calmProgress * 0.4}) 0%,
-            rgba(46, 38, 78, ${0.22 - calmProgress * 0.22}) 60%,
-            rgba(46, 38, 78, ${0.05 - calmProgress * 0.05}) 100%)`,
-          transition: "background 1.2s ease",
-          pointerEvents: "none",
-          zIndex: 1,
-        }}
-      />
-
-      {/* The dark force itself — looms over the storm while Bugsy is
-          agitated, then retreats as the child breathes him calm. */}
-      <DarkForce show={phase === "agitated"} intense />
-
-      {/* Lightning flash — fires on flashKey bump. Re-mounted via key so
-          the animation restarts cleanly each time. */}
-      {phase !== "calm" && (
-        <div
-          key={`flash-${flashKey}`}
-          aria-hidden
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "rgba(255, 250, 220, 0.85)",
-            mixBlendMode: "screen",
-            opacity: 0,
-            animation: "thunder-flash 0.55s ease-out",
-            pointerEvents: "none",
-            zIndex: 2,
-          }}
-        />
-      )}
-
-      {/* A jagged lightning bolt drawn over the window — only visible
-          on the flash itself, then fades with the same key. */}
-      {phase !== "calm" && (
-        <svg
-          key={`bolt-${flashKey}`}
-          aria-hidden
-          viewBox="0 0 100 240"
-          style={{
-            position: "absolute",
-            top: 110,
-            left: 220,
-            width: 50,
-            height: 170,
-            opacity: 0,
-            animation: "thunder-flash 0.55s ease-out",
-            zIndex: 3,
-            filter: "drop-shadow(0 0 12px rgba(255,240,160,0.9))",
-            pointerEvents: "none",
-          }}
-        >
-          <path
-            d="M58 0 L18 110 L46 110 L24 240 L80 100 L52 100 L82 0 Z"
-            fill="#fffbe0"
-            stroke="#ffe27a"
-            strokeWidth="2.5"
-            strokeLinejoin="round"
-          />
-        </svg>
-      )}
+      <RoomBackdrop chairs={false} />
 
       {/* Back button */}
       {onBack && (
@@ -3243,78 +3049,109 @@ export function ChildCalmBugsy({ tint, onNext, onBack }: Common) {
         </button>
       )}
 
-      {/* Bugsy + dialogue / breathing guide stack */}
-      <div
-        style={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-          bottom: 150,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 18,
-          padding: "0 24px",
-          zIndex: 4,
-        }}
-      >
-        {phase === "agitated" && (
-          <RoomBubble
-            key={agitatedBeat}
-            tail="down"
-            text={AGITATED_LINES[agitatedBeat]}
-            onDone={() => setBubbleDone(true)}
-          />
-        )}
-        {phase === "breathing" && (
-          <BreathingGuide step={step} count={count} round={round} />
-        )}
-
-        {/* Bugsy himself — tremor + cooler tint while nervous; belly-
-            breathes during the exercise; bursts into a happy, tail-
-            wagging jump once he's safe. In the calm phase he sits on
-            the right with the speech bubble next to him (tail pointing
-            at him), so it reads as Bugsy speaking. */}
-        {phase === "calm" ? (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 4,
-              width: "100%",
-            }}
-          >
+      {/* Zoomies / breathing: Bugsy + dialogue or breathing guide,
+          anchored above the CTA bar. */}
+      {phase !== "calm" && (
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 150,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 18,
+            padding: "0 24px",
+            zIndex: 4,
+          }}
+        >
+          {phase === "zoomies" && (
             <RoomBubble
-              tail="right"
-              maxWidth={200}
-              text="Phew… you make me brave. The dark force can't win when we're together."
-              onDone={() => setThanksDone(true)}
+              tail="down"
+              text="Oh dear! I feel the zoomies coming! Let's take calm breaths, so I feel steady."
+              onDone={() => setBubbleDone(true)}
             />
-            <BugsyAvatar
-              phase={phase}
-              step={step}
-              tremorIntensity={tremorIntensity}
-              mood={mood}
-              tint={tint}
-              startleKey={flashKey}
-            />
-          </div>
-        ) : (
+          )}
+          {phase === "breathing" && (
+            <BreathingGuide step={step} count={count} round={round} />
+          )}
+
+          {/* Bugsy himself — bounces with spiky-fur energy during the
+              zoomies; belly-breathes and slows as the child breathes
+              with him. */}
           <BugsyAvatar
             phase={phase}
             step={step}
-            tremorIntensity={tremorIntensity}
+            energy={energy}
+            calmProgress={calmProgress}
             mood={mood}
             tint={tint}
-            startleKey={flashKey}
           />
-        )}
+        </div>
+      )}
 
-      </div>
+      {/* Calm wind-down — Bugsy curled up with a soft glow + gently
+          shining breathing bubble; a few dialogue beats with little
+          lists / floating care icons. Full-height + scrollable so the
+          longer lists never clip. */}
+      {phase === "calm" && (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 16,
+            padding: "70px 24px 120px",
+            overflowY: "auto",
+            zIndex: 4,
+          }}
+        >
+          <RoomBubble
+            key={calmStep}
+            tail="down"
+            maxWidth={300}
+            text={CALM_LINES[calmStep]}
+            onDone={() => setThanksDone(true)}
+          />
 
-      {/* CTA bar — "Show me how" → start breathing, then Continue. */}
+          <div style={{ position: "relative" }}>
+            <BugsyAvatar
+              phase={phase}
+              step={step}
+              energy={energy}
+              calmProgress={calmProgress}
+              mood={mood}
+              tint={tint}
+            />
+          </div>
+
+          {/* Beat 1: when calm breaths help. Beat 3: what we do together. */}
+          {(calmStep === 1 || calmStep === 3) && (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 8,
+                width: "100%",
+                maxWidth: 300,
+                opacity: thanksDone ? 1 : 0,
+                transform: thanksDone ? "translateY(0)" : "translateY(8px)",
+                transition: "opacity 0.45s ease, transform 0.45s ease",
+              }}
+            >
+              {(calmStep === 1 ? CALM_WHEN : CALM_CAN).map((row, i) => (
+                <ActivityRow key={i} icon={row.icon} text={row.text} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* CTA bar — "Start calm breathing" → breathing loop, then Continue. */}
       <div
         style={{
           position: "absolute",
@@ -3322,43 +3159,50 @@ export function ChildCalmBugsy({ tint, onNext, onBack }: Common) {
           right: 20,
           bottom: 28,
           opacity:
-            (phase === "agitated" && bubbleDone) ||
+            (phase === "zoomies" && bubbleDone) ||
             (phase === "calm" && thanksDone)
               ? 1
               : 0,
           transform:
-            (phase === "agitated" && bubbleDone) ||
+            (phase === "zoomies" && bubbleDone) ||
             (phase === "calm" && thanksDone)
               ? "translateY(0)"
               : "translateY(10px)",
           transition: "opacity 0.4s ease, transform 0.4s ease",
           pointerEvents:
-            (phase === "agitated" && bubbleDone) ||
+            (phase === "zoomies" && bubbleDone) ||
             (phase === "calm" && thanksDone)
               ? "auto"
               : "none",
           zIndex: 6,
         }}
       >
-        {phase === "agitated" && (
+        {phase === "zoomies" && (
           <BigCTA
             onClick={() => {
-              // Step through the dark-force story first; the last beat is
-              // where Bugsy actually asks to be calmed → start breathing.
-              if (agitatedBeat < AGITATED_LINES.length - 1) {
-                setAgitatedBeat((b) => b + 1);
-                return;
-              }
               setPhase("breathing");
               setStep("in");
               setCount(1);
               setRound(0);
             }}
           >
-            {AGITATED_CTAS[agitatedBeat]}
+            Start calm breathing
           </BigCTA>
         )}
-        {phase === "calm" && <BigCTA onClick={onNext}>Continue</BigCTA>}
+        {phase === "calm" && (
+          <BigCTA
+            onClick={() => {
+              if (calmStep < CALM_LINES.length - 1) {
+                // Re-arm the "line typed" flag so the next beat's list /
+                // CTA wait for the new line to finish typing.
+                setThanksDone(false);
+                setCalmStep((s) => s + 1);
+              } else onNext();
+            }}
+          >
+            {CALM_CTAS[calmStep]}
+          </BigCTA>
+        )}
       </div>
     </div>
   );
@@ -3382,11 +3226,7 @@ function BreathingGuide({
   // noticeable because the value matches the previous "out" exit.
   const targetScale = step === "out" ? 0.62 : 1;
   const label =
-    step === "in"
-      ? "Breathe in"
-      : step === "hold"
-        ? "Hold your breath"
-        : "Breathe out";
+    step === "in" ? "Breathe in" : step === "hold" ? "Hold" : "Breathe out";
 
   return (
     <div
@@ -3397,6 +3237,20 @@ function BreathingGuide({
         gap: 14,
       }}
     >
+      {/* Full instruction so the child knows the whole rhythm up front. */}
+      <div
+        style={{
+          fontFamily: "var(--font-nunito), system-ui",
+          fontWeight: 800,
+          fontSize: 13.5,
+          color: "#7a5a44",
+          textAlign: "center",
+          maxWidth: 280,
+          lineHeight: 1.4,
+        }}
+      >
+        Breathe in for 1…2…3. Hold for 1…2…3. Breathe out for 1…2…3.
+      </div>
       <div
         style={{
           position: "relative",
@@ -3444,8 +3298,7 @@ function BreathingGuide({
           fontFamily: "var(--font-nunito), system-ui",
           fontWeight: 900,
           fontSize: 22,
-          color: "#fff",
-          textShadow: "0 2px 8px rgba(0, 0, 0, 0.45)",
+          color: "#5b3a1f",
           letterSpacing: 0.4,
         }}
       >
@@ -3457,10 +3310,9 @@ function BreathingGuide({
           fontFamily: "var(--font-nunito), system-ui",
           fontWeight: 800,
           fontSize: 12,
-          color: "rgba(255, 255, 255, 0.88)",
+          color: "rgba(91, 58, 31, 0.7)",
           letterSpacing: 1.6,
           textTransform: "uppercase",
-          textShadow: "0 1px 4px rgba(0,0,0,0.4)",
         }}
       >
         Round {round + 1} of 3
@@ -3471,58 +3323,98 @@ function BreathingGuide({
 
 // Bugsy mascot block used inside ChildCalmBugsy. Lives outside the
 // screen body so the calm-phase row layout can place a speech bubble
-// next to him without re-declaring the transform / tremor / bounce /
-// breathing-belly stack inline twice.
+// next to him without re-declaring the glow / wiggle / breathing-belly
+// stack inline twice.
 function BugsyAvatar({
   phase,
   step,
-  tremorIntensity,
+  energy,
+  calmProgress,
   mood,
   tint,
-  startleKey,
 }: {
-  phase: "agitated" | "breathing" | "calm";
+  phase: "zoomies" | "breathing" | "calm";
   step: "in" | "hold" | "out";
-  tremorIntensity: number;
+  // 0..1 — high while he has the zoomies, eases to 0 as he calms.
+  energy: number;
+  calmProgress: number;
   mood: Mood;
   tint: number;
-  // Bumps every time a lightning strike happens. We imperatively
-  // restart the bobo-startle animation on each bump so Bugsy reacts
-  // naturalistically to each thunder rather than vibrating non-stop.
-  startleKey: number;
 }) {
-  const startleRef = useRef<HTMLDivElement>(null);
+  // Body wiggle: fast & bouncy with the zoomies, slowing as he calms,
+  // stopping once curled up.
+  const wiggle =
+    phase === "zoomies"
+      ? "zoomies-bounce 0.5s ease-in-out infinite"
+      : phase === "breathing"
+        ? `zoomies-bounce ${(0.7 + calmProgress * 2).toFixed(2)}s ease-in-out infinite`
+        : undefined;
 
-  useEffect(() => {
-    if (phase === "calm" || startleKey === 0) return;
-    const el = startleRef.current;
-    if (!el) return;
-    el.style.animation = "none";
-    // Force reflow so the next assignment restarts the animation
-    // even if the same animation value was set last time.
-    void el.offsetWidth;
-    el.style.animation = "bobo-startle 0.7s ease-out";
-  }, [startleKey, phase]);
+  // Glow behind Bugsy — bright & quick while energetic, soft & steady
+  // as he calms.
+  const glowAnim =
+    phase === "zoomies"
+      ? "breath-glow 1.4s ease-in-out infinite"
+      : phase === "breathing"
+        ? `breath-glow ${(2.4 + calmProgress * 2).toFixed(2)}s ease-in-out infinite`
+        : "breath-glow 5s ease-in-out infinite";
 
   return (
     <div
       style={{
-        // Outer transform: trim him down a touch in calm so the
-        // tail wag + activity list fit cleanly.
+        position: "relative",
+        // Trim him down a touch in calm so the bubble + tail wag fit.
         transform: phase === "calm" ? "scale(0.9)" : "none",
         transition: "transform 1.6s cubic-bezier(0.22, 1, 0.36, 1)",
-        filter:
-          phase === "calm"
-            ? "saturate(1) brightness(1)"
-            : `saturate(${1 - tremorIntensity * 0.45}) brightness(${1 - tremorIntensity * 0.12}) hue-rotate(${tremorIntensity * 6}deg)`,
       }}
     >
-      {/* Breathing belly — only animates while in the breathing phase.
-          scaleX grows a touch more than scaleY so it reads as a "puff
-          out" rather than a vertical stretch, and the transform-origin
-          sits near the belly so the head barely moves. */}
+      {/* Soft glowing halo behind Bugsy — softens/steadies as he calms. */}
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          left: "calc(50% - 115px)",
+          top: "calc(52% - 115px)",
+          width: 230,
+          height: 230,
+          borderRadius: "50%",
+          background: `radial-gradient(circle, rgba(255,224,150,${(0.55 - calmProgress * 0.12).toFixed(2)}) 0%, rgba(255,200,120,0.22) 46%, rgba(255,200,120,0) 72%)`,
+          filter: "blur(4px)",
+          animation: glowAnim,
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      />
+
+      {/* Glowing "breathing bubble" beside Bugsy — appears with the
+          zoomies as a hint of the calm breathing to come. */}
+      {phase === "zoomies" && (
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            right: -6,
+            top: 4,
+            width: 54,
+            height: 54,
+            borderRadius: "50%",
+            background:
+              "radial-gradient(circle at 35% 30%, rgba(255,255,255,0.95), rgba(255,224,150,0.7) 60%, rgba(255,200,120,0.45))",
+            border: "2px solid rgba(255,255,255,0.9)",
+            boxShadow: "0 0 22px rgba(255, 220, 150, 0.8)",
+            animation: "breath-glow 2.2s ease-in-out infinite",
+            zIndex: 2,
+          }}
+        />
+      )}
+
+      {/* Breathing belly — only animates while breathing. scaleX grows a
+          touch more than scaleY so it reads as a "puff out", with the
+          transform-origin near the belly so the head barely moves. */}
       <div
         style={{
+          position: "relative",
+          zIndex: 1,
           transform:
             phase === "breathing" && step !== "out"
               ? "scale(1.07, 1.04)"
@@ -3531,29 +3423,22 @@ function BugsyAvatar({
           transition: "transform 3s ease-in-out",
         }}
       >
-        {/* In calm phase: inline `bobo-calm-idle` plays continuously.
-            In non-calm phases: animation is left blank in JSX so React
-            never resets it, and a startle is fired imperatively on
-            each flashKey bump (see useEffect above). */}
+        {/* Calm: gentle idle. Otherwise the body wiggle (zoomies fast,
+            breathing slowing). */}
         <div
-          ref={startleRef}
-          style={
-            phase === "calm"
-              ? {
-                  filter: "drop-shadow(0 12px 12px rgba(20,20,40,0.32))",
-                  animation: "bobo-calm-idle 3.6s ease-in-out infinite",
-                }
-              : {
-                  filter: "drop-shadow(0 12px 12px rgba(20,20,40,0.32))",
-                }
-          }
+          style={{
+            filter: "drop-shadow(0 12px 12px rgba(120,80,40,0.28))",
+            animation:
+              phase === "calm" ? "bobo-calm-idle 3.6s ease-in-out infinite" : wiggle,
+            transformOrigin: "bottom center",
+          }}
         >
           <Bobo
             mood={mood}
             tint={tint}
             size={160}
             tailWag={phase === "calm"}
-            frazzled={phase === "calm" ? 0 : tremorIntensity}
+            frazzled={phase === "calm" ? 0 : energy}
           />
         </div>
       </div>
@@ -3561,10 +3446,9 @@ function BugsyAvatar({
   );
 }
 
-// Cream/amber activity pill used in the "Come visit me daily" list.
-// Matches the warm onboarding palette (same border + drop-shadow as
-// the rest of Bugsy's room). `icon` can be a string emoji or any JSX
-// element (SVG icon).
+// Cream/amber activity pill used in the calm wind-down lists. Matches
+// the warm onboarding palette (same border + drop-shadow as the rest
+// of Bugsy's room). `icon` can be a string emoji or any JSX element.
 function ActivityRow({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
     <div
@@ -3650,12 +3534,24 @@ function MissionsIcon() {
   );
 }
 
-// ── SCREEN — Promise to come back tomorrow ────────────────────
+// ── SCREEN — When should I wait for you tomorrow? ─────────────
 // The emotional close: same room as the first meeting, but dusk has
-// fallen — "it's getting late, come back tomorrow?"
+// fallen. Bugsy asks what time to wait for the child tomorrow, so the
+// daily visit feels like a promise he's holding onto.
+const PROMISE_TIMES: { id: string; label: string; emoji: string }[] = [
+  { id: "morning", label: "Morning", emoji: "🌅" },
+  { id: "afternoon", label: "Afternoon", emoji: "☀️" },
+  { id: "evening", label: "Evening", emoji: "🌙" },
+];
 export function ChildPromise({ tint, childName, onNext, onBack }: Common) {
   const friend = childName.trim() || "friend";
+  const [picked, setPicked] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+
+  const pickedLabel = PROMISE_TIMES.find((t) => t.id === picked)?.label.toLowerCase();
+  const bubbleText = picked
+    ? `Yay! I'll be right here waiting for you in the ${pickedLabel}. 🐾`
+    : `It's getting late, ${friend}… When should I wait for you tomorrow?`;
 
   return (
     <div style={{ position: "absolute", inset: 0, overflow: "hidden", background: "#e7c3bd" }}>
@@ -3689,46 +3585,92 @@ export function ChildPromise({ tint, childName, onNext, onBack }: Common) {
         </button>
       )}
 
-      {/* Bugsy + the promise, centred in the dusky room */}
+      {/* Bugsy + the question + time options, centred in the dusky room */}
       <div
         style={{
           position: "absolute",
-          left: 0,
-          right: 0,
-          bottom: 150,
+          inset: 0,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          gap: 14,
-          padding: "0 24px",
+          justifyContent: "center",
+          gap: 16,
+          padding: "70px 24px 110px",
+          overflowY: "auto",
           zIndex: 3,
         }}
       >
         <div style={{ filter: "drop-shadow(0 12px 14px rgba(50,35,70,0.3))" }}>
-          <Bobo mood="worried" tint={tint} size={172} />
+          <Bobo mood={picked ? "cheer" : "worried"} tint={tint} size={150} tailWag={!!picked} />
         </div>
         <RoomBubble
+          key={picked ?? "ask"}
           tail="up"
-          text={`It's getting late, ${friend}… Promise me one thing? Come back tomorrow?`}
+          text={bubbleText}
           onDone={() => setDone(true)}
         />
+
+        {/* Time-of-day options — hidden once one is chosen. */}
+        {!picked && (
+          <div
+            style={{
+              width: "100%",
+              maxWidth: 300,
+              display: "flex",
+              flexDirection: "column",
+              gap: 10,
+              opacity: done ? 1 : 0,
+              transform: done ? "translateY(0)" : "translateY(8px)",
+              transition: "opacity 0.4s ease, transform 0.4s ease",
+              pointerEvents: done ? "auto" : "none",
+            }}
+          >
+            {PROMISE_TIMES.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => {
+                  setDone(false);
+                  setPicked(t.id);
+                }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 14,
+                  padding: "14px 18px",
+                  borderRadius: 16,
+                  border: "2px solid #c98",
+                  background: "rgba(255,255,255,0.92)",
+                  color: "#5b3a4a",
+                  fontFamily: "var(--font-nunito), system-ui",
+                  fontWeight: 800,
+                  fontSize: 18,
+                  cursor: "pointer",
+                  boxShadow: "0 4px 0 #b07f8c",
+                }}
+              >
+                <span style={{ fontSize: 26 }}>{t.emoji}</span>
+                {t.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* CTA */}
+      {/* CTA — appears once a time is picked and the reply finishes. */}
       <div
         style={{
           position: "absolute",
           left: 20,
           right: 20,
           bottom: 28,
-          opacity: done ? 1 : 0,
-          transform: done ? "translateY(0)" : "translateY(10px)",
+          opacity: picked && done ? 1 : 0,
+          transform: picked && done ? "translateY(0)" : "translateY(10px)",
           transition: "opacity 0.4s ease, transform 0.4s ease",
-          pointerEvents: done ? "auto" : "none",
+          pointerEvents: picked && done ? "auto" : "none",
           zIndex: 6,
         }}
       >
-        <BigCTA onClick={onNext}>I promise 🤞</BigCTA>
+        <BigCTA onClick={onNext}>It&apos;s a promise 🤞</BigCTA>
       </div>
     </div>
   );

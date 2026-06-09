@@ -34,8 +34,6 @@ import { Welcome } from "./components/onboarding/Welcome";
 import {
   ChildAlmostDone,
   ChildCalmBugsy,
-  ChildClanIntro,
-  ChildGrowPlan,
   ChildDailyGoal,
   ChildAgeQuestion,
   ChildDoorway,
@@ -78,7 +76,7 @@ type Stage =
 // (Snack Catch + bomb quiz), 5: dark force + calm-Bugsy storm,
 // 6: the plan (train me, earn XP, rewards), 7: meet the clan,
 // 8: pinky promise → app.
-const HANDOVER_STEPS = 9;
+const HANDOVER_STEPS = 7;
 
 // Stored in localStorage so users can resume their place across
 // sessions — important when a parent does half the setup, exits,
@@ -560,14 +558,11 @@ export default function Home() {
         // ── Dark force arrives → calm Bugsy through the storm ──
         case 6:
           return <ChildCalmBugsy tint={TINT} childName={childName} onNext={advanceChild} onBack={backChild} />;
-        // ── The plan: train me, earn XP, unlock rewards ──
+        // ── It's getting late: when will you come back tomorrow? ──
         case 7:
-          return <ChildGrowPlan tint={TINT} childName={childName} onNext={advanceChild} onBack={backChild} />;
-        // ── Meet the clan ──
-        case 8:
-          return <ChildClanIntro tint={TINT} childName={childName} onNext={advanceChild} onBack={backChild} />;
+          return <ChildPromise tint={TINT} childName={childName} onNext={advanceChild} onBack={backChild} />;
         // ── A little about them ──
-        case 9:
+        case 8:
           return (
             <ChildDailyGoal
               tint={TINT}
@@ -578,10 +573,7 @@ export default function Home() {
               onBack={backChild}
             />
           );
-        // ── Promise, grown-up consent ──
-        case 10:
-          return <ChildPromise tint={TINT} childName={childName} onNext={advanceChild} onBack={backChild} />;
-        case 11:
+        case 9:
           return (
             <ChildAlmostDone
               tint={TINT}
@@ -590,7 +582,7 @@ export default function Home() {
               onBack={backChild}
             />
           );
-        case 12:
+        case 10:
           return (
             <ChildAdultLogin
               tint={TINT}
@@ -599,7 +591,7 @@ export default function Home() {
               onBack={backChild}
             />
           );
-        case 13:
+        case 11:
           return (
             <ChildParentDetails
               tint={TINT}
@@ -614,7 +606,7 @@ export default function Home() {
           );
         // ── Grown-up shares what they're noticing, then Bugsy's
         // response (same beats as the parent flow) ──
-        case 14:
+        case 12:
           return (
             <ParentNoticing
               tint={TINT}
@@ -664,14 +656,8 @@ export default function Home() {
         // ── Dark force arrives → calm Bugsy through the storm ──
         case 5:
           return <ChildCalmBugsy tint={TINT} childName={friend} onNext={advanceHandover} />;
-        // ── The plan: train me, earn XP, unlock rewards ──
+        // ── It's getting late: when will you come back tomorrow? → home ──
         case 6:
-          return <ChildGrowPlan tint={TINT} childName={friend} onNext={advanceHandover} />;
-        // ── Meet the clan ──
-        case 7:
-          return <ChildClanIntro tint={TINT} childName={friend} onNext={advanceHandover} />;
-        // ── Daily commitment → app home ──
-        case 8:
           return <ChildPromise tint={TINT} childName={friend} onNext={advanceHandover} />;
       }
       return null;
