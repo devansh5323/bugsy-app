@@ -26,12 +26,12 @@ import {
 // beat, and finally the usual grown-up steps.
 // (BirdSpikeGame is kept in the codebase — it's used elsewhere and
 // can come back as a future mission.) Steps here:
-//   0 ChildDoorway       5 SnackCatchGame   10 ChildAdultLogin
-//   1 ChildHideSeek      6 ChildCalmBugsy   11 ChildParentDetails
-//   2 ChildPetMeet       7 ChildPromise     12 ParentNoticing
-//   3 ChildAgeQuestion   8 ChildDailyGoal
-//   4 ChildKitchen       9 ChildAlmostDone
-export const CHILD_STEPS = 13;
+//   0 ChildDoorway       5 SnackCatchGame   10 ChildAlmostDone
+//   1 ChildHideSeek      6 ChildCalmBugsy   11 ChildAdultLogin
+//   2 ChildPetMeet       7 ChildPromise     12 ChildParentDetails
+//   3 ChildAgeQuestion   8 ChildDailyGoal   13 ParentNoticing
+//   4 ChildKitchen       9 ChildBedtime
+export const CHILD_STEPS = 14;
 
 type Common = { tint: number };
 

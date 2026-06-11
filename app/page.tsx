@@ -4,9 +4,13 @@ import { useEffect, useMemo, useState } from "react";
 import {
   CLAN_BASE,
   CLAN_UNLOCK_THRESHOLD,
+  DEFAULT_CARE_METERS,
   HATS,
   PROJECTS,
   TINT,
+  lowestMeter,
+  type CareMeterKey,
+  type CareMeters,
   type ClanIntent,
   type Relationship,
   type Tab,
@@ -33,6 +37,7 @@ import { WhoAreYou } from "./components/onboarding/WhoAreYou";
 import { Welcome } from "./components/onboarding/Welcome";
 import {
   ChildAlmostDone,
+  ChildBedtime,
   ChildCalmBugsy,
   ChildDailyGoal,
   ChildAgeQuestion,
@@ -48,13 +53,13 @@ import { TourOverlay, type TourStep } from "./components/TourOverlay";
 import { ProgressContext } from "./components/onboarding/ConvoUI";
 import { VoiceProvider } from "./lib/voice";
 import {
-  ScreenHome,
   ScreenLeaderboard,
   ScreenProfile,
   ScreenProjectDetail,
   ScreenProjects,
   ScreenReward,
 } from "./components/AppScreens";
+import { ScreenHomeCare, ScreenCatometer } from "./components/CareScreens";
 
 type Stage =
   | { kind: "welcome" }
@@ -64,6 +69,7 @@ type Stage =
   | { kind: "child"; step: number }
   | { kind: "handover"; step: number }
   | { kind: "app"; tab: Tab }
+  | { kind: "catometer" }
   | { kind: "project"; projectId: string }
   | { kind: "reward"; projectId: string; unlockedHatKey: string | null };
 
@@ -76,7 +82,7 @@ type Stage =
 // (Snack Catch + bomb quiz), 5: dark force + calm-Bugsy storm,
 // 6: the plan (train me, earn XP, rewards), 7: meet the clan,
 // 8: pinky promise → app.
-const HANDOVER_STEPS = 7;
+const HANDOVER_STEPS = 8;
 
 // Stored in localStorage so users can resume their place across
 // sessions — important when a parent does half the setup, exits,
@@ -120,6 +126,9 @@ export default function Home() {
   const [completedIds, setCompletedIds] = useState<string[]>([]);
   const [totalPoints, setTotalPoints] = useState(0);
   const [equippedHat, setEquippedHat] = useState<string | null>(null);
+  // Catometer: Bugsy's five care meters (0..100). Their average is the
+  // health score. Caring (missions / care actions) raises them.
+  const [careMeters, setCareMeters] = useState<CareMeters>(DEFAULT_CARE_METERS);
   // Tour seen flag — drives the one-time guided tour overlay
   const [seenHomeTour, setSeenHomeTour] = useState(false);
   // Current tour step (null = no tour running)
@@ -157,6 +166,9 @@ export default function Home() {
         if (typeof data.totalPoints === "number") setTotalPoints(data.totalPoints);
         if (typeof data.equippedHat === "string" || data.equippedHat === null) {
           setEquippedHat(data.equippedHat);
+        }
+        if (data.careMeters && typeof data.careMeters === "object") {
+          setCareMeters({ ...DEFAULT_CARE_METERS, ...data.careMeters });
         }
         if (typeof data.seenHomeTour === "boolean") setSeenHomeTour(data.seenHomeTour);
         if (
@@ -196,6 +208,7 @@ export default function Home() {
         completedIds,
         totalPoints,
         equippedHat,
+        careMeters,
         seenHomeTour,
         onboardingResume,
       };
@@ -218,6 +231,7 @@ export default function Home() {
     completedIds,
     totalPoints,
     equippedHat,
+    careMeters,
     seenHomeTour,
     onboardingResume,
   ]);
@@ -296,6 +310,12 @@ export default function Home() {
     setStage({ kind: "app", tab: "home" });
   };
 
+  // Caring for Bugsy raises a meter (capped at 100). Used both by the
+  // catometer's per-behaviour "Go" and as a side-effect of missions.
+  const careFor = (key: CareMeterKey, amount: number) => {
+    setCareMeters((m) => ({ ...m, [key]: Math.min(100, m[key] + amount) }));
+  };
+
   const completeProject = (projectId: string) => {
     if (completedIds.includes(projectId)) return;
     const project = PROJECTS.find((p) => p.id === projectId);
@@ -303,6 +323,9 @@ export default function Home() {
     const newCount = completedIds.length + 1;
     setCompletedIds([...completedIds, projectId]);
     setTotalPoints(totalPoints + project.points);
+    // A completed mission gives Bugsy attention — top up whatever meter
+    // needs it most, so care + health climb alongside coins.
+    careFor(lowestMeter(careMeters).key, 16);
     const unlocked = HATS.find((h) => h.unlockAt === newCount) ?? null;
     if (unlocked && !equippedHat) setEquippedHat(unlocked.key);
     setStage({ kind: "reward", projectId, unlockedHatKey: unlocked?.key ?? null });
@@ -315,6 +338,38 @@ export default function Home() {
     if (amount <= 0) return;
     setTotalPoints((p) => p + amount);
   };
+
+  // Per-behaviour care action from the catometer: fill that meter and
+  // earn a few coins for showing up.
+  const careAction = (key: CareMeterKey) => {
+    careFor(key, 18);
+    setTotalPoints((p) => p + 5);
+  };
+
+  // Spend coins on a "special snack" → fills the Feeding meter.
+  const buySnack = () => {
+    if (totalPoints < 30) return;
+    setTotalPoints((p) => p - 30);
+    setCareMeters((m) => ({ ...m, feeding: 100 }));
+  };
+
+  // ── Next clan fight countdown (next Saturday 18:00). Computed after
+  // mount so server/client render match (uses the live clock). ──
+  const [nextFightLabel, setNextFightLabel] = useState("Coming soon");
+  useEffect(() => {
+    const now = new Date();
+    const target = new Date(now);
+    const daysToSat = (6 - now.getDay() + 7) % 7;
+    target.setDate(now.getDate() + daysToSat);
+    target.setHours(18, 0, 0, 0);
+    if (target.getTime() <= now.getTime()) target.setDate(target.getDate() + 7);
+    const diffH = Math.round((target.getTime() - now.getTime()) / 3_600_000);
+    const d = Math.floor(diffH / 24);
+    const h = diffH % 24;
+    setNextFightLabel(
+      `Saturday 6 PM · in ${d > 0 ? `${d}d ` : ""}${h}h`,
+    );
+  }, []);
 
   // ── Onboarding navigation ──
   const advanceParent = () => {
@@ -573,7 +628,10 @@ export default function Home() {
               onBack={backChild}
             />
           );
+        // ── Night falls: goodnight, see you tomorrow → Bugsy sleeps ──
         case 9:
+          return <ChildBedtime tint={TINT} childName={childName} onNext={advanceChild} onBack={backChild} />;
+        case 10:
           return (
             <ChildAlmostDone
               tint={TINT}
@@ -582,7 +640,7 @@ export default function Home() {
               onBack={backChild}
             />
           );
-        case 10:
+        case 11:
           return (
             <ChildAdultLogin
               tint={TINT}
@@ -591,7 +649,7 @@ export default function Home() {
               onBack={backChild}
             />
           );
-        case 11:
+        case 12:
           return (
             <ChildParentDetails
               tint={TINT}
@@ -606,7 +664,7 @@ export default function Home() {
           );
         // ── Grown-up shares what they're noticing, then Bugsy's
         // response (same beats as the parent flow) ──
-        case 12:
+        case 13:
           return (
             <ParentNoticing
               tint={TINT}
@@ -656,9 +714,12 @@ export default function Home() {
         // ── Dark force arrives → calm Bugsy through the storm ──
         case 5:
           return <ChildCalmBugsy tint={TINT} childName={friend} onNext={advanceHandover} />;
-        // ── It's getting late: when will you come back tomorrow? → home ──
+        // ── It's getting late: when will you come back tomorrow? ──
         case 6:
           return <ChildPromise tint={TINT} childName={friend} onNext={advanceHandover} />;
+        // ── Night falls: goodnight, see you tomorrow → app home ──
+        case 7:
+          return <ChildBedtime tint={TINT} childName={friend} onNext={advanceHandover} />;
       }
       return null;
     }
@@ -737,6 +798,20 @@ export default function Home() {
       );
     }
 
+    if (stage.kind === "catometer") {
+      return (
+        <ScreenCatometer
+          tint={TINT}
+          coins={totalPoints}
+          meters={careMeters}
+          equippedHat={equippedHat}
+          nextFightLabel={nextFightLabel}
+          onBack={() => setStage({ kind: "app", tab: "home" })}
+          onCare={careAction}
+        />
+      );
+    }
+
     if (stage.kind !== "app") return null;
 
     const tab = stage.tab;
@@ -746,18 +821,25 @@ export default function Home() {
     const lockedTabs: Tab[] = clanUnlocked ? [] : ["leaderboard"];
 
     if (tab === "home") {
+      const missionsOfDay = (() => {
+        const open = PROJECTS.filter((p) => !completedIds.includes(p.id));
+        return (open.length >= 2 ? open : PROJECTS).slice(0, 2);
+      })();
       return (
-        <ScreenHome
+        <ScreenHomeCare
           tint={TINT}
           name={childName || parentName}
-          completedProjects={completedCount}
-          totalPoints={totalPoints}
+          coins={totalPoints}
+          meters={careMeters}
           streak={completedCount > 0 ? Math.min(completedCount, 30) : 0}
           equippedHat={equippedHat}
+          missions={missionsOfDay}
           tab={tab}
           setTab={setTab}
           onOpenProject={(id) => setStage({ kind: "project", projectId: id })}
-          onSeeAllProjects={() => setTab("projects")}
+          onOpenCatometer={() => setStage({ kind: "catometer" })}
+          onSpendSnack={buySnack}
+          nextFightLabel={nextFightLabel}
           lockedTabs={lockedTabs}
         />
       );
@@ -833,6 +915,8 @@ export default function Home() {
       ? `handover-${stage.step}`
       : stage.kind === "app"
       ? `app-${stage.tab}`
+      : stage.kind === "catometer"
+      ? "catometer"
       : stage.kind === "project"
       ? `project-${stage.projectId}`
       : `reward-${stage.projectId}`;

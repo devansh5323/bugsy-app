@@ -232,3 +232,104 @@ export function bugsyLines(opts: {
 export function nextHatToUnlock(completedCount: number): Hat | null {
   return HATS.find((h) => h.unlockAt > completedCount) ?? null;
 }
+
+// ── Catometer: care meters, health, badges, clan cats ─────────
+// Bugsy's wellbeing is five behaviour meters (0..100). Their average
+// is the overall health score (0..100). Caring for Bugsy through
+// missions raises the matching meter; the health score + badge label
+// reflect how well he's looked after.
+export type CareMeterKey =
+  | "feeding"
+  | "playing"
+  | "cuddling"
+  | "grooming"
+  | "socialising";
+export type CareMeters = Record<CareMeterKey, number>;
+
+export const CARE_METERS: {
+  key: CareMeterKey;
+  label: string;
+  emoji: string;
+  action: string; // CTA verb on the catometer
+  desire: string; // "Bugsy ___" prompt fragment when this meter is lowest
+  tint: string; // bar colour
+}[] = [
+  { key: "feeding",     label: "Feeding",     emoji: "🍖", action: "Feed",      desire: "is hungry",          tint: "#FF8A4C" },
+  { key: "playing",     label: "Playing",     emoji: "🧶", action: "Play",      desire: "wants to play",      tint: "#4CC76B" },
+  { key: "cuddling",    label: "Cuddling",    emoji: "💞", action: "Cuddle",    desire: "wants to cuddle",    tint: "#FF5C8A" },
+  { key: "grooming",    label: "Grooming",    emoji: "🛁", action: "Groom",     desire: "needs a groom",      tint: "#A78BFA" },
+  { key: "socialising", label: "Socialising", emoji: "🐾", action: "Socialise", desire: "wants to make friends", tint: "#22B8CF" },
+];
+
+export const DEFAULT_CARE_METERS: CareMeters = {
+  feeding: 68,
+  playing: 54,
+  cuddling: 42,
+  grooming: 61,
+  socialising: 33,
+};
+
+export function healthFromMeters(m: CareMeters): number {
+  const vals = Object.values(m);
+  return Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
+}
+
+// Status bands for the health score (0..100).
+export function healthStatus(score: number): string {
+  if (score >= 80) return "Strong";
+  if (score >= 60) return "Healthy";
+  if (score >= 40) return "Growing steadily";
+  if (score >= 20) return "Needs attention";
+  return "Neglected";
+}
+
+// The meter that needs the most love right now (lowest value).
+export function lowestMeter(m: CareMeters): (typeof CARE_METERS)[number] {
+  let lowKey: CareMeterKey = CARE_METERS[0].key;
+  for (const c of CARE_METERS) if (m[c.key] < m[lowKey]) lowKey = c.key;
+  return CARE_METERS.find((c) => c.key === lowKey)!;
+}
+
+// ── Cat badges (driven by coins earned) ───────────────────────
+export const CAT_BADGES: { name: string; coins: number }[] = [
+  { name: "Kitten", coins: 0 },
+  { name: "Scout", coins: 250 },
+  { name: "Explorer", coins: 500 },
+  { name: "Leader", coins: 1000 },
+  { name: "Champion", coins: 2000 },
+];
+export function catBadge(coins: number): {
+  current: { name: string; coins: number };
+  next: { name: string; coins: number } | null;
+} {
+  let current = CAT_BADGES[0];
+  for (const b of CAT_BADGES) if (coins >= b.coins) current = b;
+  const next = CAT_BADGES.find((b) => b.coins > coins) ?? null;
+  return { current, next };
+}
+
+// ── The 8-cat attention clan (Bugsy is the captain) ───────────
+export type ClanCat = {
+  key: string;
+  name: string;
+  domain: string;
+  role: string;
+  tint: number; // mascot hue
+  captain?: boolean;
+  unlockAt: number; // coins needed to unlock (0 = already yours)
+};
+export const CLAN_CATS: ClanCat[] = [
+  { key: "bugsy",  name: "Bugsy",  domain: "Global Captain",       role: "Primary companion",      tint: 220, captain: true, unlockAt: 0 },
+  { key: "spot",   name: "Spot",   domain: "Visual Attention",     role: "Spots hidden items",     tint: 35,  unlockAt: 150 },
+  { key: "focus",  name: "Focus",  domain: "Sustained Attention",  role: "Maintains steady focus", tint: 145, unlockAt: 300 },
+  { key: "laser",  name: "Laser",  domain: "Selective Attention",  role: "Filters distractions",   tint: 8,   unlockAt: 500 },
+  { key: "flex",   name: "Flex",   domain: "Cognitive Flexibility",role: "Switches between tasks",  tint: 300, unlockAt: 750 },
+  { key: "memory", name: "Memory", domain: "Working Memory",       role: "Remembers sequences",    tint: 265, unlockAt: 1000 },
+  { key: "calmi",  name: "Calmi",  domain: "Inhibition Control",   role: "Pauses before acting",   tint: 190, unlockAt: 1300 },
+  { key: "time",   name: "Time",   domain: "Time Management",      role: "Handles temporal tasks", tint: 85,  unlockAt: 1600 },
+  { key: "echo",   name: "Echo",   domain: "Auditory Attention",   role: "Responds to sound cues", tint: 325, unlockAt: 2000 },
+];
+// The next locked cat the child is working toward (by coins).
+export function nextClanCat(coins: number): ClanCat | null {
+  return CLAN_CATS.find((c) => c.unlockAt > coins) ?? null;
+}

@@ -471,6 +471,7 @@ export function RoomBackdrop({
   chairs = true,
   dusk = false,
   stormy = false,
+  night = false,
 }: {
   tap?: (id: string) => void;
   shake?: string | null;
@@ -480,23 +481,27 @@ export function RoomBackdrop({
   dusk?: boolean;
   // Thunderstorm visuals through the window — used by ChildCalmBugsy.
   stormy?: boolean;
+  // Night sky + moon through the window — used by ChildBedtime.
+  night?: boolean;
 }) {
   const interactive = !!tap;
   // Evening palette for the "see you tomorrow" beat.
   const skyFill = stormy
     ? "url(#hs-sky-storm)"
-    : dusk
-      ? "url(#hs-sky-dusk)"
-      : "url(#hs-sky)";
-  const cloud = stormy ? "#4c4f6a" : dusk ? "#f4c6ae" : "#ffffff";
+    : night
+      ? "url(#hs-sky-night)"
+      : dusk
+        ? "url(#hs-sky-dusk)"
+        : "url(#hs-sky)";
+  const cloud = stormy ? "#4c4f6a" : night ? "#2a2e4a" : dusk ? "#f4c6ae" : "#ffffff";
   // Storm palette — hills shift toward warm wet-earth tones (muted
   // olive-brown) so they read as soggy hillside rather than the same
   // sage-green as the bushes.
-  const hillA = stormy ? "#857a62" : dusk ? "#7ba06d" : "#a9d99a";
-  const hillB = stormy ? "#665a44" : dusk ? "#67905d" : "#92c882";
-  const bush1 = stormy ? "#5e8078" : dusk ? "#5e8d56" : "#7cc46f";
-  const bush2 = stormy ? "#7a958c" : dusk ? "#6d9d62" : "#8ed07f";
-  const bush3 = stormy ? "#4d6e66" : dusk ? "#547d4d" : "#6fb862";
+  const hillA = stormy ? "#857a62" : night ? "#41506a" : dusk ? "#7ba06d" : "#a9d99a";
+  const hillB = stormy ? "#665a44" : night ? "#35435c" : dusk ? "#67905d" : "#92c882";
+  const bush1 = stormy ? "#5e8078" : night ? "#3a5a52" : dusk ? "#5e8d56" : "#7cc46f";
+  const bush2 = stormy ? "#7a958c" : night ? "#456a5e" : dusk ? "#6d9d62" : "#8ed07f";
+  const bush3 = stormy ? "#4d6e66" : night ? "#33524a" : dusk ? "#547d4d" : "#6fb862";
   const tapStyle = (id: string): React.CSSProperties => ({
     cursor: interactive ? "pointer" : "default",
     transformBox: "fill-box",
@@ -574,6 +579,13 @@ export function RoomBackdrop({
           <stop offset="0%" stopColor="#171a36" />
           <stop offset="55%" stopColor="#262a52" />
           <stop offset="100%" stopColor="#3b3a6a" />
+        </linearGradient>
+        {/* Clear night sky — deep indigo for the bedtime "see you
+            tomorrow" beat (moon + stars drawn in the window). */}
+        <linearGradient id="hs-sky-night" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#10142e" />
+          <stop offset="55%" stopColor="#1d2348" />
+          <stop offset="100%" stopColor="#2c3360" />
         </linearGradient>
       </defs>
 
@@ -658,6 +670,20 @@ export function RoomBackdrop({
               />
             ))}
           </>
+        ) : night ? (
+          <>
+            {/* Moon + a scatter of stars */}
+            <circle cx="246" cy="198" r="27" fill="#fff7d6" opacity="0.45" />
+            <circle cx="246" cy="198" r="20" fill="#fdf3c4" />
+            <circle cx="240" cy="192" r="4" fill="#eadfa6" opacity="0.6" />
+            <circle cx="253" cy="203" r="3" fill="#eadfa6" opacity="0.6" />
+            <circle cx="248" cy="208" r="2.4" fill="#eadfa6" opacity="0.6" />
+            {[[140, 178], [172, 204], [196, 172], [274, 184], [150, 236], [282, 230], [128, 210]].map(
+              ([x, y], i) => (
+                <circle key={`star-${i}`} cx={x} cy={y} r={1.6} fill="#fff" opacity="0.9" />
+              ),
+            )}
+          </>
         ) : dusk ? (
           <>
             {/* low setting sun + a couple of early stars */}
@@ -669,7 +695,7 @@ export function RoomBackdrop({
         ) : (
           <circle cx="250" cy="186" r="20" fill="#ffe9a8" />
         )}
-        {!stormy && (
+        {!stormy && !night && (
           <>
             <ellipse cx="160" cy="200" rx="30" ry="13" fill={cloud} opacity="0.8" />
             <ellipse cx="186" cy="194" rx="20" ry="11" fill={cloud} opacity="0.8" />
@@ -3538,19 +3564,26 @@ function MissionsIcon() {
 // The emotional close: same room as the first meeting, but dusk has
 // fallen. Bugsy asks what time to wait for the child tomorrow, so the
 // daily visit feels like a promise he's holding onto.
-const PROMISE_TIMES: { id: string; label: string; emoji: string }[] = [
-  { id: "morning", label: "Morning", emoji: "🌅" },
-  { id: "afternoon", label: "Afternoon", emoji: "☀️" },
-  { id: "evening", label: "Evening", emoji: "🌙" },
+// Pickable clock times for "when should I wait for you tomorrow" — a
+// grid the kid taps like the age picker.
+const PROMISE_TIMES = [
+  "7 AM",
+  "8 AM",
+  "9 AM",
+  "3 PM",
+  "4 PM",
+  "5 PM",
+  "6 PM",
+  "7 PM",
+  "8 PM",
 ];
 export function ChildPromise({ tint, childName, onNext, onBack }: Common) {
   const friend = childName.trim() || "friend";
   const [picked, setPicked] = useState<string | null>(null);
   const [done, setDone] = useState(false);
 
-  const pickedLabel = PROMISE_TIMES.find((t) => t.id === picked)?.label.toLowerCase();
   const bubbleText = picked
-    ? `Yay! I'll be right here waiting for you in the ${pickedLabel}. 🐾`
+    ? `Yay! I'll be right here waiting for you at ${picked}. 🐾`
     : `It's getting late, ${friend}… When should I wait for you tomorrow?`;
 
   return (
@@ -3610,48 +3643,49 @@ export function ChildPromise({ tint, childName, onNext, onBack }: Common) {
           onDone={() => setDone(true)}
         />
 
-        {/* Time-of-day options — hidden once one is chosen. */}
-        {!picked && (
+        {/* Time options — a tappable grid, like the age picker. Stays
+            visible once the question has typed; the chosen time stays
+            highlighted. */}
+        {(done || picked) && (
           <div
             style={{
               width: "100%",
               maxWidth: 300,
-              display: "flex",
-              flexDirection: "column",
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
               gap: 10,
-              opacity: done ? 1 : 0,
-              transform: done ? "translateY(0)" : "translateY(8px)",
-              transition: "opacity 0.4s ease, transform 0.4s ease",
-              pointerEvents: done ? "auto" : "none",
+              animation: "fade-up 0.4s ease",
             }}
           >
-            {PROMISE_TIMES.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => {
-                  setDone(false);
-                  setPicked(t.id);
-                }}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 14,
-                  padding: "14px 18px",
-                  borderRadius: 16,
-                  border: "2px solid #c98",
-                  background: "rgba(255,255,255,0.92)",
-                  color: "#5b3a4a",
-                  fontFamily: "var(--font-nunito), system-ui",
-                  fontWeight: 800,
-                  fontSize: 18,
-                  cursor: "pointer",
-                  boxShadow: "0 4px 0 #b07f8c",
-                }}
-              >
-                <span style={{ fontSize: 26 }}>{t.emoji}</span>
-                {t.label}
-              </button>
-            ))}
+            {PROMISE_TIMES.map((t, i) => {
+              const active = picked === t;
+              return (
+                <button
+                  key={t}
+                  onClick={() => {
+                    setDone(false);
+                    setPicked(t);
+                  }}
+                  style={{
+                    minHeight: 56,
+                    borderRadius: 16,
+                    cursor: "pointer",
+                    border: active ? "3px solid #d9778f" : "2px solid #c98",
+                    background: active ? "#ffe3ec" : "rgba(255,255,255,0.92)",
+                    color: active ? "#b03a5b" : "#5b3a4a",
+                    fontFamily: "var(--font-nunito), system-ui",
+                    fontWeight: 800,
+                    fontSize: 18,
+                    boxShadow: active ? "0 4px 0 #b03a5b" : "0 2px 0 #b07f8c",
+                    transform: active ? "translateY(-2px)" : "none",
+                    transition: "transform 0.12s ease, box-shadow 0.12s ease",
+                    animation: `bugsy-pop 0.35s cubic-bezier(0.22, 1.5, 0.36, 1) ${(0.04 * i).toFixed(2)}s backwards`,
+                  }}
+                >
+                  {t}
+                </button>
+              );
+            })}
           </div>
         )}
       </div>
@@ -3671,6 +3705,255 @@ export function ChildPromise({ tint, childName, onNext, onBack }: Common) {
         }}
       >
         <BigCTA onClick={onNext}>It&apos;s a promise 🤞</BigCTA>
+      </div>
+    </div>
+  );
+}
+
+// ── SCREEN — Bedtime goodnight (before the grown-up step) ─────
+// Night has fallen: the window goes dark, the moon and fireflies come
+// out. Bugsy says goodnight, then on "Can't wait!" he purrs, curls back
+// into his box, and drifts off to sleep before the grown-up step.
+const BEDTIME_FIREFLIES = [
+  { left: "18%", top: "22%", size: 4, delay: 0.0, dur: 7.4 },
+  { left: "33%", top: "34%", size: 3, delay: 1.6, dur: 8.2 },
+  { left: "70%", top: "26%", size: 4, delay: 0.7, dur: 6.8 },
+  { left: "82%", top: "40%", size: 3, delay: 2.7, dur: 9.0 },
+  { left: "26%", top: "52%", size: 3, delay: 1.1, dur: 8.6 },
+  { left: "60%", top: "48%", size: 4, delay: 3.3, dur: 7.0 },
+  { left: "47%", top: "30%", size: 3, delay: 2.0, dur: 9.4 },
+];
+export function ChildBedtime({ tint, childName, onNext, onBack }: Common) {
+  void childName;
+  const [done, setDone] = useState(false);
+  const [sleeping, setSleeping] = useState(false);
+  const { purr } = useCatSounds();
+
+  const goToBed = () => {
+    if (sleeping) return;
+    setSleeping(true);
+    purr();
+    // Let him curl into the box and the z's float up, then move on.
+    window.setTimeout(onNext, 2400);
+  };
+
+  return (
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden", background: "#1d2348" }}>
+      <RoomBackdrop night chairs={false} />
+
+      {/* Night wash so the cosy room reads as fully dark. */}
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "linear-gradient(180deg, rgba(16,20,46,0.55) 0%, rgba(28,33,72,0.42) 55%, rgba(28,33,72,0.30) 100%)",
+          pointerEvents: "none",
+          zIndex: 1,
+        }}
+      />
+
+      {/* Fireflies drifting through the room */}
+      {BEDTIME_FIREFLIES.map((f, i) => (
+        <span
+          key={i}
+          aria-hidden
+          style={{
+            position: "absolute",
+            left: f.left,
+            top: f.top,
+            width: f.size,
+            height: f.size,
+            borderRadius: "50%",
+            background: "#FFE27A",
+            boxShadow: "0 0 8px 2px rgba(255, 220, 110, 0.75)",
+            animation: `firefly ${f.dur}s ease-in-out ${f.delay}s infinite`,
+            pointerEvents: "none",
+            zIndex: 2,
+          }}
+        />
+      ))}
+
+      {/* back button */}
+      {onBack && (
+        <button
+          onClick={onBack}
+          aria-label="Back"
+          style={{
+            position: "absolute",
+            top: 14,
+            left: 14,
+            width: 40,
+            height: 40,
+            borderRadius: 12,
+            border: "2px solid rgba(255,255,255,0.18)",
+            background: "rgba(255,255,255,0.14)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            color: "#e6dcff",
+            zIndex: 8,
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14">
+            <path d="M9 1L3 7l6 6" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      )}
+
+      {/* Bugsy in his box, with the goodnight bubble right above him */}
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 128,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          padding: "0 24px",
+          zIndex: 5,
+        }}
+      >
+        {/* Reserved bubble slot so the box doesn't jump when it hides. */}
+        <div style={{ minHeight: 100, display: "flex", alignItems: "flex-end", marginBottom: 2 }}>
+          {!sleeping && (
+            <RoomBubble
+              tail="down"
+              maxWidth={300}
+              text="It's getting late now… Time to go to bed. See you tomorrow?"
+              onDone={() => setDone(true)}
+            />
+          )}
+        </div>
+
+        {/* Bugsy + his box */}
+        <div
+          style={{
+            position: "relative",
+            width: 280,
+            height: 230,
+          }}
+        >
+        {/* Box interior (dark) */}
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            bottom: 6,
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: 188,
+            height: 120,
+            background: "linear-gradient(#2c2013, #1c1209)",
+            borderRadius: "12px 12px 10px 10px",
+            zIndex: 1,
+          }}
+        />
+
+        {/* Bugsy — sits up while saying goodnight, sinks into the box
+            and falls asleep (z's) once the child taps. */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: 64,
+            left: "50%",
+            transform: `translateX(-50%) translateY(${sleeping ? 56 : 0}px)`,
+            transition: "transform 1.2s cubic-bezier(0.4, 0, 0.2, 1)",
+            zIndex: 2,
+          }}
+        >
+          <div
+            style={{
+              filter: "drop-shadow(0 12px 12px rgba(10,10,30,0.4))",
+              animation: sleeping ? "bobo-calm-idle 3.4s ease-in-out infinite" : undefined,
+            }}
+          >
+            <Bobo mood={sleeping ? "sleep" : "sleepy"} tint={tint} size={150} />
+          </div>
+        </div>
+
+        {/* Box front wall — covers Bugsy's lower half so he reads as
+            tucked inside. */}
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: 196,
+            height: 100,
+            background:
+              "linear-gradient(168deg, #e0bd8d 0%, #cba472 60%, #bd9462 100%)",
+            border: "2px solid #ac8458",
+            borderRadius: "8px 8px 14px 14px",
+            boxShadow:
+              "inset 0 6px 10px rgba(255,255,255,0.14), inset 0 -8px 14px rgba(0,0,0,0.16)",
+            zIndex: 3,
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              bottom: 0,
+              left: "50%",
+              width: 2,
+              background: "rgba(0,0,0,0.10)",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              bottom: 12,
+              left: "50%",
+              transform: "translateX(-50%)",
+              fontSize: 16,
+              opacity: 0.5,
+            }}
+          >
+            ♥
+          </div>
+        </div>
+
+        {/* Ground shadow */}
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            bottom: -6,
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: 220,
+            height: 18,
+            borderRadius: "50%",
+            background: "rgba(0,0,0,0.35)",
+            filter: "blur(6px)",
+            zIndex: 0,
+          }}
+        />
+        </div>
+      </div>
+
+      {/* CTA — appears once the goodnight line finishes typing. */}
+      <div
+        style={{
+          position: "absolute",
+          left: 20,
+          right: 20,
+          bottom: 28,
+          opacity: done && !sleeping ? 1 : 0,
+          transform: done && !sleeping ? "translateY(0)" : "translateY(10px)",
+          transition: "opacity 0.4s ease, transform 0.4s ease",
+          pointerEvents: done && !sleeping ? "auto" : "none",
+          zIndex: 6,
+        }}
+      >
+        <BigCTA onClick={goToBed}>Can&apos;t wait!</BigCTA>
       </div>
     </div>
   );
