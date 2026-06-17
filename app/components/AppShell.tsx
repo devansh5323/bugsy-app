@@ -124,6 +124,48 @@ export function TabBar({
   );
 }
 
+// Ambient warm motes drifting over the home scene — same polish layer
+// the onboarding parent flow uses. Purely decorative, zero interactivity.
+function AmbientMotes() {
+  const motes = [
+    { left: "14%", top: "18%", size: 10, dur: 9, delay: 0, c: "rgba(255,212,128,0.55)" },
+    { left: "80%", top: "24%", size: 7, dur: 11, delay: 1.4, c: "rgba(255,180,200,0.5)" },
+    { left: "30%", top: "42%", size: 6, dur: 10, delay: 2.6, c: "rgba(255,225,150,0.5)" },
+    { left: "68%", top: "50%", size: 9, dur: 12, delay: 0.8, c: "rgba(200,160,255,0.42)" },
+    { left: "50%", top: "14%", size: 5, dur: 8.5, delay: 3.2, c: "rgba(255,255,255,0.6)" },
+    { left: "88%", top: "60%", size: 6, dur: 10.5, delay: 1.9, c: "rgba(255,200,140,0.48)" },
+  ];
+  return (
+    <div
+      aria-hidden
+      style={{
+        position: "absolute",
+        inset: 0,
+        zIndex: 1,
+        pointerEvents: "none",
+        overflow: "hidden",
+      }}
+    >
+      {motes.map((m, i) => (
+        <span
+          key={i}
+          style={{
+            position: "absolute",
+            left: m.left,
+            top: m.top,
+            width: m.size,
+            height: m.size,
+            borderRadius: "50%",
+            background: m.c,
+            filter: "blur(1px)",
+            animation: `parent-mote ${m.dur}s ease-in-out ${m.delay}s infinite`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export function AppShell({
   children,
   tab,
@@ -135,6 +177,7 @@ export function AppShell({
   bugzySize = 44,
   bugzyHat,
   lockedTabs,
+  backdrop,
 }: {
   children: ReactNode;
   tab: Tab;
@@ -146,6 +189,11 @@ export function AppShell({
   bugzySize?: number;
   bugzyHat?: string | null;
   lockedTabs?: Tab[];
+  // Optional full-bleed scene rendered behind the content (e.g. the
+  // cosy-room backdrop on home). We layer the onboarding's readability
+  // scrim + ambient motes over it so cards and text stay legible.
+  // Omitted → original plain-canvas look, other screens unaffected.
+  backdrop?: ReactNode;
 }) {
   return (
     <div
@@ -157,7 +205,38 @@ export function AppShell({
         flexDirection: "column",
       }}
     >
-      <div style={{ flex: 1, overflow: "auto", paddingTop: 60 }}>
+      {backdrop && (
+        <>
+          {/* Scene — gently "breathes" so it feels alive without distracting. */}
+          <div
+            aria-hidden
+            style={{
+              position: "absolute",
+              inset: 0,
+              zIndex: 0,
+              transformOrigin: "center",
+              animation: "parent-scene-drift 20s ease-in-out infinite",
+            }}
+          >
+            {backdrop}
+          </div>
+          {/* Readability scrim — light up top (scene shows through behind
+              Bugsy), heavier toward the bottom where cards stack up. */}
+          <div
+            aria-hidden
+            style={{
+              position: "absolute",
+              inset: 0,
+              zIndex: 0,
+              pointerEvents: "none",
+              background:
+                "linear-gradient(180deg, rgba(255,251,245,0.30) 0%, rgba(255,250,244,0.42) 38%, rgba(255,249,242,0.66) 70%, rgba(255,248,240,0.82) 100%)",
+            }}
+          />
+          <AmbientMotes />
+        </>
+      )}
+      <div style={{ flex: 1, overflow: "auto", paddingTop: 60, position: "relative", zIndex: 2 }}>
         <div style={{ padding: "8px 24px 18px", display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ flex: 1 }}>
             {subtitle && (

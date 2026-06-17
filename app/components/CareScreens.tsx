@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Bobo } from "./Mascot";
 import { AppShell } from "./AppShell";
+import { RoomBackdrop } from "./onboarding/ChildMeet";
 import {
   CARE_METERS,
   CAT_BADGES,
@@ -299,6 +300,15 @@ export function ScreenHomeCare({
   const low = lowestMeter(meters);
   const heroMood = health >= 60 ? "happy" : health >= 40 ? "thinking" : "hungry";
 
+  // Time-of-day for the room scene — sunny by day, sunset at dusk,
+  // moon + stars at night. Set after mount (not at render) so the
+  // server and client markup agree during hydration.
+  const [daypart, setDaypart] = useState<"day" | "dusk" | "night">("day");
+  useEffect(() => {
+    const hour = new Date().getHours();
+    setDaypart(hour >= 20 || hour < 6 ? "night" : hour >= 17 ? "dusk" : "day");
+  }, []);
+
   return (
     <AppShell
       title={`Hey, ${name || "friend"}`}
@@ -307,6 +317,31 @@ export function ScreenHomeCare({
       setTab={setTab}
       tint={tint}
       lockedTabs={lockedTabs}
+      backdrop={
+        // Same cosy room the child met Bugsy in during onboarding —
+        // home *is* Bugsy's room. Chairs off keeps the wall clear
+        // behind the cards; the window follows the child's real clock.
+        <>
+          <RoomBackdrop
+            chairs={false}
+            dusk={daypart === "dusk"}
+            night={daypart === "night"}
+          />
+          {/* The window (moon + stars) hides behind the cards, so give
+              the whole room a gentle lamplight-indigo dim at night. */}
+          {daypart === "night" && (
+            <div
+              aria-hidden
+              style={{
+                position: "absolute",
+                inset: 0,
+                background:
+                  "linear-gradient(180deg, rgba(42,46,90,0.22) 0%, rgba(58,52,112,0.12) 55%, rgba(255,177,94,0.10) 100%)",
+              }}
+            />
+          )}
+        </>
+      }
     >
       {/* Coins + badge */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>

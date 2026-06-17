@@ -6,6 +6,7 @@ import { ChunkyButton } from "./ConvoUI";
 import { Typewriter } from "../Typewriter";
 import type { Mood } from "../../lib/data";
 import { AGE_MAX, AGE_MIN } from "../../lib/data";
+import { NightRoomBackdrop } from "./WhoAreYou";
 
 // ── Child onboarding, post-handover: meeting Bugsy in his room ──
 // Brighter, bigger, more playful than the parent flow. Screens:
@@ -280,164 +281,412 @@ function RoomBubble({
   );
 }
 
+// ── Night-room starfield backdrop for ChildDoorway ────────────
+export function DoorwayBackdrop() {
+  return (
+    <div aria-hidden style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", overflow: "hidden" }}>
+      <svg width="100%" height="100%" viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice"
+        style={{ position: "absolute", inset: 0, display: "block" }}>
+        <defs>
+          <radialGradient id="dr-bg" cx="50%" cy="55%" r="75%">
+            <stop offset="0%"   stopColor="#4a3f63" />
+            <stop offset="55%"  stopColor="#2e2747" />
+            <stop offset="100%" stopColor="#1d1830" />
+          </radialGradient>
+          <radialGradient id="dr-moon" cx="38%" cy="38%" r="65%">
+            <stop offset="0%"   stopColor="#FFFAE0" />
+            <stop offset="100%" stopColor="#EDD850" />
+          </radialGradient>
+          <radialGradient id="dr-glow" cx="50%" cy="100%" r="70%">
+            <stop offset="0%"   stopColor="rgba(255,220,130,0.22)" />
+            <stop offset="100%" stopColor="rgba(255,220,130,0)" />
+          </radialGradient>
+          <filter id="dr-star-glow"><feGaussianBlur stdDeviation="2" /></filter>
+          <filter id="dr-moon-glow"><feGaussianBlur stdDeviation="8" /></filter>
+        </defs>
+
+        {/* Background */}
+        <rect x="0" y="0" width="400" height="800" fill="url(#dr-bg)" />
+        {/* Floor line */}
+        <rect x="0" y="740" width="400" height="60" fill="rgba(0,0,0,0.25)" />
+        {/* Warm ambient pool at floor level (lamp / door glow spill) */}
+        <ellipse cx="200" cy="800" rx="260" ry="120" fill="url(#dr-glow)" />
+
+        {/* ── Window — top-left ── */}
+        <rect x="18" y="38" width="96" height="118" rx="12" fill="#2a1a4a" />
+        <rect x="22" y="42" width="88" height="110" rx="9"
+          fill="#050218" />
+        {/* cross bars */}
+        <line x1="66" y1="42" x2="66" y2="152" stroke="#2a1a4a" strokeWidth="4" />
+        <line x1="22" y1="97" x2="110" y2="97" stroke="#2a1a4a" strokeWidth="4" />
+        {/* window frame border */}
+        <rect x="18" y="38" width="96" height="118" rx="12" fill="none" stroke="#4a3480" strokeWidth="3.5" />
+        {/* window sill */}
+        <rect x="12" y="152" width="108" height="10" rx="5" fill="#3a2868" />
+        {/* crescent moon */}
+        <circle cx="76" cy="116" r="24" fill="rgba(255,240,140,0.12)" filter="url(#dr-moon-glow)" />
+        <circle cx="74" cy="118" r="20" fill="url(#dr-moon)" />
+        <circle cx="86" cy="112" r="17" fill="#050218" />
+        {/* night sky stars */}
+        {[{x:30,y:55,r:1.2,d:6.5,dl:0.3},{x:98,y:62,r:0.9,d:8.2,dl:1.1},
+          {x:44,y:80,r:1.0,d:7.0,dl:2.0},{x:100,y:82,r:0.8,d:9.0,dl:0.7},
+          {x:28,y:140,r:0.9,d:7.8,dl:1.8},{x:55,y:60,r:0.7,d:6.2,dl:3.0}].map((s,i)=>(
+          <circle key={i} cx={s.x} cy={s.y} r={s.r} fill="white" opacity="0.90"
+            style={{ animation:`firefly ${s.d}s ease-in-out ${s.dl}s infinite` }} />
+        ))}
+        {/* curtains */}
+        <path d="M18 38 Q6 97 18 156 L30 156 Q18 97 30 38 Z" fill="#5a3890" opacity="0.55" />
+        <path d="M114 38 Q126 97 114 156 L102 156 Q114 97 102 38 Z" fill="#5a3890" opacity="0.55" />
+
+        {/* ── Floating star particles ── */}
+        {[
+          {x: 60,y:230,r:3.2,d:7.4,dl:0.0},{x:350,y:180,r:2.8,d:8.6,dl:1.2},
+          {x:320,y:310,r:3.6,d:6.8,dl:2.1},{x: 28,y:370,r:2.6,d:9.2,dl:0.6},
+          {x:370,y:420,r:3.0,d:7.0,dl:3.4},{x:340,y:100,r:2.4,d:8.0,dl:1.8},
+          {x:160,y: 50,r:2.2,d:7.6,dl:0.9},{x:260,y: 60,r:2.8,d:6.4,dl:2.6},
+          {x: 36,y:490,r:2.0,d:8.8,dl:1.5},{x:376,y:560,r:2.4,d:7.2,dl:0.4},
+        ].map((p,i)=>(
+          <circle key={i} cx={p.x} cy={p.y} r={p.r} fill="#FFE27A"
+            filter="url(#dr-star-glow)"
+            style={{ animation:`firefly ${p.d}s ease-in-out ${p.dl}s infinite` }} />
+        ))}
+
+        {/* ── Minimal wall decor — two small framed shapes ── */}
+        <rect x="304" y="52" width="76" height="62" rx="9" fill="#2e1e54" />
+        <rect x="308" y="56" width="68" height="54" rx="7" fill="#3c2a6a" />
+        {/* simple star art in frame */}
+        <polygon points="342,66 345,74 353,74 347,79 349,87 342,82 335,87 337,79 331,74 339,74"
+          fill="#FFD060" opacity="0.80" />
+      </svg>
+    </div>
+  );
+}
+
+// ── Simple cozy-room backdrop just for ChildDoorway ──────────
+function AdventureRoomBackdrop() {
+  return (
+    <div aria-hidden style={{ position:"absolute", inset:0, zIndex:0, pointerEvents:"none", overflow:"hidden" }}>
+      <svg width="100%" height="100%" viewBox="0 0 400 800"
+        preserveAspectRatio="xMidYMid slice"
+        style={{ position:"absolute", inset:0, display:"block" }}>
+        <defs>
+          <radialGradient id="ar-bg" cx="50%" cy="45%" r="80%">
+            <stop offset="0%"   stopColor="#3a3060" />
+            <stop offset="55%"  stopColor="#26204a" />
+            <stop offset="100%" stopColor="#191330" />
+          </radialGradient>
+          <radialGradient id="ar-floor" cx="50%" cy="0%" r="100%">
+            <stop offset="0%"   stopColor="#2e2250" />
+            <stop offset="100%" stopColor="#18112e" />
+          </radialGradient>
+          <radialGradient id="ar-door-glow" cx="50%" cy="60%" r="70%">
+            <stop offset="0%"   stopColor="rgba(255,220,110,0.30)" />
+            <stop offset="100%" stopColor="rgba(255,220,110,0)" />
+          </radialGradient>
+          <radialGradient id="ar-moon" cx="38%" cy="38%" r="65%">
+            <stop offset="0%"   stopColor="#FFFAE0" />
+            <stop offset="100%" stopColor="#EDD850" />
+          </radialGradient>
+          <filter id="ar-star"><feGaussianBlur stdDeviation="2" /></filter>
+          <filter id="ar-moon-glow"><feGaussianBlur stdDeviation="10" /></filter>
+          <filter id="ar-door-halo"><feGaussianBlur stdDeviation="28" /></filter>
+        </defs>
+
+        {/* Background + floor */}
+        <rect x="0" y="0" width="400" height="800" fill="url(#ar-bg)" />
+        <rect x="0" y="734" width="400" height="66" fill="url(#ar-floor)" />
+        <line x1="0" y1="734" x2="400" y2="734" stroke="#5040a0" strokeWidth="1" opacity="0.20" />
+
+        {/* Soft door glow on the wall — behind everything */}
+        <ellipse cx="200" cy="560" rx="220" ry="260" fill="url(#ar-door-glow)" filter="url(#ar-door-halo)" />
+
+        {/* ── Window — top-left ── */}
+        <rect x="20" y="36" width="100" height="122" rx="13"
+          fill="rgba(0,0,0,0.55)" transform="translate(3,3)" />
+        <rect x="17" y="33" width="100" height="122" rx="13" fill="#2e1d52" />
+        <rect x="21" y="37" width="92" height="114" rx="10" fill="#04011a" />
+        <line x1="67" y1="37"  x2="67"  y2="151" stroke="#2e1d52" strokeWidth="4" />
+        <line x1="21" y1="94"  x2="113" y2="94"  stroke="#2e1d52" strokeWidth="4" />
+        <rect x="17" y="33" width="100" height="122" rx="13"
+          fill="none" stroke="#5038a0" strokeWidth="3.5" />
+        <rect x="11" y="151" width="112" height="12" rx="6" fill="#3c2870" />
+        {/* Moon */}
+        <circle cx="72" cy="112" r="26" fill="rgba(255,240,140,0.13)" filter="url(#ar-moon-glow)" />
+        <circle cx="70" cy="114" r="22" fill="url(#ar-moon)" />
+        <circle cx="83" cy="108" r="18" fill="#04011a" />
+        {/* Curtains */}
+        <path d="M17 33 Q4 94 17 155 L30 155 Q17 94 30 33 Z" fill="#6040a8" opacity="0.50" />
+        <path d="M117 33 Q130 94 117 155 L104 155 Q117 94 104 33 Z" fill="#6040a8" opacity="0.50" />
+        {/* Window stars */}
+        {[{x:29,y:50,r:1.1,d:7.0,dl:0.3},{x:106,y:56,r:0.9,d:8.4,dl:1.2},
+          {x:42,y:76,r:0.8,d:6.8,dl:2.1},{x:108,y:78,r:0.7,d:9.0,dl:0.8},
+          {x:26,y:134,r:0.9,d:7.5,dl:1.9}].map((s,i)=>(
+          <circle key={i} cx={s.x} cy={s.y} r={s.r} fill="white" opacity="0.88"
+            style={{ animation:`firefly ${s.d}s ease-in-out ${s.dl}s infinite` }} />
+        ))}
+
+        {/* ── Wall stars — sparse, edges only ── */}
+        {[{x:358,y:44, r:2.6,d:7.2,dl:0.0},{x:370,y:140,r:2.2,d:8.8,dl:1.6},
+          {x:352,y:240,r:2.8,d:6.6,dl:2.8},{x:162,y:32, r:2.0,d:7.8,dl:0.7},
+          {x:254,y:38, r:2.4,d:9.2,dl:1.4},{x: 24,y:240,r:2.4,d:8.0,dl:3.0},
+          {x: 20,y:360,r:2.0,d:7.0,dl:1.1},{x:376,y:360,r:2.2,d:8.4,dl:2.3}].map((p,i)=>(
+          <circle key={i} cx={p.x} cy={p.y} r={p.r} fill="#FFE27A"
+            filter="url(#ar-star)"
+            style={{ animation:`firefly ${p.d}s ease-in-out ${p.dl}s infinite` }} />
+        ))}
+
+        {/* ── Bookshelf — left edge ── */}
+        <rect x="0" y="460" width="72" height="142" rx="6" fill="#1a1038" opacity="0.92" />
+        <rect x="0" y="502" width="72" height="7"   rx="2" fill="#362060" />
+        <rect x="0" y="554" width="72" height="7"   rx="2" fill="#362060" />
+        {[{x:2,y:468,w:12,h:34,c:"#FF8080"},{x:16,y:470,w:14,h:32,c:"#7DC8FF"},
+          {x:32,y:466,w:13,h:36,c:"#FFD070"},{x:47,y:468,w:11,h:34,c:"#80EFA0"},
+          {x:60,y:466,w:10,h:36,c:"#C890FF"}].map((b,i)=>(
+          <rect key={i} x={b.x} y={b.y} width={b.w} height={b.h} rx="2" fill={b.c} />
+        ))}
+        {[{x:2,y:512,w:11,h:42,c:"#FF90C0"},{x:15,y:510,w:14,h:44,c:"#60D8F0"},
+          {x:31,y:513,w:12,h:41,c:"#FFA860"},{x:45,y:511,w:13,h:43,c:"#88EE80"},
+          {x:60,y:512,w:10,h:42,c:"#B8A0FF"}].map((b,i)=>(
+          <rect key={i} x={b.x} y={b.y} width={b.w} height={b.h} rx="2" fill={b.c} />
+        ))}
+
+        {/* ── Plant — right edge ── */}
+        <path d="M344 736 Q340 712 350 707 L372 707 Q382 712 378 736 Z" fill="#B8875E" />
+        <rect x="342" y="730" width="38" height="8" rx="4" fill="#CA9870" />
+        <ellipse cx="362" cy="707" rx="11" ry="4" fill="#6B3E22" />
+        <path d="M362 706 Q381 676 390 687 Q384 702 362 706 Z" fill="#52B050" opacity="0.95" />
+        <path d="M362 702 Q342 670 332 683 Q338 698 362 702 Z" fill="#48A848" opacity="0.95" />
+        <path d="M363 693 Q375 663 364 654 Q355 675 363 693 Z" fill="#5CBE5C" opacity="0.88" />
+
+        {/* ── Round rug — floor center ── */}
+        <ellipse cx="200" cy="754" rx="138" ry="32" fill="#5e38a0" opacity="0.44" />
+        <ellipse cx="200" cy="752" rx="108" ry="25" fill="#7a50bc" opacity="0.40" />
+        <ellipse cx="200" cy="750" rx="78"  ry="18" fill="#a070d8" opacity="0.36" />
+        <ellipse cx="200" cy="749" rx="50"  ry="12" fill="#c090ee" opacity="0.30" />
+        <ellipse cx="200" cy="748" rx="26"  ry="7"  fill="#d8b0f8" opacity="0.24" />
+      </svg>
+    </div>
+  );
+}
+
 // ── SCREEN 1 — Doorway transition ─────────────────────────────
 export function ChildDoorway({ tint, onNext, onBack }: Common) {
-  const [entered, setEntered] = useState(false);
   const [ready, setReady] = useState(false);
+  const [opening, setOpening] = useState(false);
 
   useEffect(() => {
-    const t1 = window.setTimeout(() => setEntered(true), 900);
-    const t2 = window.setTimeout(() => setReady(true), 3000);
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-    };
+    const t = window.setTimeout(() => setReady(true), 1600);
+    return () => clearTimeout(t);
   }, []);
 
+  const handleDoorTap = () => {
+    if (!ready || opening) return;
+    setOpening(true);
+    window.setTimeout(onNext, 1700);
+  };
+
   return (
-    <Room brighten={entered} onBack={onBack}>
-      <div style={{ flex: 1 }} />
-      {/* The whole doorway is the tap target — kid follows the cat
-          by tapping the door once it's open. */}
-      <div
-        onClick={ready ? onNext : undefined}
-        role="button"
-        aria-label="Enter Bugsy's room"
-        aria-disabled={!ready}
-        style={{
-          position: "relative",
-          width: 320,
-          height: 440,
-          display: "flex",
-          alignItems: "flex-end",
-          justifyContent: "center",
-          cursor: ready ? "pointer" : "default",
-          touchAction: "manipulation",
-          animation: ready ? "door-tap-pulse 1.8s ease-in-out infinite" : undefined,
-          transformOrigin: "center bottom",
-        }}
-      >
-        {/* Door frame */}
-        <div
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden", color: "#fff" }}>
+      <NightRoomBackdrop />
+
+      {/* Warm-light flood — fades in after door swings open */}
+      {opening && (
+        <div aria-hidden style={{
+          position: "absolute", inset: 0, zIndex: 20, pointerEvents: "none",
+          background: "radial-gradient(ellipse at 50% 60%, #fff8e0 0%, #ffe8a0 55%, #ffcc44 100%)",
+          animation: "door-light-flood 1.7s ease forwards",
+        }} />
+      )}
+
+      {/* Back button — hidden once opening starts */}
+      {onBack && !opening && (
+        <button
+          onClick={onBack}
+          aria-label="Back"
           style={{
-            position: "absolute",
-            bottom: 0,
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: 220,
-            height: 340,
-            borderRadius: "18px 18px 0 0",
-            background: "linear-gradient(#6a5a3a, #4a3d28)",
-            boxShadow: "0 0 0 10px #3a3020",
-          }}
-        />
-        {/* Warm light from the doorway. Centered with margin (not
-            translateX) so the door-open scaleX animation — which
-            sets its own transform — doesn't knock it off-center. */}
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            bottom: 10,
-            left: "50%",
-            marginLeft: -98,
-            transformOrigin: "center bottom",
-            width: 196,
-            height: 320,
-            borderRadius: "12px 12px 0 0",
-            background:
-              "linear-gradient(#fff6d8 0%, #ffe6a8 55%, #ffd27a 100%)",
-            animation: "door-open 0.9s ease forwards",
-            boxShadow: "0 0 56px 24px rgba(255, 224, 150, 0.5)",
-          }}
-        />
-        {/* "Bugsy's room" hanging name plate above the door */}
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            bottom: 358,
-            left: "50%",
-            marginLeft: -110,
-            width: 220,
-            padding: "12px 16px",
-            background: "#fff3d6",
-            border: "3px solid #6b4520",
-            borderRadius: 14,
-            color: "#3a2410",
-            fontFamily: "var(--font-nunito), system-ui",
-            fontWeight: 900,
-            fontSize: 22,
-            letterSpacing: 0.3,
-            textAlign: "center",
-            boxShadow: "0 5px 0 #4a2f15, 0 8px 16px rgba(0,0,0,0.35)",
-            zIndex: 3,
+            position: "absolute", top: 14, left: 14,
+            width: 40, height: 40, borderRadius: 12, zIndex: 6,
+            border: "2px solid rgba(255,255,255,0.25)",
+            background: "rgba(255,255,255,0.12)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: "pointer", color: "#fff",
           }}
         >
-          Bugsy&apos;s room
-        </div>
-        {/* small ropes hanging the sign from above the door */}
+          <svg width="14" height="14" viewBox="0 0 14 14">
+            <path d="M9 1L3 7l6 6" stroke="currentColor" strokeWidth="2.5"
+              fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      )}
+
+      {/* Content column */}
+      <div style={{
+        position: "relative", zIndex: 1,
+        height: "100%", display: "flex", flexDirection: "column",
+        alignItems: "center", padding: "56px 22px 32px", boxSizing: "border-box",
+      }}>
+        <div style={{ flex: 1 }} />
+
+        {/* ── Tappable door scene ── */}
         <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            bottom: 420,
-            left: "50%",
-            marginLeft: -84,
-            width: 3,
-            height: 18,
-            background: "#6b4520",
-            borderRadius: 2,
-            zIndex: 2,
-          }}
-        />
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            bottom: 420,
-            left: "50%",
-            marginLeft: 82,
-            width: 3,
-            height: 18,
-            background: "#6b4520",
-            borderRadius: 2,
-            zIndex: 2,
-          }}
-        />
-        {/* Bugsy walking in */}
-        <div
+          onClick={handleDoorTap}
+          role="button"
+          aria-label="Enter Bugsy's room"
+          aria-disabled={!ready}
           style={{
             position: "relative",
-            zIndex: 2,
-            marginBottom: 10,
-            animation: entered ? "bugsy-walk-in 1.5s ease forwards" : "none",
-            opacity: entered ? undefined : 0,
+            width: 340,
+            height: 480,
+            display: "flex",
+            alignItems: "flex-end",
+            justifyContent: "center",
+            cursor: ready && !opening ? "pointer" : "default",
+            touchAction: "manipulation",
+            transformOrigin: "50% 62%",
+            transform: opening ? "scale(3.0) translateY(-12px)" : "scale(1)",
+            transition: opening
+              ? "transform 1.6s cubic-bezier(0.16, 1, 0.3, 1)"
+              : "transform 0.14s ease",
           }}
         >
-          <Bobo mood="waving" tint={tint} size={216} />
-        </div>
-      </div>
+          {/* Outer door frame */}
+          <div style={{
+            position: "absolute", bottom: 0,
+            left: "50%", transform: "translateX(-50%)",
+            width: 248, height: 376,
+            borderRadius: "22px 22px 0 0",
+            background: "linear-gradient(170deg,#8a7248 0%,#5c4228 60%,#3e2c18 100%)",
+            boxShadow: "0 0 0 12px #32240f, 0 0 60px 20px rgba(255,200,80,0.22), 0 16px 48px rgba(0,0,0,0.60)",
+          }} />
 
-      <div
-        style={{
-          marginTop: 18,
+          {/* Warm interior — brightens as door opens */}
+          <div aria-hidden style={{
+            position: "absolute", bottom: 8,
+            left: "50%", marginLeft: -108,
+            width: 216, height: 356,
+            borderRadius: "14px 14px 0 0",
+            background: opening
+              ? "linear-gradient(180deg,#ffffff 0%,#fff8e0 40%,#ffe090 100%)"
+              : "linear-gradient(180deg,#fffbf0 0%,#ffecb0 45%,#ffd878 100%)",
+            boxShadow: opening
+              ? "0 0 180px 110px rgba(255,240,100,0.95)"
+              : "0 0 80px 36px rgba(255,215,90,0.60)",
+            transition: "background 0.7s ease 0.25s, box-shadow 0.7s ease 0.25s",
+          }} />
+
+          {/* Door panel — wooden face that swings open (3-D hinge from left edge) */}
+          <div aria-hidden style={{
+            position: "absolute", bottom: 8,
+            left: "50%", marginLeft: -108,
+            width: 216, height: 356,
+            borderRadius: "14px 14px 0 0",
+            background: "linear-gradient(160deg,#7a6238 0%,#4e3418 55%,#3a2410 100%)",
+            zIndex: 2,
+            transformOrigin: "left center",
+            transform: opening
+              ? "perspective(560px) rotateY(-86deg)"
+              : "perspective(560px) rotateY(0deg)",
+            transition: opening
+              ? "transform 0.9s cubic-bezier(0.4, 0, 0.15, 1)"
+              : "none",
+          }} />
+
+          {/* Door panel detail lines */}
+          <div aria-hidden style={{
+            position: "absolute", bottom: 180,
+            left: "50%", marginLeft: -96,
+            width: 192, height: 148,
+            borderRadius: "10px 10px 6px 6px",
+            border: "3px solid rgba(255,255,255,0.12)",
+            pointerEvents: "none", zIndex: 3,
+          }} />
+          <div aria-hidden style={{
+            position: "absolute", bottom: 28,
+            left: "50%", marginLeft: -96,
+            width: 192, height: 140,
+            borderRadius: "6px",
+            border: "3px solid rgba(255,255,255,0.10)",
+            pointerEvents: "none", zIndex: 3,
+          }} />
+
+          {/* Gold door knob */}
+          <div aria-hidden style={{
+            position: "absolute", bottom: 168, left: "50%", marginLeft: 78,
+            width: 16, height: 16, borderRadius: "50%", zIndex: 4,
+            background: "radial-gradient(circle at 35% 35%, #FFE070, #9a7010)",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.50)",
+          }} />
+
+          {/* Hanging sign — two ropes + plaque */}
+          <div aria-hidden style={{
+            position: "absolute", bottom: 402,
+            left: "50%", marginLeft: -88, width: 3, height: 24,
+            background: "#7a5830", borderRadius: 2, zIndex: 4,
+          }} />
+          <div aria-hidden style={{
+            position: "absolute", bottom: 402,
+            left: "50%", marginLeft: 86, width: 3, height: 24,
+            background: "#7a5830", borderRadius: 2, zIndex: 4,
+          }} />
+          <div style={{
+            position: "absolute", bottom: 420,
+            left: "50%", marginLeft: -112,
+            width: 224, padding: "12px 18px",
+            background: "linear-gradient(170deg,#fff8e0,#fde8a0)",
+            border: "3px solid #7a5228",
+            borderRadius: 16,
+            color: "#3a2410",
+            fontFamily: "var(--font-nunito), system-ui",
+            fontWeight: 900, fontSize: 21, letterSpacing: 0.3,
+            textAlign: "center",
+            boxShadow: "0 5px 0 #5a3618, 0 10px 22px rgba(0,0,0,0.42)",
+            zIndex: 5,
+          }}>
+            Bugsy&apos;s room
+          </div>
+
+          {/* Bugsy — left side of the door, welcoming children inside */}
+          <div style={{
+            position: "absolute",
+            bottom: -20,
+            left: 2,
+            zIndex: 6,
+          }}>
+            <div style={{
+              transformBox: "fill-box",
+              transformOrigin: "center bottom",
+              animation: opening ? undefined : "mascot-beckon 2.8s ease-in-out infinite",
+            }}>
+              <Bobo mood="waving" tint={tint} size={210} />
+            </div>
+          </div>
+        </div>
+
+        {/* Instruction — fades out when opening */}
+        <p style={{
+          margin: "22px 0 0",
           textAlign: "center",
           fontFamily: "var(--font-nunito), system-ui",
-          fontSize: 18,
-          fontWeight: 800,
+          fontSize: 18, fontWeight: 800,
           color: "#fff",
-          textShadow: "0 2px 12px rgba(0,0,0,0.35)",
-          opacity: ready ? 1 : 0,
-          transform: ready ? "translateY(0)" : "translateY(6px)",
-          transition: "opacity 0.5s ease, transform 0.5s ease",
-        }}
-      >
-        Follow the cat by tapping on the door
-      </div>
+          lineHeight: 1.4,
+          textShadow: "0 2px 10px rgba(0,0,0,0.50)",
+          opacity: ready && !opening ? 1 : 0,
+          transform: ready && !opening ? "translateY(0)" : "translateY(8px)",
+          transition: "opacity 0.3s ease, transform 0.3s ease",
+        }}>
+          Follow the cat<br />
+          by <span style={{
+            color: "#FFD234",
+            fontWeight: 900,
+            display: "inline-block",
+            animation: "tap-hint 3.2s ease-in-out infinite",
+          }}>tapping on the door</span>
+        </p>
 
-      <div style={{ flex: 1 }} />
-    </Room>
+        <div style={{ flex: 1 }} />
+      </div>
+    </div>
   );
 }
 

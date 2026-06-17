@@ -441,6 +441,26 @@ textarea {
   0%, 100% { transform: scale(0.92); opacity: 0.55; }
   50%      { transform: scale(1.12); opacity: 0.95; }
 }
+@keyframes mascot-beckon {
+  0%, 100% { transform: translateY(0px)   rotate(0deg);  }
+  30%       { transform: translateY(-7px)  rotate(-4deg); }
+  65%       { transform: translateY(-3px)  rotate(3deg);  }
+}
+/* Warm-light flood when door swings open: holds dark, then washes white-gold */
+@keyframes door-light-flood {
+  0%   { opacity: 0; }
+  52%  { opacity: 0; }
+  82%  { opacity: 0.88; }
+  100% { opacity: 1; }
+}
+/* Periodic tap-hint: squish down (press), bounce up, settle — teaches children to tap */
+@keyframes tap-hint {
+  0%, 58%, 100% { transform: scale(1);    filter: brightness(1);    }
+  63%            { transform: scale(0.88); filter: brightness(0.88); }
+  72%            { transform: scale(1.12); filter: brightness(1.18); }
+  80%            { transform: scale(0.97); filter: brightness(1.05); }
+  88%            { transform: scale(1.02); filter: brightness(1.02); }
+}
 @keyframes sparkle {
   0%, 100% { opacity: 0; transform: scale(0); }
   50%      { opacity: 1; transform: scale(1); }
@@ -692,6 +712,17 @@ textarea {
   20%  { opacity: 1; }
   85%  { opacity: 1; transform: translate(-50%, 60px) scale(1) rotate(20deg); }
   100% { opacity: 0; transform: translate(-50%, 80px) scale(0.4) rotate(40deg); }
+}
+
+/* Welcome backdrop: sun & secondary elements gently float up/down */
+@keyframes wb-float {
+  0%, 100% { transform: translateY(0px); }
+  50%      { transform: translateY(-6px); }
+}
+/* Welcome backdrop: twinkle sparkles pulse opacity + scale without fully disappearing */
+@keyframes wb-twinkle {
+  0%, 100% { opacity: 0.07; transform: scale(0.65); }
+  50%      { opacity: 0.24; transform: scale(1.15); }
 }
 
 
