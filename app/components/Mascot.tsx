@@ -39,6 +39,9 @@ type BoboProps = {
   // tufts off the head (in the calm body colour, NOT the angry-red rig),
   // for frightened beats like the thunderstorm. Independent of anger.
   frazzled?: number;
+  // When true, the right paw (shy pose) pulses with a purple glow to
+  // signal to the user that they should tap it.
+  glowRightPaw?: boolean;
 };
 
 // Hats sit above the ears — y centred around -120
@@ -108,7 +111,7 @@ function Hat({ kind }: { kind: string }) {
   }
 }
 
-export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, hat, angerLevel, eyeOpen, tailWag, walking, mouthOpen, frazzled }: BoboProps) {
+export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, hat, angerLevel, eyeOpen, tailWag, walking, mouthOpen, frazzled, glowRightPaw }: BoboProps) {
   const lidControlled = eyeOpen !== undefined;
   const eyeOpenClamped = Math.max(0, Math.min(1, eyeOpen ?? 1));
   // Continuous anger 0..1. mood="angry" implies 1 when angerLevel
@@ -226,47 +229,48 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
     worried?: boolean;          // worried eyes (wider whites)
   };
   const eyesMap: Record<Mood, EyeCfg> = {
-    happy:    { lx: -18, rx: 18, y: -2, r: 6 },
-    waving:   { lx: -18, rx: 18, y: -2, r: 6 },
-    thinking: { lx: -20, rx: 16, y: -2, r: 5, curve: true },
-    cheer:    { lx: -18, rx: 18, y: -4, r: 0, happyArc: true },
-    sleep:    { lx: -18, rx: 18, y: 0,  r: 0, closed: true },
-    blink:    { lx: -18, rx: 18, y: 0,  r: 0, closed: true },
-    sad:      { lx: -16, rx: 16, y: 2,  r: 4, sad: true },
-    sleepy:   { lx: -18, rx: 18, y: 1,  r: 0, halfClosed: true },
-    excited:  { lx: -18, rx: 18, y: -2, r: 8, bigShine: true },
-    worried:  { lx: -18, rx: 18, y: -2, r: 5, worried: true },
-    hungry:   { lx: -18, rx: 18, y: 0,  r: 5, pupilDown: true },
-    angry:    { lx: -18, rx: 18, y: -2, r: 5 },
+    happy:    { lx: -20, rx: 20, y: -10, r: 12 },
+    waving:   { lx: -20, rx: 20, y: -10, r: 12 },
+    thinking: { lx: -22, rx: 18, y: -10, r: 10, curve: true },
+    cheer:    { lx: -20, rx: 20, y: -12, r: 0,  happyArc: true },
+    sleep:    { lx: -20, rx: 20, y: -8,  r: 0,  closed: true },
+    blink:    { lx: -20, rx: 20, y: -8,  r: 0,  closed: true },
+    sad:      { lx: -18, rx: 18, y: -6,  r: 8,  sad: true },
+    sleepy:   { lx: -20, rx: 20, y: -8,  r: 0,  halfClosed: true },
+    excited:  { lx: -20, rx: 20, y: -10, r: 14, bigShine: true },
+    worried:  { lx: -20, rx: 20, y: -10, r: 10, worried: true },
+    hungry:   { lx: -20, rx: 20, y: -8,  r: 10, pupilDown: true },
+    shy:      { lx: -20, rx: 20, y: -12, r: 14, bigShine: true },
+    angry:    { lx: -20, rx: 20, y: -10, r: 10 },
   };
   // When the eyelid system is driving the eyes, force a normal
   // open-eye geometry (sleep/sleepy configs use r:0, which would
   // render invisible pupils under the lid).
   const eyes = lidControlled
-    ? { lx: -18, rx: 18, y: -2, r: 6 }
+    ? { lx: -20, rx: 20, y: -10, r: 12 }
     : eyesMap[mood] ?? eyesMap.happy;
 
   const mouthMap: Record<Mood, React.ReactNode> = {
-    happy:    <path d="M 0 16 Q -6 22 -10 18 M 0 16 Q 6 22 10 18" stroke="#2a1028" strokeWidth="2.8" fill="none" strokeLinecap="round"/>,
-    waving:   <path d="M 0 16 Q -6 22 -10 18 M 0 16 Q 6 22 10 18" stroke="#2a1028" strokeWidth="2.8" fill="none" strokeLinecap="round"/>,
-    thinking: <path d="M -5 19 Q 0 17 5 19" stroke="#2a1028" strokeWidth="2.8" fill="none" strokeLinecap="round"/>,
-    cheer:    <path d="M -12 14 Q 0 30 12 14 Z" fill="#2a1028"/>,
-    sleep:    <path d="M -4 19 Q 0 21 4 19" stroke="#2a1028" strokeWidth="2.5" fill="none" strokeLinecap="round"/>,
-    blink:    <path d="M 0 16 Q -6 22 -10 18 M 0 16 Q 6 22 10 18" stroke="#2a1028" strokeWidth="2.8" fill="none" strokeLinecap="round"/>,
-    sad:      <path d="M -10 22 Q 0 16 10 22" stroke="#2a1028" strokeWidth="2.8" fill="none" strokeLinecap="round"/>,
-    sleepy:   <ellipse cx="0" cy="20" rx="3.5" ry="2.8" fill="#2a1028"/>,
-    excited:  <path d="M -13 14 Q 0 30 13 14 Q 8 19 0 19 Q -8 19 -13 14 Z" fill="#2a1028"/>,
-    worried:  <ellipse cx="0" cy="21" rx="3" ry="3" fill="#2a1028"/>,
+    happy:    <path d="M 0 22 Q -6 28 -10 24 M 0 22 Q 6 28 10 24" stroke="#2a1028" strokeWidth="2.8" fill="none" strokeLinecap="round"/>,
+    waving:   <path d="M 0 22 Q -6 28 -10 24 M 0 22 Q 6 28 10 24" stroke="#2a1028" strokeWidth="2.8" fill="none" strokeLinecap="round"/>,
+    thinking: <path d="M -5 24 Q 0 22 5 24" stroke="#2a1028" strokeWidth="2.8" fill="none" strokeLinecap="round"/>,
+    cheer:    <path d="M -12 20 Q 0 36 12 20 Z" fill="#2a1028"/>,
+    sleep:    <path d="M -4 24 Q 0 26 4 24" stroke="#2a1028" strokeWidth="2.5" fill="none" strokeLinecap="round"/>,
+    blink:    <path d="M 0 22 Q -6 28 -10 24 M 0 22 Q 6 28 10 24" stroke="#2a1028" strokeWidth="2.8" fill="none" strokeLinecap="round"/>,
+    sad:      <path d="M -10 28 Q 0 22 10 28" stroke="#2a1028" strokeWidth="2.8" fill="none" strokeLinecap="round"/>,
+    sleepy:   <ellipse cx="0" cy="25" rx="3.5" ry="2.8" fill="#2a1028"/>,
+    excited:  <path d="M -13 20 Q 0 36 13 20 Q 8 25 0 25 Q -8 25 -13 20 Z" fill="#2a1028"/>,
+    worried:  <ellipse cx="0" cy="26" rx="3" ry="3" fill="#2a1028"/>,
+    shy:      <path d="M -5 28 Q 0 32 5 28" stroke="#2a1028" strokeWidth="2.2" fill="none" strokeLinecap="round"/>,
     hungry:   (
       <>
-        <ellipse cx="0" cy="21" rx="5" ry="4" fill="#2a1028"/>
-        <ellipse cx="0" cy="25" rx="3" ry="1.5" fill={nose}/>
+        <ellipse cx="0" cy="26" rx="5" ry="4" fill="#2a1028"/>
+        <ellipse cx="0" cy="30" rx="3" ry="1.5" fill={nose}/>
       </>
     ),
-    // Jagged snarl — bared teeth zigzag
     angry: (
       <path
-        d="M -14 18 L -10 22 L -6 18 L -2 22 L 2 18 L 6 22 L 10 18 L 14 22"
+        d="M -14 24 L -10 28 L -6 24 L -2 28 L 2 24 L 6 28 L 10 24 L 14 28"
         stroke="#2a1028"
         strokeWidth="2.6"
         fill="none"
@@ -325,6 +329,13 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
             <stop offset="0%" stopColor="#fff" stopOpacity="0.95"/>
             <stop offset="100%" stopColor="#fff" stopOpacity="0"/>
           </radialGradient>
+          {glowRightPaw && (
+            <linearGradient id={`${id}-paw-grad`} x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%"   stopColor="#c084fc"/>
+              <stop offset="45%"  stopColor="#f472b6"/>
+              <stop offset="100%" stopColor="#fb923c"/>
+            </linearGradient>
+          )}
         </defs>
 
         <ellipse cx="0" cy="96" rx="72" ry="10" fill={shadow}/>
@@ -442,20 +453,33 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
               consistent. Left arm always renders; right arm is
               suppressed during `waving` mood since the wave
               animation already draws a raised right arm. */}
-          <g transform="rotate(-14 -82 48)">
-            <ellipse cx="-82" cy="48" rx="15" ry="22" fill={bodyMid}/>
-            {/* paw pad — soft darker patch */}
-            <ellipse cx="-82" cy="64" rx="7" ry="4.5" fill={bodyBottom} opacity="0.45"/>
-            {/* toe beans clustered above the pad */}
-            <circle cx="-88" cy="56" r="1.8" fill={bodyBottom} opacity="0.55"/>
-            <circle cx="-82" cy="54" r="1.8" fill={bodyBottom} opacity="0.55"/>
-            <circle cx="-76" cy="56" r="1.8" fill={bodyBottom} opacity="0.55"/>
-            {/* outer-edge highlight */}
-            <path d="M -94 32 Q -98 48 -92 66" stroke={highlight} strokeWidth="2.5" fill="none" opacity="0.5" strokeLinecap="round"/>
-            {/* tiny specular shine on the paw */}
-            <ellipse cx="-86" cy="36" rx="3.5" ry="2.5" fill="#fff" opacity="0.4"/>
-          </g>
-          {mood !== "waving" && (
+          {mood !== "shy" && (
+            mood === "waving" ? (
+              // Waving: left arm hangs normally so right arm can wave solo
+              <g transform="rotate(-14 -82 48)">
+                <ellipse cx="-82" cy="48" rx="15" ry="22" fill={bodyMid}/>
+                <ellipse cx="-82" cy="64" rx="7" ry="4.5" fill={bodyBottom} opacity="0.45"/>
+                <circle cx="-88" cy="56" r="1.8" fill={bodyBottom} opacity="0.55"/>
+                <circle cx="-82" cy="54" r="1.8" fill={bodyBottom} opacity="0.55"/>
+                <circle cx="-76" cy="56" r="1.8" fill={bodyBottom} opacity="0.55"/>
+                <path d="M -94 32 Q -98 48 -92 66" stroke={highlight} strokeWidth="2.5" fill="none" opacity="0.5" strokeLinecap="round"/>
+                <ellipse cx="-86" cy="36" rx="3.5" ry="2.5" fill="#fff" opacity="0.4"/>
+              </g>
+            ) : (
+              // Default: left paw raised — signature greeting pose
+              <g>
+                <path d="M -78 14 Q -108 -10 -104 -46" stroke={bodyMid} strokeWidth="22" fill="none" strokeLinecap="round"/>
+                <path d="M -74 18 Q -100 -6 -96 -38" stroke={highlight} strokeWidth="3" fill="none" opacity="0.45" strokeLinecap="round"/>
+                <circle cx="-104" cy="-48" r="16" fill={bodyMid}/>
+                <ellipse cx="-104" cy="-42" rx="6.5" ry="4.5" fill={bodyBottom} opacity="0.5"/>
+                <circle cx="-112" cy="-56" r="2.2" fill={bodyBottom} opacity="0.55"/>
+                <circle cx="-104" cy="-60" r="2.2" fill={bodyBottom} opacity="0.55"/>
+                <circle cx="-96" cy="-56" r="2.2" fill={bodyBottom} opacity="0.55"/>
+                <ellipse cx="-110" cy="-54" rx="4.5" ry="2.5" fill="#fff" opacity="0.45"/>
+              </g>
+            )
+          )}
+          {mood !== "waving" && mood !== "shy" && (
             <g transform="rotate(14 82 48)">
               <ellipse cx="82" cy="48" rx="15" ry="22" fill={bodyMid}/>
               <ellipse cx="82" cy="64" rx="7" ry="4.5" fill={bodyBottom} opacity="0.45"/>
@@ -472,8 +496,8 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
           <path d="M -72 -48 C -55 -82 -20 -92 10 -90" stroke={highlight} strokeWidth="6" strokeLinecap="round" fill="none" opacity="0.55"/>
           <ellipse cx="-24" cy="-58" rx="30" ry="14" fill={`url(#${id}-shine)`} opacity="0.9"/>
 
-          <ellipse cx="-48" cy="14" rx="16" ry="10" fill={`url(#${id}-cheek)`}/>
-          <ellipse cx="48" cy="14" rx="16" ry="10" fill={`url(#${id}-cheek)`}/>
+          <ellipse cx="-48" cy="20" rx="16" ry="10" fill={`url(#${id}-cheek)`}/>
+          <ellipse cx="48" cy="20" rx="16" ry="10" fill={`url(#${id}-cheek)`}/>
 
           {/* Eye block — wrapped so pointer-tracking offset darts
               the eyes as one unit, and blinks can briefly override
@@ -499,8 +523,8 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
                   transition: "opacity 0.9s ease",
                 }}
               >
-                <path d={`M ${eyes.lx - 9} ${eyes.y} Q ${eyes.lx} ${eyes.y + 5} ${eyes.lx + 9} ${eyes.y}`} stroke="#1a1420" strokeWidth="3.2" fill="none" strokeLinecap="round"/>
-                <path d={`M ${eyes.rx - 9} ${eyes.y} Q ${eyes.rx} ${eyes.y + 5} ${eyes.rx + 9} ${eyes.y}`} stroke="#1a1420" strokeWidth="3.2" fill="none" strokeLinecap="round"/>
+                <path d={`M ${eyes.lx - eyes.r - 2} ${eyes.y} Q ${eyes.lx} ${eyes.y + 7} ${eyes.lx + eyes.r + 2} ${eyes.y}`} stroke="#1a1420" strokeWidth="3.2" fill="none" strokeLinecap="round"/>
+                <path d={`M ${eyes.rx - eyes.r - 2} ${eyes.y} Q ${eyes.rx} ${eyes.y + 7} ${eyes.rx + eyes.r + 2} ${eyes.y}`} stroke="#1a1420" strokeWidth="3.2" fill="none" strokeLinecap="round"/>
               </g>
               {/* Each eye scales open vertically from a flat line
                   (scaleY 0) to a full eye (scaleY 1) around its own
@@ -513,8 +537,10 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
                   transition: "transform 1.1s cubic-bezier(0.33, 0, 0.2, 1)",
                 }}
               >
-                <ellipse cx={eyes.lx} cy={eyes.y} rx={eyes.r} ry={eyes.r + 1.5} fill="#1a1420"/>
-                <circle cx={eyes.lx + 2} cy={eyes.y - 3} r="2" fill="#fff"/>
+                <ellipse cx={eyes.lx} cy={eyes.y} rx={eyes.r + 3} ry={eyes.r + 4} fill="#fff" stroke="#1a1420" strokeWidth="1.5"/>
+                <ellipse cx={eyes.lx} cy={eyes.y} rx={eyes.r} ry={eyes.r + 2} fill="#1a1420"/>
+                <circle cx={eyes.lx + 4} cy={eyes.y - 5} r="4" fill="#fff"/>
+                <circle cx={eyes.lx - 3} cy={eyes.y + 4} r="2" fill="#fff" opacity="0.7"/>
               </g>
               <g
                 style={{
@@ -524,82 +550,92 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
                   transition: "transform 1.1s cubic-bezier(0.33, 0, 0.2, 1)",
                 }}
               >
-                <ellipse cx={eyes.rx} cy={eyes.y} rx={eyes.r} ry={eyes.r + 1.5} fill="#1a1420"/>
-                <circle cx={eyes.rx + 2} cy={eyes.y - 3} r="2" fill="#fff"/>
+                <ellipse cx={eyes.rx} cy={eyes.y} rx={eyes.r + 3} ry={eyes.r + 4} fill="#fff" stroke="#1a1420" strokeWidth="1.5"/>
+                <ellipse cx={eyes.rx} cy={eyes.y} rx={eyes.r} ry={eyes.r + 2} fill="#1a1420"/>
+                <circle cx={eyes.rx + 4} cy={eyes.y - 5} r="4" fill="#fff"/>
+                <circle cx={eyes.rx - 3} cy={eyes.y + 4} r="2" fill="#fff" opacity="0.7"/>
               </g>
             </>
           ) : (eyes.closed || (blinking && !eyes.halfClosed)) ? (
             <>
-              <path d={`M ${eyes.lx - 9} ${eyes.y} Q ${eyes.lx} ${eyes.y + 5} ${eyes.lx + 9} ${eyes.y}`} stroke="#1a1420" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
-              <path d={`M ${eyes.rx - 9} ${eyes.y} Q ${eyes.rx} ${eyes.y + 5} ${eyes.rx + 9} ${eyes.y}`} stroke="#1a1420" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
+              <path d={`M ${eyes.lx - eyes.r - 2} ${eyes.y} Q ${eyes.lx} ${eyes.y + 7} ${eyes.lx + eyes.r + 2} ${eyes.y}`} stroke="#1a1420" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
+              <path d={`M ${eyes.rx - eyes.r - 2} ${eyes.y} Q ${eyes.rx} ${eyes.y + 7} ${eyes.rx + eyes.r + 2} ${eyes.y}`} stroke="#1a1420" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
             </>
           ) : eyes.halfClosed ? (
             <>
               {/* Sleepy — top lid arches halfway down */}
-              <path d={`M ${eyes.lx - 9} ${eyes.y - 2} Q ${eyes.lx} ${eyes.y + 4} ${eyes.lx + 9} ${eyes.y - 2}`} stroke="#1a1420" strokeWidth="3" fill="none" strokeLinecap="round"/>
-              <path d={`M ${eyes.rx - 9} ${eyes.y - 2} Q ${eyes.rx} ${eyes.y + 4} ${eyes.rx + 9} ${eyes.y - 2}`} stroke="#1a1420" strokeWidth="3" fill="none" strokeLinecap="round"/>
+              <path d={`M ${eyes.lx - eyes.r - 2} ${eyes.y - 2} Q ${eyes.lx} ${eyes.y + 6} ${eyes.lx + eyes.r + 2} ${eyes.y - 2}`} stroke="#1a1420" strokeWidth="3" fill="none" strokeLinecap="round"/>
+              <path d={`M ${eyes.rx - eyes.r - 2} ${eyes.y - 2} Q ${eyes.rx} ${eyes.y + 6} ${eyes.rx + eyes.r + 2} ${eyes.y - 2}`} stroke="#1a1420" strokeWidth="3" fill="none" strokeLinecap="round"/>
             </>
           ) : eyes.happyArc ? (
             <>
-              <path d={`M ${eyes.lx - 9} ${eyes.y + 2} Q ${eyes.lx} ${eyes.y - 6} ${eyes.lx + 9} ${eyes.y + 2}`} stroke="#1a1420" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
-              <path d={`M ${eyes.rx - 9} ${eyes.y + 2} Q ${eyes.rx} ${eyes.y - 6} ${eyes.rx + 9} ${eyes.y + 2}`} stroke="#1a1420" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
+              <path d={`M ${eyes.lx - eyes.r - 2} ${eyes.y + 2} Q ${eyes.lx} ${eyes.y - 8} ${eyes.lx + eyes.r + 2} ${eyes.y + 2}`} stroke="#1a1420" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
+              <path d={`M ${eyes.rx - eyes.r - 2} ${eyes.y + 2} Q ${eyes.rx} ${eyes.y - 8} ${eyes.rx + eyes.r + 2} ${eyes.y + 2}`} stroke="#1a1420" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
             </>
           ) : eyes.curve ? (
             <>
-              <ellipse cx={eyes.lx} cy={eyes.y} rx={eyes.r} ry={eyes.r + 1.5} fill="#1a1420"/>
-              <circle cx={eyes.lx + 2} cy={eyes.y - 2} r="1.8" fill="#fff"/>
-              <path d={`M ${eyes.rx - 8} ${eyes.y - 2} Q ${eyes.rx} ${eyes.y - 9} ${eyes.rx + 8} ${eyes.y - 2}`} stroke="#1a1420" strokeWidth="3" fill="none" strokeLinecap="round"/>
+              <ellipse cx={eyes.lx} cy={eyes.y} rx={eyes.r + 3} ry={eyes.r + 4} fill="#fff" stroke="#1a1420" strokeWidth="1.5"/>
+              <ellipse cx={eyes.lx} cy={eyes.y} rx={eyes.r} ry={eyes.r + 2} fill="#1a1420"/>
+              <circle cx={eyes.lx + 4} cy={eyes.y - 5} r="4" fill="#fff"/>
+              <path d={`M ${eyes.rx - eyes.r + 2} ${eyes.y - 2} Q ${eyes.rx} ${eyes.y - 11} ${eyes.rx + eyes.r - 2} ${eyes.y - 2}`} stroke="#1a1420" strokeWidth="3" fill="none" strokeLinecap="round"/>
             </>
           ) : eyes.sad ? (
             <>
-              {/* Small dull eyes, no shine */}
+              <ellipse cx={eyes.lx} cy={eyes.y} rx={eyes.r + 2} ry={eyes.r + 3} fill="#fff" stroke="#1a1420" strokeWidth="1.2"/>
+              <ellipse cx={eyes.rx} cy={eyes.y} rx={eyes.r + 2} ry={eyes.r + 3} fill="#fff" stroke="#1a1420" strokeWidth="1.2"/>
               <ellipse cx={eyes.lx} cy={eyes.y} rx={eyes.r} ry={eyes.r + 1} fill="#1a1420"/>
               <ellipse cx={eyes.rx} cy={eyes.y} rx={eyes.r} ry={eyes.r + 1} fill="#1a1420"/>
               {/* "Sad" brows — outer raised, inner low */}
-              <path d={`M ${eyes.lx - 12} ${eyes.y - 14} Q ${eyes.lx - 4} ${eyes.y - 16} ${eyes.lx + 6} ${eyes.y - 8}`} stroke="#2a1028" strokeWidth="2.4" fill="none" strokeLinecap="round"/>
-              <path d={`M ${eyes.rx - 6} ${eyes.y - 8} Q ${eyes.rx + 4} ${eyes.y - 16} ${eyes.rx + 12} ${eyes.y - 14}`} stroke="#2a1028" strokeWidth="2.4" fill="none" strokeLinecap="round"/>
+              <path d={`M ${eyes.lx - 14} ${eyes.y - 16} Q ${eyes.lx - 4} ${eyes.y - 20} ${eyes.lx + 6} ${eyes.y - 10}`} stroke="#2a1028" strokeWidth="2.4" fill="none" strokeLinecap="round"/>
+              <path d={`M ${eyes.rx - 6} ${eyes.y - 10} Q ${eyes.rx + 4} ${eyes.y - 20} ${eyes.rx + 14} ${eyes.y - 16}`} stroke="#2a1028" strokeWidth="2.4" fill="none" strokeLinecap="round"/>
             </>
           ) : eyes.worried ? (
             <>
-              {/* Wider whites visible, smaller pupil */}
-              <ellipse cx={eyes.lx} cy={eyes.y} rx={eyes.r + 2} ry={eyes.r + 3} fill="#fff" stroke="#1a1420" strokeWidth="1.2"/>
-              <ellipse cx={eyes.rx} cy={eyes.y} rx={eyes.r + 2} ry={eyes.r + 3} fill="#fff" stroke="#1a1420" strokeWidth="1.2"/>
+              <ellipse cx={eyes.lx} cy={eyes.y} rx={eyes.r + 3} ry={eyes.r + 4} fill="#fff" stroke="#1a1420" strokeWidth="1.2"/>
+              <ellipse cx={eyes.rx} cy={eyes.y} rx={eyes.r + 3} ry={eyes.r + 4} fill="#fff" stroke="#1a1420" strokeWidth="1.2"/>
               <circle cx={eyes.lx} cy={eyes.y - 1} r={eyes.r - 1} fill="#1a1420"/>
               <circle cx={eyes.rx} cy={eyes.y - 1} r={eyes.r - 1} fill="#1a1420"/>
               {/* Inner-raised brows */}
-              <path d={`M ${eyes.lx - 12} ${eyes.y - 10} Q ${eyes.lx - 4} ${eyes.y - 16} ${eyes.lx + 6} ${eyes.y - 12}`} stroke="#2a1028" strokeWidth="2.4" fill="none" strokeLinecap="round"/>
-              <path d={`M ${eyes.rx - 6} ${eyes.y - 12} Q ${eyes.rx + 4} ${eyes.y - 16} ${eyes.rx + 12} ${eyes.y - 10}`} stroke="#2a1028" strokeWidth="2.4" fill="none" strokeLinecap="round"/>
+              <path d={`M ${eyes.lx - 14} ${eyes.y - 14} Q ${eyes.lx - 4} ${eyes.y - 20} ${eyes.lx + 6} ${eyes.y - 16}`} stroke="#2a1028" strokeWidth="2.4" fill="none" strokeLinecap="round"/>
+              <path d={`M ${eyes.rx - 6} ${eyes.y - 16} Q ${eyes.rx + 4} ${eyes.y - 20} ${eyes.rx + 14} ${eyes.y - 14}`} stroke="#2a1028" strokeWidth="2.4" fill="none" strokeLinecap="round"/>
             </>
           ) : eyes.pupilDown ? (
             <>
               {/* Hungry — pupils sit low in the eye */}
-              <ellipse cx={eyes.lx} cy={eyes.y + 2} rx={eyes.r} ry={eyes.r + 1.5} fill="#1a1420"/>
-              <ellipse cx={eyes.rx} cy={eyes.y + 2} rx={eyes.r} ry={eyes.r + 1.5} fill="#1a1420"/>
-              <circle cx={eyes.lx + 2} cy={eyes.y + 4} r="1.8" fill="#fff"/>
-              <circle cx={eyes.rx + 2} cy={eyes.y + 4} r="1.8" fill="#fff"/>
+              <ellipse cx={eyes.lx} cy={eyes.y} rx={eyes.r + 3} ry={eyes.r + 4} fill="#fff" stroke="#1a1420" strokeWidth="1.5"/>
+              <ellipse cx={eyes.rx} cy={eyes.y} rx={eyes.r + 3} ry={eyes.r + 4} fill="#fff" stroke="#1a1420" strokeWidth="1.5"/>
+              <ellipse cx={eyes.lx} cy={eyes.y + 3} rx={eyes.r} ry={eyes.r + 2} fill="#1a1420"/>
+              <ellipse cx={eyes.rx} cy={eyes.y + 3} rx={eyes.r} ry={eyes.r + 2} fill="#1a1420"/>
+              <circle cx={eyes.lx + 4} cy={eyes.y + 5} r="3" fill="#fff"/>
+              <circle cx={eyes.rx + 4} cy={eyes.y + 5} r="3" fill="#fff"/>
             </>
           ) : eyes.bigShine ? (
             <>
-              {/* Excited — extra big pupils with bright multi-stop shine */}
+              <ellipse cx={eyes.lx} cy={eyes.y} rx={eyes.r + 3} ry={eyes.r + 4} fill="#fff" stroke="#1a1420" strokeWidth="1.5"/>
+              <ellipse cx={eyes.rx} cy={eyes.y} rx={eyes.r + 3} ry={eyes.r + 4} fill="#fff" stroke="#1a1420" strokeWidth="1.5"/>
               <ellipse cx={eyes.lx} cy={eyes.y} rx={eyes.r} ry={eyes.r + 2} fill="#1a1420"/>
               <ellipse cx={eyes.rx} cy={eyes.y} rx={eyes.r} ry={eyes.r + 2} fill="#1a1420"/>
-              <circle cx={eyes.lx + 2} cy={eyes.y - 4} r="3" fill="#fff"/>
-              <circle cx={eyes.rx + 2} cy={eyes.y - 4} r="3" fill="#fff"/>
-              <circle cx={eyes.lx - 3} cy={eyes.y + 3} r="1.4" fill="#fff"/>
-              <circle cx={eyes.rx - 3} cy={eyes.y + 3} r="1.4" fill="#fff"/>
+              <circle cx={eyes.lx + 4} cy={eyes.y - 6} r="5" fill="#fff"/>
+              <circle cx={eyes.rx + 4} cy={eyes.y - 6} r="5" fill="#fff"/>
+              <circle cx={eyes.lx - 4} cy={eyes.y + 4} r="2.5" fill="#fff"/>
+              <circle cx={eyes.rx - 4} cy={eyes.y + 4} r="2.5" fill="#fff"/>
             </>
           ) : (
             <>
-              <ellipse cx={eyes.lx} cy={eyes.y} rx={eyes.r} ry={eyes.r + 1.5} fill="#1a1420"/>
-              <ellipse cx={eyes.rx} cy={eyes.y} rx={eyes.r} ry={eyes.r + 1.5} fill="#1a1420"/>
-              <circle cx={eyes.lx + 2} cy={eyes.y - 3} r="2" fill="#fff"/>
-              <circle cx={eyes.rx + 2} cy={eyes.y - 3} r="2" fill="#fff"/>
+              <ellipse cx={eyes.lx} cy={eyes.y} rx={eyes.r + 3} ry={eyes.r + 4} fill="#fff" stroke="#1a1420" strokeWidth="1.5"/>
+              <ellipse cx={eyes.rx} cy={eyes.y} rx={eyes.r + 3} ry={eyes.r + 4} fill="#fff" stroke="#1a1420" strokeWidth="1.5"/>
+              <ellipse cx={eyes.lx} cy={eyes.y} rx={eyes.r} ry={eyes.r + 2} fill="#1a1420"/>
+              <ellipse cx={eyes.rx} cy={eyes.y} rx={eyes.r} ry={eyes.r + 2} fill="#1a1420"/>
+              <circle cx={eyes.lx + 4} cy={eyes.y - 5} r="4" fill="#fff"/>
+              <circle cx={eyes.rx + 4} cy={eyes.y - 5} r="4" fill="#fff"/>
+              <circle cx={eyes.lx - 3} cy={eyes.y + 4} r="2" fill="#fff" opacity="0.7"/>
+              <circle cx={eyes.rx - 3} cy={eyes.y + 4} r="2" fill="#fff" opacity="0.7"/>
             </>
           )}
           </g>
 
-          <path d="M 0 8 L -6 14 Q 0 18 6 14 Z" fill={nose} stroke="#2a1028" strokeWidth="1.2" strokeLinejoin="round"/>
-          <path d="M 0 15 L 0 17" stroke="#2a1028" strokeWidth="2" strokeLinecap="round"/>
+          <path d="M 0 12 L -6 18 Q 0 22 6 18 Z" fill={nose} stroke="#2a1028" strokeWidth="1.2" strokeLinejoin="round"/>
+          <path d="M 0 19 L 0 21" stroke="#2a1028" strokeWidth="2" strokeLinecap="round"/>
           {/* Mood mouth — fades out as anger rises so we can crossfade
               the snarl in below without double-rendering. Also hidden
               while the mouth is open (eating). */}
@@ -621,10 +657,10 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
 
           {!eyes.closed && (
             <g stroke="#2a1028" strokeWidth="1.6" strokeLinecap="round" opacity="0.7" fill="none">
-              <path d="M -22 14 L -58 10"/>
-              <path d="M -22 18 L -58 20"/>
-              <path d="M 22 14 L 58 10"/>
-              <path d="M 22 18 L 58 20"/>
+              <path d="M -22 18 L -58 14"/>
+              <path d="M -22 22 L -58 24"/>
+              <path d="M 22 18 L 58 14"/>
+              <path d="M 22 22 L 58 24"/>
             </g>
           )}
 
@@ -705,6 +741,43 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
             />
           )}
 
+          {/* Shy+curious+nervous: paws raised and clasped in front of face */}
+          {mood === "shy" && (
+            <g>
+              {/* Rosy blush dots on cheeks (like reference) */}
+              <circle cx="-50" cy="10" r="16" fill={cheek} opacity="0.72"/>
+              <circle cx="50" cy="10" r="16" fill={cheek} opacity="0.72"/>
+
+              {/* Nervous sweat drop left side */}
+              <path d="M -66 -30 Q -62 -23 -66 -16 Q -70 -23 -66 -30 Z"
+                fill="oklch(72% 0.13 230)" stroke="oklch(50% 0.13 230)" strokeWidth="0.7"/>
+
+              {/* Left arm curving inward to front-center */}
+              <path d="M -78 28 Q -56 14 -26 26" stroke={bodyMid} strokeWidth="22" fill="none" strokeLinecap="round"/>
+              {/* Left paw — in front of body, near center */}
+              <circle cx="-24" cy="28" r="20" fill={bodyTop}/>
+              <circle cx="-24" cy="28" r="20" fill="none" stroke={bodyBottom} strokeWidth="1.6" opacity="0.45"/>
+              <ellipse cx="-24" cy="37" rx="8" ry="5" fill={bodyBottom} opacity="0.38"/>
+              <circle cx="-33" cy="20" r="2.6" fill={bodyBottom} opacity="0.52"/>
+              <circle cx="-24" cy="17" r="2.6" fill={bodyBottom} opacity="0.52"/>
+              <circle cx="-15" cy="20" r="2.6" fill={bodyBottom} opacity="0.52"/>
+              <ellipse cx="-31" cy="18" rx="5" ry="3" fill="#fff" opacity="0.45"/>
+
+              {/* Right arm curving inward to front-center */}
+              <path d="M 78 28 Q 56 14 26 26" stroke={bodyMid} strokeWidth="22" fill="none" strokeLinecap="round"/>
+              {/* Right paw — glows + gradient fill when glowRightPaw is true */}
+              <g style={glowRightPaw ? { animation: "paw-flicker 2.4s ease-in-out infinite" } : {}}>
+                <circle cx="24" cy="28" r="20" fill={glowRightPaw ? `url(#${id}-paw-grad)` : bodyTop}/>
+                <circle cx="24" cy="28" r="20" fill="none" stroke={bodyBottom} strokeWidth="1.6" opacity="0.45"/>
+                <ellipse cx="24" cy="37" rx="8" ry="5" fill={bodyBottom} opacity="0.38"/>
+                <circle cx="15" cy="20" r="2.6" fill={bodyBottom} opacity="0.52"/>
+                <circle cx="24" cy="17" r="2.6" fill={bodyBottom} opacity="0.52"/>
+                <circle cx="33" cy="20" r="2.6" fill={bodyBottom} opacity="0.52"/>
+                <ellipse cx="17" cy="18" rx="5" ry="3" fill="#fff" opacity="0.45"/>
+              </g>
+            </g>
+          )}
+
           {/* Excited — sparkle stars around the face */}
           {mood === "excited" && (
             <g fill="oklch(80% 0.16 90)" stroke="oklch(55% 0.16 70)" strokeWidth="1">
@@ -731,13 +804,13 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
             <g style={{ opacity: safeAnger }}>
               {/* Sharp V-brows pulled in toward the nose */}
               <path
-                d="M -28 -16 L -8 -8"
+                d="M -30 -30 L -10 -22"
                 stroke="#2a1028"
                 strokeWidth="4"
                 strokeLinecap="round"
               />
               <path
-                d="M 28 -16 L 8 -8"
+                d="M 30 -30 L 10 -22"
                 stroke="#2a1028"
                 strokeWidth="4"
                 strokeLinecap="round"

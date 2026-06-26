@@ -34,7 +34,7 @@ import {
 } from "./components/onboarding/ChildFlow";
 import { LoginScreen } from "./components/onboarding/LoginScreen";
 import { WhoAreYou } from "./components/onboarding/WhoAreYou";
-import { Welcome } from "./components/onboarding/Welcome";
+import { Splash, Welcome, TrustScreen } from "./components/onboarding/Welcome";
 import {
   ChildAlmostDone,
   ChildBedtime,
@@ -62,7 +62,9 @@ import {
 import { ScreenHomeCare, ScreenCatometer } from "./components/CareScreens";
 
 type Stage =
+  | { kind: "splash" }
   | { kind: "welcome" }
+  | { kind: "trust" }
   | { kind: "who" }
   | { kind: "login" } // "I already have an account" path from welcome
   | { kind: "parent"; step: number }
@@ -99,7 +101,7 @@ const TOUR_STEPS: TourStep[] = [
 ];
 
 export default function Home() {
-  const [stage, setStage] = useState<Stage>({ kind: "welcome" });
+  const [stage, setStage] = useState<Stage>({ kind: "splash" });
   const [prevStep, setPrevStep] = useState(0);
 
   // When the kid plays a real quest mid-onboarding (either inside
@@ -263,7 +265,7 @@ export default function Home() {
     setSeenHomeTour(false);
     setOnboardingResume(null);
     setPrevStep(0);
-    setStage({ kind: "welcome" });
+    setStage({ kind: "splash" });
     if (typeof window !== "undefined") {
       try {
         window.localStorage.removeItem(STORAGE_KEY);
@@ -439,12 +441,25 @@ export default function Home() {
   }, [stage]);
 
   const renderStage = () => {
+    if (stage.kind === "splash") {
+      return <Splash onEnter={() => setStage({ kind: "welcome" })} />;
+    }
+
     if (stage.kind === "welcome") {
       return (
         <Welcome
           tint={TINT}
-          onGetStarted={() => setStage({ kind: "who" })}
+          onGetStarted={() => setStage({ kind: "trust" })}
           onHaveAccount={() => setStage({ kind: "login" })}
+        />
+      );
+    }
+
+    if (stage.kind === "trust") {
+      return (
+        <TrustScreen
+          tint={TINT}
+          onNext={() => setStage({ kind: "who" })}
         />
       );
     }
@@ -901,8 +916,12 @@ export default function Home() {
   };
 
   const key =
-    stage.kind === "welcome"
+    stage.kind === "splash"
+      ? "splash"
+      : stage.kind === "welcome"
       ? "welcome"
+      : stage.kind === "trust"
+      ? "trust"
       : stage.kind === "who"
       ? "who"
       : stage.kind === "login"

@@ -2,8 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Bobo } from "../Mascot";
-import { Typewriter } from "../Typewriter";
-import type { Mood, UserType } from "../../lib/data";
+import type { UserType } from "../../lib/data";
 
 // First real moment with Bugsy. The box opens, he rises out and
 // stretches awake, types out a greeting, and only then do the CTAs
@@ -30,7 +29,7 @@ const RANK: Record<Phase, number> = {
 
 
 // ── Magical nighttime children's room backdrop ───────────────────
-export function NightRoomBackdrop() {
+export function NightRoomBackdrop({ minimal = false, hideRug = false }: { minimal?: boolean; hideRug?: boolean } = {}) {
   const star5 = (cx: number, cy: number, r: number, fill: string, op: number, key: string) => {
     const ri = r * 0.42;
     let pts = "";
@@ -54,8 +53,8 @@ export function NightRoomBackdrop() {
             <stop offset="100%" stopColor="#341e58" />
           </linearGradient>
           <linearGradient id="nr-floor" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%"   stopColor="#2a1c42" />
-            <stop offset="100%" stopColor="#1a1230" />
+            <stop offset="0%"   stopColor="#3E1E0C" />
+            <stop offset="100%" stopColor="#261208" />
           </linearGradient>
           {/* Window sky */}
           <linearGradient id="nr-sky" x1="0" y1="0" x2="0" y2="1">
@@ -64,10 +63,16 @@ export function NightRoomBackdrop() {
           </linearGradient>
           {/* Lamp cone */}
           <radialGradient id="nr-lamp-cone" cx="50%" cy="0%" r="100%" fx="50%" fy="0%">
-            <stop offset="0%"   stopColor="#FFE580" stopOpacity="0.38" />
-            <stop offset="55%"  stopColor="#FFD060" stopOpacity="0.12" />
+            <stop offset="0%"   stopColor="#FFE580" stopOpacity="0.58" />
+            <stop offset="40%"  stopColor="#FFD060" stopOpacity="0.24" />
             <stop offset="100%" stopColor="#FFD060" stopOpacity="0" />
           </radialGradient>
+          {/* Moonlight cone */}
+          <linearGradient id="nr-moonlight-cone" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"   stopColor="#B0D0FF" stopOpacity="0.24" />
+            <stop offset="55%"  stopColor="#90B8F0" stopOpacity="0.07" />
+            <stop offset="100%" stopColor="#90B8F0" stopOpacity="0" />
+          </linearGradient>
           {/* Moon */}
           <radialGradient id="nr-moon" cx="38%" cy="38%" r="65%">
             <stop offset="0%"   stopColor="#FFFAE0" />
@@ -101,13 +106,25 @@ export function NightRoomBackdrop() {
 
         {/* ── Background + floor ── */}
         <rect x="0" y="0" width="400" height="800" fill="url(#nr-bg)" />
-        <rect x="0" y="738" width="400" height="62" fill="url(#nr-floor)" />
-        <line x1="0" y1="738" x2="400" y2="738" stroke="#5a3090" strokeWidth="1" opacity="0.18" />
-        {/* Warm ambient from lamp */}
-        <ellipse cx="200" cy="200" rx="240" ry="310"
-          fill="rgba(255,210,60,0.05)" filter="url(#nr-warm-blur)" />
+        <rect x="0" y="658" width="400" height="142" fill="url(#nr-floor)" />
+        <line x1="0" y1="658" x2="400" y2="658" stroke="#5a3090" strokeWidth="1" opacity="0.18" />
+        {/* Floor wood planks */}
+        <line x1="0" y1="674" x2="400" y2="674" stroke="#1A0A04" strokeWidth="1.2" opacity="0.55" />
+        <line x1="0" y1="692" x2="400" y2="692" stroke="#1A0A04" strokeWidth="1.2" opacity="0.55" />
+        <line x1="0" y1="712" x2="400" y2="712" stroke="#1A0A04" strokeWidth="1.2" opacity="0.55" />
+        <line x1="130" y1="658" x2="110" y2="800" stroke="#1A0A04" strokeWidth="0.8" opacity="0.28" />
+        <line x1="270" y1="658" x2="290" y2="800" stroke="#1A0A04" strokeWidth="0.8" opacity="0.28" />
+        {/* Ambient light */}
+        {minimal ? (
+          <ellipse cx="200" cy="140" rx="240" ry="320"
+            fill="rgba(160,200,255,0.06)" filter="url(#nr-warm-blur)" />
+        ) : (
+          <ellipse cx="200" cy="200" rx="240" ry="310"
+            fill="rgba(255,210,60,0.05)" filter="url(#nr-warm-blur)" />
+        )}
 
-        {/* ══ WINDOW — top-right ══ */}
+        {/* ══ WINDOW — top-right (hidden in minimal mode) ══ */}
+        {!minimal && (<>
         <rect x="284" y="30" width="112" height="138" rx="14"
           fill="rgba(0,0,0,0.50)" transform="translate(3,3)" />
         <rect x="281" y="27" width="112" height="138" rx="14" fill="#3a2468" />
@@ -135,8 +152,10 @@ export function NightRoomBackdrop() {
           <circle key={i} cx={s.x} cy={s.y} r={s.r} fill="white" opacity="0.90"
             style={{ animation:`firefly ${s.d}s ease-in-out ${s.dl}s infinite` }} />
         ))}
+        </>)}
 
-        {/* ══ HANGING LAMP — top-center ══ */}
+        {/* ══ HANGING LAMP — top-center (hidden in minimal mode) ══ */}
+        {!minimal && (<>
         <line x1="200" y1="0" x2="200" y2="52"
           stroke="#A090C0" strokeWidth="2.2" strokeLinecap="round" opacity="0.62" />
         <ellipse cx="200" cy="53" rx="19" ry="7.5" fill="#D4A830" />
@@ -150,19 +169,78 @@ export function NightRoomBackdrop() {
         {/* Lamp shine */}
         <path d="M186 60 Q195 57 200 60 Q195 72 186 71 Z"
           fill="rgba(255,255,200,0.34)" />
-        {/* Light cone */}
-        <path d="M168 102 Q104 296 64 438 L336 438 Q364 296 232 102 Z"
+        {/* Light cone — wide warm spotlight to floor */}
+        <path d="M172 106 Q100 330 54 590 L346 590 Q374 330 228 106 Z"
           fill="url(#nr-lamp-cone)" />
         <circle cx="200" cy="76" r="58"
           fill="rgba(255,215,60,0.09)" filter="url(#nr-lamp-blur)" />
+        </>)}
+
+        {/* ══ MOONLIGHT + BACKGROUND STARS — minimal mode only ══ */}
+        {minimal && (<>
+        {/* Moonlight cone */}
+        <path d="M166 58 Q96 380 60 658 L340 658 Q374 380 234 58 Z"
+          fill="url(#nr-moonlight-cone)" />
+        {/* Moon outer halo */}
+        <circle cx="200" cy="55" r="85" fill="rgba(180,220,255,0.09)" filter="url(#nr-glow-md)" />
+        <circle cx="200" cy="55" r="52" fill="rgba(210,235,255,0.07)" filter="url(#nr-glow-md)" />
+        {/* Crescent moon */}
+        <circle cx="200" cy="55" r="34" fill="#FFF6D8" />
+        <circle cx="218" cy="48" r="29" fill="#16103a" />
+        {/* Moon surface craters */}
+        <circle cx="188" cy="46" r="4.5" fill="rgba(210,195,155,0.30)" />
+        <circle cx="196" cy="63" r="3"   fill="rgba(210,195,155,0.24)" />
+        {/* Background stars scattered across sky */}
+        {[
+          {x: 18,y: 82,r:1.5,d:7.2,dl:0.2},{x: 52,y: 38,r:1.1,d:8.8,dl:1.5},
+          {x: 88,y: 60,r:1.7,d:6.5,dl:0.8},{x:132,y: 34,r:1.0,d:9.2,dl:2.3},
+          {x:158,y: 72,r:1.3,d:7.8,dl:1.1},{x:248,y: 50,r:1.6,d:8.0,dl:0.5},
+          {x:280,y: 30,r:1.0,d:7.4,dl:3.0},{x:316,y: 64,r:1.4,d:6.8,dl:1.8},
+          {x:358,y: 42,r:1.7,d:9.0,dl:0.3},{x:384,y: 80,r:1.0,d:8.2,dl:2.6},
+          {x: 28,y:154,r:1.2,d:7.6,dl:1.4},{x: 72,y:194,r:1.5,d:8.4,dl:0.7},
+          {x:118,y:136,r:0.9,d:6.8,dl:3.2},{x:164,y:174,r:1.3,d:7.2,dl:1.9},
+          {x:224,y:124,r:1.7,d:8.8,dl:0.6},{x:268,y:160,r:1.1,d:7.0,dl:2.4},
+          {x:320,y:114,r:1.4,d:9.4,dl:1.1},{x:370,y:150,r:1.0,d:7.8,dl:3.5},
+          {x: 48,y:264,r:1.2,d:8.0,dl:2.0},{x:142,y:300,r:1.5,d:7.4,dl:0.9},
+          {x:354,y:246,r:1.3,d:6.6,dl:1.6},{x:390,y:294,r:0.9,d:8.6,dl:2.8},
+          {x:100,y:352,r:1.1,d:7.2,dl:1.3},{x:300,y:344,r:1.4,d:8.4,dl:0.4},
+          {x: 22,y:420,r:1.0,d:9.0,dl:2.1},{x:380,y:410,r:1.2,d:7.6,dl:1.0},
+        ].map((s,i)=>(
+          <circle key={`bgs-${i}`} cx={s.x} cy={s.y} r={s.r} fill="white" opacity="0.80"
+            filter="url(#nr-ff-cool)"
+            style={{ animation:`firefly ${s.d}s ease-in-out ${s.dl}s infinite` }} />
+        ))}
+        {/* ══ CLOUDS — animated drift ══ */}
+        {/* Cloud 1 — upper-left corner, half off-screen */}
+        <g style={{ animation:"cloud-drift 9s ease-in-out 0s infinite" }} opacity="0.42">
+          <ellipse cx="14"  cy="162" rx="38" ry="14" fill="#cde0f2" />
+          <circle cx="-8"   cy="150" r="14" fill="#cde0f2" />
+          <circle cx="14"   cy="145" r="19" fill="#cde0f2" />
+          <circle cx="38"   cy="151" r="14" fill="#cde0f2" />
+        </g>
+        {/* Cloud 2 — upper-right corner, half off-screen */}
+        <g style={{ animation:"cloud-drift 13s ease-in-out 2.8s infinite" }} opacity="0.44">
+          <ellipse cx="390" cy="108" rx="58" ry="21" fill="#cde0f2" />
+          <circle cx="356"  cy="91"  r="19" fill="#cde0f2" />
+          <circle cx="382"  cy="85"  r="27" fill="#cde0f2" />
+          <circle cx="412"  cy="92"  r="21" fill="#cde0f2" />
+        </g>
+        {/* Cloud 3 — lower-left corner, above CTA */}
+        <g style={{ animation:"cloud-drift 11s ease-in-out 5s infinite" }} opacity="0.38">
+          <ellipse cx="8"   cy="622" rx="50" ry="18" fill="#c8dcea" />
+          <circle cx="-18"  cy="608" r="18" fill="#c8dcea" />
+          <circle cx="6"    cy="602" r="24" fill="#c8dcea" />
+          <circle cx="34"   cy="609" r="18" fill="#c8dcea" />
+        </g>
+        </>)}
 
         {/* ══ CAT POSTER — upper-left ══ */}
+        {!minimal && (<>
         <rect x="18" y="106" width="76" height="92" rx="9"
           fill="rgba(0,0,0,0.45)" transform="translate(4,4)" />
         <rect x="18" y="106" width="76" height="92" rx="9" fill="#4A3898" />
         <rect x="22" y="110" width="68" height="84" rx="7" fill="#6A58B8" />
         <rect x="25" y="113" width="62" height="78" rx="6" fill="#F5EAD8" />
-        {/* Cat face */}
         <circle cx="56" cy="145" r="23" fill="#F0C898" />
         <polygon points="37,131 42,114 52,128" fill="#F0C898" />
         <polygon points="60,128 70,114 75,131" fill="#F0C898" />
@@ -181,8 +259,10 @@ export function NightRoomBackdrop() {
         <line x1="62" y1="150" x2="79" y2="150" stroke="#B09070" strokeWidth="0.9" opacity="0.56" />
         <circle cx="41" cy="146" r="5.5" fill="#FFB6C1" opacity="0.32" />
         <circle cx="71" cy="146" r="5.5" fill="#FFB6C1" opacity="0.32" />
+        </>)}
 
         {/* ══ WALL STAR STICKERS ══ */}
+        {!minimal && (<>
         {star5(12,  258, 8,  "#FFE060", 0.54, "ws1")}
         {star5( 8,  348, 6,  "#C0A0FF", 0.44, "ws2")}
         {star5(14,  464, 7,  "#80D8FF", 0.38, "ws3")}
@@ -192,62 +272,72 @@ export function NightRoomBackdrop() {
         {star5( 46,  44, 5,  "#FFE4A0", 0.32, "ws7")}
         {star5(162,  28, 4,  "#B6D4FF", 0.28, "ws8")}
         {star5(240,  24, 5,  "#FFB6C1", 0.30, "ws9")}
+        </>)}
 
-        {/* ══ BOOKSHELF — left edge ══ */}
+        {/* ══ ROUND RUG — center floor ══ */}
+        {!hideRug && (<>
+        <ellipse cx="200" cy="655" rx="170" ry="65" fill="#4A0810" opacity="0.92" />
+        <ellipse cx="200" cy="653" rx="153" ry="59" fill="#720F18" opacity="0.92" />
+        <ellipse cx="200" cy="651" rx="136" ry="53" fill="#921820" opacity="0.90" />
+        <ellipse cx="200" cy="649" rx="119" ry="46" fill="#AE2028" opacity="0.88" />
+        <ellipse cx="200" cy="647" rx="103" ry="40" fill="#C43040" opacity="0.86" />
+        <ellipse cx="200" cy="646" rx="86"  ry="34" fill="#D44858" opacity="0.84" />
+        <ellipse cx="200" cy="645" rx="69"  ry="28" fill="#E06070" opacity="0.82" />
+        <ellipse cx="200" cy="644" rx="53"  ry="21" fill="#E87888" opacity="0.80" />
+        <ellipse cx="200" cy="643" rx="36"  ry="15" fill="#F098A8" opacity="0.78" />
+        <ellipse cx="200" cy="642" rx="19"  ry="9"  fill="#F8BEC8" opacity="0.74" />
+        </>)}
+
+        {/* ══ BOOKSHELF, CAT TREE, TOY BLOCKS — hidden in minimal mode ══ */}
+        {!minimal && (<>
+        <g transform="translate(18, -60)">
         <rect x="0" y="548" width="88" height="152" rx="6" fill="#1e1240" opacity="0.90" />
         <rect x="0" y="597" width="88" height="8" rx="2" fill="#3e2870" />
         <rect x="0" y="652" width="88" height="8" rx="2" fill="#3e2870" />
-        {/* Top shelf books */}
         {[{x:3,y:556,w:15,h:41,c:"#FF7E7E"},{x:20,y:558,w:13,h:39,c:"#7EC8FF"},
           {x:35,y:553,w:17,h:44,c:"#FFD080"},{x:54,y:556,w:14,h:41,c:"#80FFA0"},
           {x:70,y:554,w:16,h:43,c:"#D080FF"}].map((b,i)=>(
           <rect key={i} x={b.x} y={b.y} width={b.w} height={b.h} rx="2.5" fill={b.c} />
         ))}
-        {/* Bottom shelf books */}
         {[{x:3,y:609,w:13,h:43,c:"#FF90C0"},{x:18,y:606,w:16,h:46,c:"#60D8F0"},
           {x:36,y:610,w:14,h:42,c:"#FFA060"},{x:52,y:607,w:15,h:45,c:"#90E080"},
           {x:69,y:609,w:17,h:43,c:"#C8A0FF"}].map((b,i)=>(
           <rect key={i} x={b.x} y={b.y} width={b.w} height={b.h} rx="2.5" fill={b.c} />
         ))}
-        {/* Shelf decoration */}
-        <circle cx="44" cy="548" r="7.5" fill="#FFD080" opacity="0.74" />
-        <circle cx="44" cy="543" r="5.5" fill="#FFC040" opacity="0.88" />
-
-        {/* ══ BEAN BAG — right edge ══ */}
-        <ellipse cx="394" cy="604" rx="40" ry="52" fill="#9880D4" opacity="0.68" />
-        <ellipse cx="392" cy="591" rx="31" ry="38" fill="#B4A0E8" opacity="0.58" />
-        <ellipse cx="388" cy="581" rx="15" ry="11" fill="rgba(255,255,255,0.16)" />
-
-        {/* ══ INDOOR PLANT — right corner ══ */}
-        <path d="M352 732 Q348 707 358 702 L380 702 Q390 707 386 732 Z" fill="#C4956A" />
-        <rect x="350" y="726" width="42" height="9" rx="4.5" fill="#D4A878" />
-        <ellipse cx="371" cy="702" rx="12.5" ry="4.5" fill="#5C3218" />
-        <path d="M371 701 Q393 667 402 679 Q395 696 371 701 Z" fill="#5CB85C" opacity="0.92" />
-        <path d="M371 697 Q348 661 338 676 Q345 693 371 697 Z" fill="#4CAF50" opacity="0.92" />
-        <path d="M372 687 Q386 654 373 644 Q363 667 372 687 Z" fill="#66BB6A" opacity="0.86" />
-        <path d="M368 690 Q350 660 356 646 Q366 670 368 690 Z" fill="#A5D6A7" opacity="0.68" />
-
-        {/* ══ TOY BLOCKS — left floor ══ */}
-        <rect x="58"  y="672" width="30" height="30" rx="6" fill="#FFD080" />
-        <path d="M58 672 L66 662 L88 662 L88 672 Z" fill="#FFE4A0" />
-        <text x="73" y="692" textAnchor="middle" fill="white" fontSize="13"
+        <path d="M26 554 Q23 536 28 531 L52 531 Q57 536 52 554 Z" fill="#D4580A" />
+        <rect x="20" y="548" width="38" height="8" rx="4" fill="#E86818" />
+        <ellipse cx="38" cy="531" rx="12" ry="4" fill="#6B2C00" />
+        <path d="M38 530 Q58 506 66 514 Q59 526 38 530 Z" fill="#4CAF50" opacity="0.92" />
+        <path d="M38 526 Q16 502 8 512 Q16 524 38 526 Z" fill="#388E3C" opacity="0.92" />
+        <path d="M40 518 Q52 492 40 482 Q32 502 40 518 Z" fill="#66BB6A" opacity="0.88" />
+        <path d="M36 520 Q20 494 26 482 Q34 502 36 520 Z" fill="#81C784" opacity="0.75" />
+        </g>
+        <g transform="translate(-28, -35)">
+        <rect x="320" y="649" width="80" height="15" rx="7" fill="#5A2080" />
+        <rect x="343" y="464" width="24" height="185" rx="8" fill="#8B6040" />
+        {Array.from({ length: 15 }).map((_, i) => (
+          <rect key={`rope-${i}`} x="343" y={464 + i * 12} width="24" height="6" rx="2" fill="#6B4030" opacity="0.55" />
+        ))}
+        <ellipse cx="355" cy="480" rx="48" ry="17" fill="#7A18A0" opacity="0.90" />
+        <ellipse cx="355" cy="475" rx="48" ry="15" fill="#B040C8" />
+        <ellipse cx="347" cy="468" rx="18" ry="5" fill="rgba(255,255,255,0.18)" />
+        <circle cx="308" cy="650" r="22" fill="#5030B0" />
+        <circle cx="300" cy="642" r="8" fill="rgba(255,255,255,0.22)" />
+        </g>
+        <rect x="80"  y="594" width="30" height="30" rx="6" fill="#FFD080" />
+        <path d="M80 594 L88 584 L110 584 L110 594 Z" fill="#FFE4A0" />
+        <text x="95" y="614" textAnchor="middle" fill="white" fontSize="13"
           fontWeight="800" fontFamily="sans-serif" opacity="0.88">C</text>
-        <rect x="48"  y="700" width="42" height="42" rx="7" fill="#FF8A65" />
-        <path d="M48 700 L62 689 L90 689 L90 700 Z" fill="#FFA082" />
-        <text x="69" y="727" textAnchor="middle" fill="white" fontSize="17"
+        <rect x="70"  y="622" width="42" height="42" rx="7" fill="#FF8A65" />
+        <path d="M70 622 L84 611 L112 611 L112 622 Z" fill="#FFA082" />
+        <text x="91" y="649" textAnchor="middle" fill="white" fontSize="17"
           fontWeight="800" fontFamily="sans-serif" opacity="0.88">A</text>
-        <rect x="24"  y="718" width="34" height="34" rx="6" fill="#7EC8FF" />
-        <path d="M24 718 L34 707 L58 707 L58 718 Z" fill="#A0DAFF" />
-        <text x="41" y="740" textAnchor="middle" fill="white" fontSize="14"
+        <rect x="50"  y="640" width="34" height="34" rx="6" fill="#7EC8FF" />
+        <path d="M50 640 L60 629 L84 629 L84 640 Z" fill="#A0DAFF" />
+        <text x="67" y="662" textAnchor="middle" fill="white" fontSize="14"
           fontWeight="800" fontFamily="sans-serif" opacity="0.88">B</text>
+        </>)}
 
-        {/* ══ ROUND RUG — center floor ══ */}
-        <ellipse cx="200" cy="756" rx="148" ry="36" fill="#6840A0" opacity="0.46" />
-        <ellipse cx="200" cy="754" rx="118" ry="29" fill="#8A60C8" opacity="0.42" />
-        <ellipse cx="200" cy="752" rx="88"  ry="22" fill="#B080E0" opacity="0.38" />
-        <ellipse cx="200" cy="750" rx="58"  ry="15" fill="#C89EF0" opacity="0.34" />
-        <ellipse cx="200" cy="749" rx="32"  ry="9"  fill="#D8B8FF" opacity="0.28" />
-        <ellipse cx="200" cy="748" rx="13"  ry="5"  fill="#ECD0FF" opacity="0.24" />
 
         {/* ══ FLOATING STAR PARTICLES ══ */}
         {[
@@ -278,100 +368,6 @@ export function NightRoomBackdrop() {
   );
 }
 
-// ── Game-style role selection card ──────────────────────────────
-function RoleCard({
-  label,
-  color,
-  shadowColor,
-  icon,
-  onClick,
-}: {
-  label: string;
-  color: string;
-  shadowColor: string;
-  icon: React.ReactNode;
-  onClick: () => void;
-}) {
-  const [pressed, setPressed] = React.useState(false);
-  const [hovered, setHovered] = React.useState(false);
-
-  return (
-    <button
-      onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => { setHovered(false); setPressed(false); }}
-      onPointerDown={() => setPressed(true)}
-      onPointerUp={() => setPressed(false)}
-      onPointerLeave={() => { setPressed(false); setHovered(false); }}
-      style={{
-        width: "100%",
-        height: 74,
-        border: "none",
-        borderRadius: 20,
-        background: color,
-        boxShadow: pressed
-          ? `0 2px 0 ${shadowColor}`
-          : `0 5px 0 ${shadowColor}, 0 8px 20px rgba(0,0,0,0.18)`,
-        transform: pressed
-          ? "translateY(3px) scale(0.98)"
-          : hovered
-          ? "translateY(-2px) scale(1.015)"
-          : "translateY(0) scale(1)",
-        transition: "transform 0.13s ease, box-shadow 0.13s ease",
-        display: "flex",
-        alignItems: "center",
-        padding: "0 20px",
-        gap: 16,
-        cursor: "pointer",
-        outline: "none",
-      }}
-    >
-      {/* Icon circle */}
-      <div style={{
-        width: 52,
-        height: 52,
-        borderRadius: "50%",
-        background: "rgba(255,255,255,0.22)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexShrink: 0,
-      }}>
-        {icon}
-      </div>
-
-      {/* Label */}
-      <span style={{
-        flex: 1,
-        textAlign: "center",
-        fontFamily: "var(--font-nunito), system-ui",
-        fontSize: 21,
-        fontWeight: 900,
-        letterSpacing: "0.05em",
-        color: "white",
-      }}>
-        {label}
-      </span>
-
-      {/* Chevron */}
-      <div style={{
-        width: 32,
-        height: 32,
-        borderRadius: "50%",
-        background: "rgba(255,255,255,0.20)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexShrink: 0,
-      }}>
-        <svg width="14" height="14" viewBox="0 0 14 14">
-          <path d="M5 3l4 4-4 4" stroke="white" strokeWidth="2.4" fill="none"
-            strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </div>
-    </button>
-  );
-}
 
 export function WhoAreYou({
   tint,
@@ -385,44 +381,16 @@ export function WhoAreYou({
   const audioRef = useRef<AudioContext | null>(null);
   const padRef = useRef<{ stop: () => void } | null>(null);
 
-  // Timed wake sequence. Reduced-motion users land on "ready".
+  // Simple two-step reveal: bubble first, then CTA card.
   useEffect(() => {
-    const reduce =
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) {
-      setPhase("ready");
-      return;
-    }
-    const timers = [
-      // Box pops open quickly so the kid SEES Bugsy sleeping…
-      window.setTimeout(() => setPhase("sleeping"), 800),
-      // …dozes (z's) for ~2s, then the eyes open fully in one
-      // smooth ~1.1s move…
-      window.setTimeout(() => setPhase("waking"), 2800),
-      // …and he stretches awake as they finish opening.
-      window.setTimeout(() => setPhase("stretch"), 3900),
-      window.setTimeout(() => setPhase("greeting"), 5000),
-    ];
-    return () => timers.forEach((t) => clearTimeout(t));
+    const t1 = window.setTimeout(() => setPhase("greeting"), 400);
+    const t2 = window.setTimeout(() => setPhase("ready"),    1800);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
   const rank = RANK[phase];
-  const flapsOpen = rank >= RANK.sleeping;
-  const sittingUp = rank >= RANK.waking;
   const showText = rank >= RANK.greeting;
   const showCTA = phase === "ready";
-  // sleep (with z's) through the sleeping dwell, sleepy as he stirs,
-  // then happy once he's stretching/awake.
-  const mood: Mood =
-    rank <= RANK.sleeping ? "sleep" : rank === RANK.waking ? "sleepy" : "happy";
-  // Deep in the box when closed → slumped but visible while asleep
-  // → sits fully up when waking.
-  const bugsyTranslateY = phase === "closed" ? 74 : sittingUp ? 0 : 22;
-  // Eyes go straight from shut to fully open in one smooth move
-  // (no half-open beat) — the mascot's ~1.1s eye-open transition
-  // eases the whole reveal.
-  const eyeOpen = rank <= RANK.sleeping ? 0 : 1;
 
   // ── Audio ────────────────────────────────────────────────
   const ensureAudio = useCallback(() => {
@@ -517,14 +485,9 @@ export function WhoAreYou({
     onPick(t);
   };
 
-  // Bugsy wrapper animation: stretch once on entering "stretch",
-  // wiggle on tap, otherwise none.
-  const bugsyAnim =
-    phase === "stretch"
-      ? "bugsy-wake-stretch 0.9s cubic-bezier(0.22, 1, 0.36, 1)"
-      : wiggleKey > 0 && rank >= RANK.greeting
-      ? "bugsy-wiggle 0.5s ease-in-out"
-      : "none";
+  const bugsyWiggleAnim = wiggleKey > 0
+    ? "bugsy-wiggle 0.5s ease-in-out"
+    : "bobo-enter 0.7s cubic-bezier(0.22, 1, 0.36, 1)";
 
   return (
     <div
@@ -535,305 +498,338 @@ export function WhoAreYou({
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        padding: "56px 24px 32px",
         boxSizing: "border-box",
         color: "#fff",
       }}
     >
-      <NightRoomBackdrop />
+      <NightRoomBackdrop minimal />
 
-      <div style={{ position: "relative", zIndex: 1, flex: 1 }} />
-
-      {/* Dialogue bubble — sits above Bugsy with a tail pointing
-          down at him, so it reads as him speaking. Space is
-          reserved (minHeight) so the box scene doesn't jump when
-          the bubble appears. */}
+      {/* ── HEADER ────────────────────────────────────────────── */}
       <div
         style={{
-          minHeight: 86,
-          display: "flex",
-          alignItems: "flex-end",
-          justifyContent: "center",
-          marginBottom: 6,
           position: "relative",
           zIndex: 1,
+          textAlign: "center",
+          padding: "52px 24px 0",
+          width: "100%",
+          animation: "fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both",
         }}
       >
+        <h1
+          style={{
+            fontFamily: "var(--font-nunito), system-ui",
+            fontSize: 30,
+            fontWeight: 900,
+            color: "#FFD166",
+            margin: "0 0 6px",
+            letterSpacing: "0.05em",
+            textShadow: "0 2px 14px rgba(255,190,0,0.65)",
+          }}
+        >
+          ★ NEW FRIEND! ★
+        </h1>
+        <p
+          style={{
+            fontFamily: "var(--font-nunito), system-ui",
+            fontSize: 15,
+            fontWeight: 700,
+            color: "rgba(255,255,255,0.88)",
+            margin: 0,
+          }}
+        >
+          Bugsy is excited to play with you!
+        </p>
+      </div>
+
+      {/* ── MIDDLE SCENE ──────────────────────────────────────── */}
+      <div
+        style={{
+          position: "relative",
+          zIndex: 1,
+          flex: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: "100%",
+          padding: "0 12px",
+        }}
+      >
+        {/* Floating hearts */}
+        <span aria-hidden style={{ position: "absolute", top: "10%",  right: "14%", fontSize: 26, animation: "float-gentle 2.6s ease-in-out infinite" }}>💗</span>
+        <span aria-hidden style={{ position: "absolute", top: "38%",  right:  "8%", fontSize: 18, animation: "float-gentle 3.1s ease-in-out 0.7s infinite" }}>💗</span>
+        <span aria-hidden style={{ position: "absolute", top: "62%",  left:  "10%", fontSize: 15, animation: "float-gentle 2.9s ease-in-out 0.35s infinite" }}>💗</span>
+        <span aria-hidden style={{ position: "absolute", top: "18%",  left:  "16%", fontSize: 13, animation: "float-gentle 3.4s ease-in-out 1.1s infinite" }}>💜</span>
+
+        {/* Speech bubble — left side, tail points RIGHT toward Bugsy */}
         {showText && (
           <div
             style={{
               position: "relative",
-              maxWidth: 300,
-              padding: "14px 22px",
-              borderRadius: 22,
-              background: "var(--surface)",
-              border: "1px solid var(--border-strong)",
-              color: "var(--ink)",
-              fontFamily: "var(--font-nunito), system-ui",
-              fontSize: 18,
-              fontWeight: 800,
-              lineHeight: 1.4,
-              textAlign: "center",
-              boxShadow: "0 8px 22px rgba(0,0,0,0.28)",
+              flexShrink: 0,
+              maxWidth: 148,
+              padding: "14px 18px",
+              borderRadius: 20,
+              background: "#fff9f0",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.28)",
+              marginRight: 14,
               animation: "bubble-pop 0.4s cubic-bezier(0.22, 1.5, 0.36, 1)",
             }}
           >
-            <Typewriter
-              text="Hi, I'm Bugsy. Follow me to discover something cool"
-              speedMultiplier={1.4}
-              onDone={() => setPhase("ready")}
-            />
-            {/* down-pointing tail toward Bugsy */}
+            <p style={{ fontFamily: "var(--font-nunito), system-ui", fontSize: 17, fontWeight: 800, color: "#7C3AED", margin: "0 0 3px", lineHeight: 1.3 }}>
+              Yay! 🩷
+            </p>
+            <p style={{ fontFamily: "var(--font-nunito), system-ui", fontSize: 17, fontWeight: 800, color: "#1e1430", margin: "0 0 6px", lineHeight: 1.3 }}>
+              You said<br />hello!
+            </p>
+            <p style={{ textAlign: "center", margin: 0, fontSize: 20 }}>💜</p>
+            {/* Tail pointing RIGHT toward Bugsy */}
             <span
               aria-hidden
               style={{
                 position: "absolute",
-                bottom: -8,
-                left: "50%",
-                transform: "translateX(-50%) rotate(45deg)",
+                right: -8,
+                top: "38%",
+                transform: "translateY(-50%) rotate(45deg)",
                 width: 16,
                 height: 16,
-                background: "var(--surface)",
-                borderRight: "1px solid var(--border-strong)",
-                borderBottom: "1px solid var(--border-strong)",
-                borderRadius: 3,
+                background: "#fff9f0",
+                borderTop: "none",
+                borderLeft: "none",
+                borderRight: "1px solid rgba(0,0,0,0.06)",
+                borderBottom: "1px solid rgba(0,0,0,0.06)",
+                borderRadius: "0 0 3px 0",
               }}
             />
           </div>
         )}
-      </div>
 
-      {/* Box + Bugsy scene */}
-      <div
-        style={{
-          position: "relative",
-          width: 280,
-          height: 240,
-          display: "flex",
-          justifyContent: "center",
-          zIndex: 1,
-        }}
-      >
-        {/* Dark box interior — revealed once the flaps open */}
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            bottom: 6,
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: 188,
-            height: 124,
-            background: "linear-gradient(#2c2013, #1c1209)",
-            borderRadius: "12px 12px 10px 10px",
-            zIndex: 1,
-          }}
-        />
-
-        {/* Bugsy — rises out of the box (translateY) then stretches.
-            onPet wakes/purrs; the inner key re-mounts on tap so the
-            wiggle replays. */}
+        {/* Bugsy in cheer mode */}
         <div
           onPointerDown={onPet}
           role="button"
           aria-label="Pet Bugsy"
-          style={{
-            position: "absolute",
-            bottom: 70,
-            left: "50%",
-            transform: `translateX(-50%) translateY(${bugsyTranslateY}px)`,
-            transition: "transform 0.95s cubic-bezier(0.22, 1, 0.36, 1)",
-            zIndex: 2,
-            cursor: "pointer",
-            touchAction: "manipulation",
-          }}
+          style={{ cursor: "pointer", touchAction: "manipulation", flexShrink: 0 }}
         >
           <div
-            key={`bugsy-${phase}-${wiggleKey}`}
-            style={{ animation: bugsyAnim, transformOrigin: "bottom center" }}
+            key={`bugsy-${wiggleKey}`}
+            style={{ animation: bugsyWiggleAnim, transformOrigin: "bottom center" }}
           >
-            <Bobo mood={mood} tint={tint} size={150} eyeOpen={eyeOpen} />
+            <Bobo mood="cheer" tint={tint} size={190} />
           </div>
         </div>
-
-        {/* Box flaps — closed they cap the opening (and hide Bugsy);
-            they swing open ±118° as the box "opens". Kept in front
-            (z=4) so the closed state fully conceals him. */}
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            bottom: 96,
-            left: 42,
-            width: 98,
-            height: 46,
-            background: "linear-gradient(160deg, #dcb98a 0%, #c39c6c 100%)",
-            border: "2px solid #a8825a",
-            borderRadius: "8px 4px 3px 3px",
-            transformOrigin: "left bottom",
-            transform: flapsOpen ? "rotate(-118deg)" : "rotate(0deg)",
-            transition: "transform 0.95s cubic-bezier(0.34, 1.3, 0.5, 1)",
-            boxShadow: "inset 0 3px 6px rgba(255,255,255,0.16)",
-            zIndex: 4,
-          }}
-        />
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            bottom: 96,
-            left: 140,
-            width: 98,
-            height: 46,
-            background: "linear-gradient(200deg, #dcb98a 0%, #c39c6c 100%)",
-            border: "2px solid #a8825a",
-            borderRadius: "4px 8px 3px 3px",
-            transformOrigin: "right bottom",
-            transform: flapsOpen ? "rotate(118deg)" : "rotate(0deg)",
-            transition: "transform 0.95s cubic-bezier(0.34, 1.3, 0.5, 1)",
-            boxShadow: "inset 0 3px 6px rgba(255,255,255,0.16)",
-            zIndex: 4,
-          }}
-        />
-
-        {/* Box front wall — covers Bugsy's lower half, in front. */}
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: 196,
-            height: 100,
-            background:
-              "linear-gradient(168deg, #e0bd8d 0%, #cba472 60%, #bd9462 100%)",
-            border: "2px solid #ac8458",
-            borderRadius: "8px 8px 14px 14px",
-            boxShadow:
-              "inset 0 6px 10px rgba(255,255,255,0.18), inset 0 -8px 14px rgba(0,0,0,0.14)",
-            zIndex: 3,
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              bottom: 0,
-              left: "50%",
-              width: 2,
-              background: "rgba(0,0,0,0.10)",
-            }}
-          />
-          <div
-            style={{
-              position: "absolute",
-              bottom: 12,
-              left: "50%",
-              transform: "translateX(-50%)",
-              fontSize: 16,
-              opacity: 0.5,
-            }}
-          >
-            ♥
-          </div>
-        </div>
-
-        {/* Ground shadow */}
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            bottom: -6,
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: 220,
-            height: 18,
-            borderRadius: "50%",
-            background: "rgba(0,0,0,0.30)",
-            filter: "blur(6px)",
-            zIndex: 0,
-          }}
-        />
       </div>
 
-      <div style={{ flex: 1, position: "relative", zIndex: 1 }} />
-
-      {/* CTAs — only after the greeting finishes typing. */}
+      {/* ── BOTTOM CARD ───────────────────────────────────────── */}
       <div
         style={{
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-          gap: 12,
-          opacity: showCTA ? 1 : 0,
-          transform: showCTA ? "translateY(0)" : "translateY(16px)",
-          transition: "opacity 0.5s ease, transform 0.5s ease",
-          pointerEvents: showCTA ? "auto" : "none",
           position: "relative",
           zIndex: 1,
+          width: "100%",
+          background: "#f5f1ea",
+          borderRadius: "28px 28px 0 0",
+          padding: "20px 16px 28px",
+          boxSizing: "border-box",
+          opacity: showCTA ? 1 : 0,
+          transform: showCTA ? "translateY(0)" : "translateY(24px)",
+          transition: "opacity 0.5s ease, transform 0.5s ease",
+          pointerEvents: showCTA ? "auto" : "none",
         }}
       >
-        {/* "Who are you?" plain text heading */}
-        <p style={{
-          textAlign: "center",
-          margin: "0 0 8px",
-          fontFamily: "var(--font-nunito), system-ui",
-          fontSize: 20,
-          fontWeight: 900,
-          color: "white",
-          letterSpacing: "0.02em",
-          textShadow: "0 2px 8px rgba(0,0,0,0.35)",
-        }}>
-          ✨ Who are you? ✨
+        <p
+          style={{
+            fontFamily: "var(--font-nunito), system-ui",
+            fontSize: 18,
+            fontWeight: 800,
+            color: "#1e1430",
+            textAlign: "center",
+            margin: "0 0 14px",
+          }}
+        >
+          Who&apos;s joining me today? 💜
         </p>
 
-        <RoleCard
-          label="PARENT"
-          color="#F0366E"
-          shadowColor="#A81E4A"
-          icon={
-            <svg viewBox="0 0 28 28" width="30" height="30" fill="none">
-              {/* Two adults + child silhouette */}
-              <circle cx="9"  cy="8"  r="4.5" fill="white" />
-              <path d="M2 22 Q2 16 9 16 Q16 16 16 22" fill="white" />
-              <circle cx="21" cy="9"  r="3.8" fill="rgba(255,255,255,0.75)" />
-              <path d="M15 22 Q15 17 21 17 Q27 17 27 22" fill="rgba(255,255,255,0.75)" />
-              <circle cx="13" cy="20" r="2.4" fill="rgba(255,255,255,0.55)" />
-            </svg>
-          }
-          onClick={() => pick("parent")}
-        />
+        {/* Two option cards */}
+        <div style={{ display: "flex", gap: 10 }}>
 
-        <RoleCard
-          label="CHILD"
-          color="#F5A800"
-          shadowColor="#B07600"
-          icon={
-            <svg viewBox="0 0 28 28" width="30" height="30" fill="none">
-              {/* Star */}
-              <polygon
-                points="14,3 16.5,10 24,10 18,14.5 20.5,22 14,17.5 7.5,22 10,14.5 4,10 11.5,10"
-                fill="white"
-              />
-            </svg>
-          }
-          onClick={() => pick("child")}
-        />
+          {/* ── It's Me (child) ── */}
+          <button
+            onClick={() => pick("child")}
+            style={{
+              flex: 1,
+              borderRadius: 20,
+              background: "linear-gradient(155deg, #8B5CF6 0%, #6D28D9 100%)",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+              minHeight: 174,
+              position: "relative",
+              overflow: "hidden",
+              boxShadow: "0 6px 20px rgba(109,40,217,0.45)",
+              touchAction: "manipulation",
+            }}
+          >
+            <span aria-hidden style={{ position: "absolute", top: 10, left: 12, fontSize: 13, opacity: 0.9 }}>⭐</span>
+            <span aria-hidden style={{ position: "absolute", top: 14, right: 16, fontSize: 9,  opacity: 0.8 }}>⭐</span>
+            <span aria-hidden style={{ position: "absolute", top: 36, right: 10, fontSize: 11, opacity: 0.75 }}>⭐</span>
+            {/* Child illustration */}
+            <div style={{ paddingTop: 22, textAlign: "center", lineHeight: 1 }}>
+              <svg viewBox="0 0 80 90" width="72" height="81" aria-hidden>
+                {/* hair */}
+                <ellipse cx="40" cy="26" rx="20" ry="14" fill="#5D2E0C" />
+                <rect x="20" y="26" width="4" height="22" rx="2" fill="#5D2E0C" />
+                {/* head */}
+                <ellipse cx="40" cy="32" rx="18" ry="18" fill="#F5C5A3" />
+                {/* eyes */}
+                <circle cx="33" cy="30" r="3" fill="#1e1430" />
+                <circle cx="47" cy="30" r="3" fill="#1e1430" />
+                <circle cx="34" cy="29" r="1" fill="white" />
+                <circle cx="48" cy="29" r="1" fill="white" />
+                {/* smile */}
+                <path d="M34 38 Q40 44 46 38" stroke="#C07050" strokeWidth="2" fill="none" strokeLinecap="round" />
+                {/* body */}
+                <rect x="28" y="48" width="24" height="28" rx="8" fill="#A855F7" />
+                {/* raised arm */}
+                <path d="M28 52 Q16 44 14 36" stroke="#F5C5A3" strokeWidth="8" strokeLinecap="round" fill="none" />
+                <circle cx="14" cy="34" r="6" fill="#F5C5A3" />
+                {/* other arm */}
+                <path d="M52 54 Q60 52 62 58" stroke="#F5C5A3" strokeWidth="8" strokeLinecap="round" fill="none" />
+                {/* legs */}
+                <rect x="30" y="74" width="8" height="14" rx="4" fill="#7C3AED" />
+                <rect x="42" y="74" width="8" height="14" rx="4" fill="#7C3AED" />
+              </svg>
+            </div>
+            {/* label */}
+            <div
+              style={{
+                background: "rgba(0,0,0,0.22)",
+                margin: "8px 10px 10px",
+                borderRadius: 12,
+                padding: "9px 10px",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "var(--font-nunito), system-ui",
+                  fontSize: 16,
+                  fontWeight: 900,
+                  color: "white",
+                  letterSpacing: "0.01em",
+                }}
+              >
+                It&apos;s Me
+              </span>
+            </div>
+          </button>
 
-        <RoleCard
-          label="YOUNG ADULT"
-          color="#7C3AED"
-          shadowColor="#4C1A9A"
-          icon={
-            <svg viewBox="0 0 28 28" width="30" height="30" fill="none">
-              {/* Lightning bolt */}
-              <polygon points="17,3 10,15 15,15 11,25 21,12 16,12" fill="white" />
-            </svg>
-          }
-          onClick={() => {}}
-        />
+          {/* ── A Grown-up Is Helping (parent) ── */}
+          <button
+            onClick={() => pick("parent")}
+            style={{
+              flex: 1,
+              borderRadius: 20,
+              background: "linear-gradient(155deg, #FBBF24 0%, #D97706 100%)",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+              minHeight: 174,
+              position: "relative",
+              overflow: "hidden",
+              boxShadow: "0 6px 20px rgba(217,119,6,0.45)",
+              touchAction: "manipulation",
+            }}
+          >
+            <span aria-hidden style={{ position: "absolute", top: 10, left: 12, fontSize: 13, opacity: 0.9 }}>⭐</span>
+            <span aria-hidden style={{ position: "absolute", top: 16, right: 14, fontSize: 10, opacity: 0.8 }}>⭐</span>
+            {/* Parent couple illustration */}
+            <div style={{ paddingTop: 16, textAlign: "center", lineHeight: 1, display: "flex", justifyContent: "center", gap: 4 }}>
+              <svg viewBox="0 0 88 90" width="80" height="82" aria-hidden>
+                {/* Woman */}
+                {/* hair */}
+                <ellipse cx="28" cy="20" rx="14" ry="10" fill="#7B3F00" />
+                <path d="M14 20 Q12 36 16 44" stroke="#7B3F00" strokeWidth="4" fill="none" />
+                <path d="M42 20 Q44 36 40 44" stroke="#7B3F00" strokeWidth="4" fill="none" />
+                {/* head */}
+                <ellipse cx="28" cy="24" rx="13" ry="13" fill="#F5C5A3" />
+                {/* eyes */}
+                <circle cx="23" cy="22" r="2.2" fill="#1e1430" />
+                <circle cx="33" cy="22" r="2.2" fill="#1e1430" />
+                <circle cx="23.8" cy="21.3" r="0.8" fill="white" />
+                <circle cx="33.8" cy="21.3" r="0.8" fill="white" />
+                {/* smile */}
+                <path d="M23 29 Q28 33 33 29" stroke="#C07050" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+                {/* body */}
+                <rect x="18" y="36" width="20" height="26" rx="6" fill="#FBBF24" />
+                {/* arm toward man */}
+                <path d="M38 44 Q50 46 54 50" stroke="#F5C5A3" strokeWidth="7" strokeLinecap="round" fill="none" />
+                {/* other arm */}
+                <path d="M18 42 Q10 40 8 46" stroke="#F5C5A3" strokeWidth="7" strokeLinecap="round" fill="none" />
+                {/* legs */}
+                <rect x="20" y="60" width="6" height="12" rx="3" fill="#D97706" />
+                <rect x="30" y="60" width="6" height="12" rx="3" fill="#D97706" />
+
+                {/* Man */}
+                {/* hair */}
+                <ellipse cx="64" cy="20" rx="15" ry="9" fill="#3D2000" />
+                {/* head */}
+                <ellipse cx="64" cy="25" rx="14" ry="14" fill="#E8B090" />
+                {/* beard */}
+                <path d="M51 32 Q52 40 64 42 Q76 40 77 32" fill="#3D2000" opacity="0.55" />
+                {/* eyes */}
+                <circle cx="58" cy="22" r="2.4" fill="#1e1430" />
+                <circle cx="70" cy="22" r="2.4" fill="#1e1430" />
+                <circle cx="58.8" cy="21.3" r="0.9" fill="white" />
+                <circle cx="70.8" cy="21.3" r="0.9" fill="white" />
+                {/* body */}
+                <rect x="52" y="38" width="24" height="26" rx="6" fill="#16A34A" />
+                {/* arm toward woman */}
+                <path d="M52 46 Q44 47 40 50" stroke="#E8B090" strokeWidth="8" strokeLinecap="round" fill="none" />
+                {/* other arm */}
+                <path d="M76 44 Q82 42 84 48" stroke="#E8B090" strokeWidth="7" strokeLinecap="round" fill="none" />
+                {/* legs */}
+                <rect x="55" y="62" width="7" height="12" rx="3" fill="#15803D" />
+                <rect x="66" y="62" width="7" height="12" rx="3" fill="#15803D" />
+              </svg>
+            </div>
+            {/* label */}
+            <div
+              style={{
+                background: "rgba(0,0,0,0.18)",
+                margin: "4px 10px 10px",
+                borderRadius: 12,
+                padding: "7px 8px",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "var(--font-nunito), system-ui",
+                  fontSize: 13,
+                  fontWeight: 900,
+                  color: "white",
+                  letterSpacing: "0.01em",
+                  lineHeight: 1.3,
+                }}
+              >
+                A Grown-up<br />Is Helping
+              </span>
+            </div>
+          </button>
+        </div>
+
+        {/* Pagination dots */}
+        <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 14 }}>
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              style={{
+                width: i === 0 ? 22 : 8,
+                height: 8,
+                borderRadius: 4,
+                background: i === 0 ? "#7C3AED" : "rgba(0,0,0,0.18)",
+                transition: "width 0.3s ease",
+              }}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

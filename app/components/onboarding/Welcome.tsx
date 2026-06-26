@@ -1,7 +1,9 @@
-"use client";
++"use client";
 
-import { useId } from "react";
+import { useId, useState, useEffect, useRef, useCallback } from "react";
 import { Bobo } from "../Mascot";
+import { NightRoomBackdrop } from "./WhoAreYou";
+import { Typewriter } from "../Typewriter";
 
 // ── Subject-themed clay icons ────────────────────────────────────
 type ClaySubject = "book" | "pencil" | "math" | "flask" | "music" | "globe";
@@ -477,6 +479,403 @@ function WelcomeBackdrop() {
   );
 }
 
+// ── "Can I trust you?" intermediate screen ───────────────────────
+// Hearts are px-positioned relative to the cat so they truly cluster
+// around it. Cat head sits at roughly (195, 153) within the 320px-tall
+// comp box — all other elements are anchored to that point.
+export function TrustScreen({ tint, onNext }: { tint: number; onNext: () => void }) {
+  const HEARTS = [
+    { left:  18, top:  50, size: 26, delay: 0.0, dur: 3.0 },  // upper-left
+    { left: 155, top:  18, size: 18, delay: 0.7, dur: 2.8 },  // above head
+    { left: 290, top:  45, size: 22, delay: 1.3, dur: 3.4 },  // upper-right (above bubble)
+    { left:  12, top: 165, size: 20, delay: 1.9, dur: 3.2 },  // left torso
+    { left:  20, top: 278, size: 16, delay: 0.4, dur: 2.6 },  // lower-left
+    { left: 305, top: 270, size: 14, delay: 1.1, dur: 3.8 },  // lower-right
+  ];
+
+  return (
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
+      <NightRoomBackdrop />
+
+      {/* Music button */}
+      <div style={{
+        position: "absolute", top: 18, right: 20, zIndex: 4,
+        width: 48, height: 48, borderRadius: "50%",
+        background: "#5B21B6",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        cursor: "pointer",
+        boxShadow: "0 4px 16px rgba(91,33,182,0.50)",
+      }}>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+          stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M9 18V5l12-2v13" />
+          <circle cx="6" cy="18" r="3" />
+          <circle cx="18" cy="16" r="3" />
+        </svg>
+      </div>
+
+      {/* Main column — vertically centers the composition */}
+      <div style={{
+        position: "relative", zIndex: 1,
+        height: "100%", display: "flex", flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "60px 0 44px",
+        boxSizing: "border-box",
+        gap: 20,
+      }}>
+
+        {/* ── Composition box: fixed 320px tall so hearts, bubble, and cat
+            are all pixel-positioned relative to the same origin ── */}
+        <div style={{
+          position: "relative",
+          width: "100%",
+          height: 320,
+          flexShrink: 0,
+        }}>
+
+          {/* Hearts — pixel coords anchored near cat center (195, 153) */}
+          {HEARTS.map((h, i) => (
+            <div key={i} aria-hidden style={{
+              position: "absolute",
+              left: h.left, top: h.top,
+              fontSize: h.size,
+              animation: `float-heart ${h.dur}s ease-in-out ${h.delay}s infinite`,
+              pointerEvents: "none", lineHeight: 1, zIndex: 2,
+            }}>💗</div>
+          ))}
+
+          {/* Speech bubble — right side, tail aligned to cat head (y≈152) */}
+          <div style={{
+            position: "absolute",
+            right: 12, top: 115,
+            width: 148,
+            background: "#fffdf5",
+            borderRadius: 22,
+            padding: "14px 18px 14px 16px",
+            boxShadow: "0 10px 36px rgba(0,0,0,0.32)",
+            zIndex: 3,
+            animation: "pop-in 0.5s cubic-bezier(0.22, 1.5, 0.36, 1) 0.85s backwards",
+          }}>
+            {/* Tail points left toward cat face */}
+            <div style={{
+              position: "absolute",
+              left: -13, top: 28,
+              width: 0, height: 0,
+              borderTop: "9px solid transparent",
+              borderBottom: "9px solid transparent",
+              borderRight: "15px solid #fffdf5",
+            }} />
+            <p style={{
+              fontFamily: "var(--font-nunito), system-ui",
+              fontSize: 22, fontWeight: 900, color: "#1e1430",
+              margin: 0, lineHeight: 1.3,
+            }}>Can I<br />trust you?</p>
+          </div>
+
+          {/* Bugsy — centered, pinned to bottom of comp box */}
+          <div
+            onClick={onNext}
+            style={{
+              position: "absolute",
+              bottom: 10, left: "50%", transform: "translateX(-50%)",
+              cursor: "pointer",
+              animation: "bobo-enter 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.15s backwards",
+            }}
+          >
+            <Bobo mood="cheer" tint={tint} size={210} tailWag />
+          </div>
+        </div>
+
+        {/* Tap hint — finger-tapping paw animation */}
+        <div
+          onClick={onNext}
+          style={{
+            cursor: "pointer", flexShrink: 0,
+            display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
+            animation: "fade-up 0.5s ease 1.5s backwards",
+          }}
+        >
+          <span style={{
+            fontFamily: "var(--font-nunito), system-ui",
+            fontSize: 20, fontWeight: 900,
+            color: "#FFD234",
+            textShadow: "0 0 18px rgba(255,210,52,0.75), 0 2px 8px rgba(0,0,0,0.6)",
+            letterSpacing: 0.4,
+          }}>Tap on paw</span>
+
+          {/* Paw + ripples + tapping finger */}
+          <div style={{ position: "relative", width: 76, height: 80 }}>
+
+            {/* Ripple ring 1 */}
+            <div style={{
+              position: "absolute", inset: 0,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              pointerEvents: "none",
+            }}>
+              <div style={{
+                width: 64, height: 64, borderRadius: "50%",
+                border: "2.5px solid rgba(255,210,52,0.80)",
+                animation: "paw-ripple 1.9s ease-out 2.1s infinite",
+              }} />
+            </div>
+
+            {/* Ripple ring 2 (offset delay) */}
+            <div style={{
+              position: "absolute", inset: 0,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              pointerEvents: "none",
+            }}>
+              <div style={{
+                width: 64, height: 64, borderRadius: "50%",
+                border: "2px solid rgba(255,210,52,0.50)",
+                animation: "paw-ripple 1.9s ease-out 2.4s infinite",
+              }} />
+            </div>
+
+            {/* Paw emoji — squishes on tap */}
+            <div style={{
+              position: "absolute", inset: 0,
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <span style={{
+                fontSize: 40, lineHeight: 1, display: "inline-block",
+                animation: "paw-compress 1.9s ease-in-out 2.1s infinite",
+              }}>🐾</span>
+            </div>
+
+            {/* Finger — bobs down from above to tap the paw */}
+            <div style={{
+              position: "absolute", top: -8, left: "50%", transform: "translateX(-20%)",
+              pointerEvents: "none",
+            }}>
+              <span style={{
+                fontSize: 28, lineHeight: 1, display: "inline-block",
+                animation: "finger-tap 1.9s ease-in-out 2.1s infinite",
+              }}>👆</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Ambient music via Web Audio API ─────────────────────────────
+function useAmbientMusic() {
+  const ctxRef     = useRef<AudioContext | null>(null);
+  const masterRef  = useRef<GainNode | null>(null);
+  const startedRef = useRef(false);
+  const [on, setOn] = useState(true);
+
+  const startAudio = useCallback(() => {
+    if (startedRef.current) return;
+    startedRef.current = true;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const AudioCtx = (window as any).AudioContext ?? (window as any).webkitAudioContext;
+    if (!AudioCtx) return;
+
+    const ctx: AudioContext = new AudioCtx();
+    ctxRef.current = ctx;
+
+    const master = ctx.createGain();
+    master.gain.setValueAtTime(0, ctx.currentTime);
+    master.gain.linearRampToValueAtTime(0.22, ctx.currentTime + 4);
+    master.connect(ctx.destination);
+    masterRef.current = master;
+
+    // Slow breathing LFO — gentle volume swell
+    const lfo     = ctx.createOscillator();
+    const lfoGain = ctx.createGain();
+    lfo.frequency.value = 0.07;
+    lfoGain.gain.value  = 0.025;
+    lfo.connect(lfoGain);
+    lfoGain.connect(master.gain);
+    lfo.start();
+
+    // A-minor ambient pad: A2 E3 A3 C4 E4 A4
+    ([ [110, 0.12], [164.81, 0.08], [220, 0.07],
+       [261.63, 0.05], [329.63, 0.04], [440, 0.025] ] as [number, number][])
+      .forEach(([freq, vol]) => {
+        const osc = ctx.createOscillator();
+        const g   = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = freq;
+        g.gain.value = vol;
+        osc.connect(g);
+        g.connect(master);
+        osc.start();
+      });
+  }, []);
+
+  // Auto-start on first user gesture (browser autoplay policy)
+  useEffect(() => {
+    const handler = () => startAudio();
+    document.addEventListener("pointerdown", handler, { once: true });
+    return () => document.removeEventListener("pointerdown", handler);
+  }, [startAudio]);
+
+  const toggle = useCallback(() => {
+    startAudio(); // no-op if already running
+    setOn(prev => {
+      const next = !prev;
+      if (masterRef.current && ctxRef.current) {
+        const t = ctxRef.current.currentTime;
+        masterRef.current.gain.cancelScheduledValues(t);
+        masterRef.current.gain.setValueAtTime(masterRef.current.gain.value, t);
+        masterRef.current.gain.linearRampToValueAtTime(
+          next ? 0.22 : 0,
+          t + (next ? 1.2 : 0.8),
+        );
+      }
+      return next;
+    });
+  }, [startAudio]);
+
+  // Cleanup on unmount
+  useEffect(() => () => { try { ctxRef.current?.close(); } catch (_) {} }, []);
+
+  return { on, toggle };
+}
+
+// ── Splash / teaser screen (shown before Welcome) ────────────────
+export function Splash({ onEnter }: { onEnter: () => void }) {
+  return (
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
+      <NightRoomBackdrop minimal hideRug />
+
+      <div style={{
+        position: "relative", zIndex: 1,
+        height: "100%", display: "flex", flexDirection: "column",
+        alignItems: "center", justifyContent: "space-between",
+        padding: "118px 28px 48px",
+        boxSizing: "border-box",
+      }}>
+
+        {/* ── Logo ── */}
+        <div style={{
+          display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+          animation: "fade-up 0.7s ease 0.1s backwards",
+        }}>
+          <h1 style={{
+            fontFamily: "var(--font-nunito), system-ui",
+            fontSize: 72, fontWeight: 900, margin: 0, lineHeight: 1,
+            letterSpacing: -2,
+            background: "linear-gradient(135deg, #FFD234 0%, #FF85C2 48%, #A78BFA 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            animation: "logo-glow 3s ease-in-out infinite",
+          }}>Bugsy</h1>
+        </div>
+
+        {/* ── Bold intro text ── */}
+        <div style={{
+          textAlign: "center",
+          animation: "fade-up 0.65s ease 0.6s backwards, float-gentle 3.6s ease-in-out 1.4s infinite",
+        }}>
+          <p style={{
+            fontFamily: "var(--font-nunito), system-ui",
+            fontSize: 13, fontWeight: 700,
+            color: "rgba(255,220,160,0.75)",
+            letterSpacing: 3, textTransform: "uppercase",
+            margin: "0 0 14px",
+          }}>✦ &nbsp;meet your new friend&nbsp; ✦</p>
+          <p style={{
+            fontFamily: "var(--font-nunito), system-ui",
+            fontSize: 34, fontWeight: 900,
+            color: "#fff",
+            lineHeight: 1.3, margin: "0 0 6px",
+            textShadow: "0 3px 20px rgba(0,0,0,0.6), 0 0 40px rgba(167,139,250,0.25)",
+            letterSpacing: -0.5,
+          }}>
+            Hi, someone&apos;s been
+          </p>
+          <p style={{
+            fontFamily: "var(--font-nunito), system-ui",
+            fontSize: 34, fontWeight: 900,
+            lineHeight: 1.3, margin: 0,
+            textShadow: "0 3px 20px rgba(0,0,0,0.6)",
+            letterSpacing: -0.5,
+          }}>
+            <span style={{ color: "#FFD234" }}>waiting</span>
+            <span style={{ color: "#fff" }}> to meet </span>
+            <span style={{ color: "#FF85C2" }}>you.</span>
+          </p>
+          <p style={{
+            fontFamily: "var(--font-nunito), system-ui",
+            fontSize: 16, fontWeight: 600,
+            color: "rgba(200,215,255,0.72)",
+            margin: "16px 0 0",
+            letterSpacing: 0.2,
+          }}>
+            Your very own study buddy 💜
+          </p>
+        </div>
+
+        {/* ── CTA ── */}
+        <div style={{
+          width: "100%", position: "relative",
+          animation: "fade-up 0.6s ease 1.1s backwards",
+        }}>
+          {/* Pulsing glow rings */}
+          <div style={{
+            position: "absolute", inset: -8, borderRadius: 40,
+            background: "rgba(147,51,234,0.42)",
+            animation: "say-hi-ping 2.2s ease-out 1.8s infinite",
+            pointerEvents: "none",
+          }} />
+          <div style={{
+            position: "absolute", inset: -8, borderRadius: 40,
+            background: "rgba(109,40,217,0.30)",
+            animation: "say-hi-ping 2.2s ease-out 3.1s infinite",
+            pointerEvents: "none",
+          }} />
+          <button
+            onClick={onEnter}
+            style={{
+              width: "100%", height: 64, border: "none", borderRadius: 32,
+              background: "linear-gradient(180deg, #9333EA 0%, #6D28D9 100%)",
+              color: "#fff",
+              fontFamily: "var(--font-nunito), system-ui",
+              fontSize: 20, fontWeight: 900, letterSpacing: 0.2,
+              cursor: "pointer",
+              boxShadow: "0 6px 0 #4C1D95, 0 10px 36px rgba(109,40,217,0.55)",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              position: "relative", overflow: "hidden",
+              animation: "cta-glow-pulse 2.4s ease-in-out 1.5s infinite",
+            }}
+            onPointerDown={e => {
+              (e.currentTarget as HTMLButtonElement).style.transform = "translateY(5px)";
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 2px 0 #4C1D95, 0 4px 14px rgba(109,40,217,0.28)";
+            }}
+            onPointerUp={e => {
+              (e.currentTarget as HTMLButtonElement).style.transform = "";
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 0 #4C1D95, 0 10px 36px rgba(109,40,217,0.55)";
+            }}
+            onPointerLeave={e => {
+              (e.currentTarget as HTMLButtonElement).style.transform = "";
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 0 #4C1D95, 0 10px 36px rgba(109,40,217,0.55)";
+            }}
+          >
+            {/* shimmer sweep */}
+            <div style={{
+              position: "absolute", top: "-10%", left: "-90%",
+              width: "48%", height: "120%",
+              background: "linear-gradient(105deg, transparent 20%, rgba(255,220,100,0.35) 50%, transparent 80%)",
+              transform: "skewX(-12deg)",
+              animation: "say-hi-shimmer 3.2s ease-in-out 1.6s infinite",
+              pointerEvents: "none",
+            }} />
+            Tap to find out who &nbsp;👀
+          </button>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
 // ── The welcome screen ───────────────────────────────────────────
 export function Welcome({
   tint,
@@ -487,403 +886,277 @@ export function Welcome({
   onGetStarted: () => void;
   onHaveAccount: () => void;
 }) {
-  return (
-    <div
-      style={{
-        position: "absolute",
-        inset: 0,
-        background: "#FFF6D6",
-        overflow: "hidden",
-      }}
-    >
-      <WelcomeBackdrop />
+  const [introPhase, setIntroPhase] = useState(0);
+  const [burstActive, setBurstActive] = useState(false);
+  const { on: musicOn, toggle: toggleMusic } = useAmbientMusic();
 
-      {/* ── Main column ─────────────────────────────────────────── */}
+  useEffect(() => {
+    const t = setTimeout(() => setIntroPhase(1), 1150);
+    return () => clearTimeout(t);
+  }, []);
+
+  // paw tapped → play high-five burst, then navigate after 950ms
+  const handlePawTap = useCallback(() => {
+    if (introPhase !== 4 || burstActive) return;
+    setBurstActive(true);
+    setTimeout(() => onGetStarted(), 950);
+  }, [introPhase, burstActive, onGetStarted]);
+
+  return (
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
+      <NightRoomBackdrop minimal />
+
+      {/* Music toggle button — top-right */}
       <div
+        role="button"
+        aria-label={musicOn ? "Mute music" : "Play music"}
+        onClick={toggleMusic}
         style={{
-          position: "relative",
-          zIndex: 1,
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          paddingTop: 40,
-          paddingBottom: 24,
-          paddingLeft: 20,
-          paddingRight: 20,
-          boxSizing: "border-box",
+          position: "absolute", top: 18, right: 20, zIndex: 4,
+          width: 48, height: 48, borderRadius: "50%",
+          background: musicOn ? "#5B21B6" : "rgba(60,20,100,0.55)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          cursor: "pointer",
+          boxShadow: musicOn ? "0 4px 16px rgba(91,33,182,0.50)" : "none",
+          transition: "background 0.3s ease, box-shadow 0.3s ease",
+          opacity: musicOn ? 1 : 0.65,
         }}
       >
-        {/* ── Brand mark ──────────────────────────────────────── */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-            flexShrink: 0,
-            animation: "fade-in 0.5s ease 0.05s backwards",
-          }}
-        >
-          <Bobo mood="happy" tint={tint} size={32} animate={false} />
-          <span
-            style={{
-              fontFamily: "var(--font-nunito), sans-serif",
-              fontSize: 24,
-              fontWeight: 900,
-              letterSpacing: -0.5,
-              color: "var(--primary)",
-              lineHeight: 1,
-            }}
-          >
-            bugsy
-          </span>
-        </div>
+        {/* Pulsing ring when music is on */}
+        {musicOn && (
+          <div style={{
+            position: "absolute", inset: -5, borderRadius: "50%",
+            border: "2px solid rgba(147,51,234,0.55)",
+            animation: "say-hi-ping 2.6s ease-out 0.4s infinite",
+            pointerEvents: "none",
+          }} />
+        )}
+        {musicOn ? (
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+            stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 18V5l12-2v13" />
+            <circle cx="6" cy="18" r="3" />
+            <circle cx="18" cy="16" r="3" />
+          </svg>
+        ) : (
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+            stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 18V5l12-2v13" />
+            <circle cx="6" cy="18" r="3" />
+            <circle cx="18" cy="16" r="3" />
+            <line x1="3" y1="3" x2="21" y2="21" />
+          </svg>
+        )}
+      </div>
 
-        {/* ── Hero scene — fills remaining vertical space ──────── */}
-        <div
-          style={{
-            flex: 1,
-            minHeight: 0,
+      {/* ── Main column ── */}
+      <div style={{
+        position: "relative", zIndex: 1,
+        height: "100%", display: "flex", flexDirection: "column",
+        padding: "60px 20px 32px",
+        boxSizing: "border-box",
+      }}>
+
+        {/* ── Scene: cat centered, bubble floats above ── */}
+        <div style={{
+          flex: 1, minHeight: 0,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          paddingBottom: 0,
+        }}>
+          {/* Speech bubble — above cat, tail points down to its head.
+              minHeight locks it to the fully-expanded size so Bugsy
+              never shifts as new lines appear. */}
+          <div style={{
             position: "relative",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          {/* Radial glow */}
-          <div
-            aria-hidden
-            style={{
+            width: 220,
+            minHeight: 168,
+            background: "#fff9f0",
+            borderRadius: 22,
+            padding: "12px 16px 10px",
+            boxShadow: "0 10px 36px rgba(0,0,0,0.28)",
+            marginBottom: 4,
+            boxSizing: "border-box",
+            animation: "pop-in 0.45s cubic-bezier(0.22, 1.5, 0.36, 1) 0.6s backwards",
+          }}>
+            {/* Tail pointing down toward cat head */}
+            <div style={{
               position: "absolute",
-              width: 380,
-              height: 380,
-              borderRadius: "50%",
-              background:
-                "radial-gradient(circle, rgba(255,92,138,0.20) 0%, rgba(167,139,250,0.10) 50%, transparent 72%)",
-              filter: "blur(16px)",
-              animation: "breath-glow 4s ease-in-out infinite",
-              pointerEvents: "none",
-            }}
-          />
+              bottom: -13, left: "38%",
+              width: 0, height: 0,
+              borderLeft: "12px solid transparent",
+              borderRight: "12px solid transparent",
+              borderTop: "15px solid #fff9f0",
+            }} />
 
-          {/* Mascot + floating items */}
-          <div
-            style={{
-              position: "relative",
-              animation: "bobo-enter 0.7s cubic-bezier(0.22, 1, 0.36, 1)",
-            }}
-          >
-            <Bobo mood="waving" tint={tint} size={210} />
+            <p style={{ textAlign: "center", margin: "0 0 5px", fontSize: 18, lineHeight: 1 }}>♥</p>
 
-            {/* Ground shadow */}
-            <div
-              aria-hidden
-              style={{
-                position: "absolute",
-                bottom: 8,
-                left: "50%",
-                transform: "translateX(-50%)",
-                width: 180,
-                height: 20,
-                borderRadius: "50%",
-                background:
-                  "radial-gradient(ellipse, rgba(20,16,30,0.16) 0%, transparent 70%)",
-                filter: "blur(6px)",
-                pointerEvents: "none",
-                zIndex: -1,
-              }}
+            {introPhase >= 1 && (
+              <p style={{
+                fontFamily: "var(--font-nunito), system-ui",
+                fontSize: 17, fontWeight: 800, color: "#1e1430", margin: "0 0 2px",
+              }}>
+                <Typewriter text="Hi..." onDone={() => setIntroPhase(2)} speedMultiplier={1.4} />
+              </p>
+            )}
+
+            {introPhase >= 2 && (
+              <p style={{
+                fontFamily: "var(--font-nunito), system-ui",
+                fontSize: 17, fontWeight: 800, color: "#1e1430", margin: "0 0 8px",
+              }}>
+                I&apos;m{" "}
+                <span style={{ color: "#FF5C8A" }}>
+                  <Typewriter text="Bugsy." onDone={() => setIntroPhase(3)} speedMultiplier={1.0} />
+                </span>
+              </p>
+            )}
+
+            {introPhase >= 3 && (
+              <p style={{
+                fontFamily: "var(--font-nunito), system-ui",
+                fontSize: 13, fontWeight: 600, color: "#5a4070",
+                lineHeight: 1.5, margin: "0 0 7px",
+              }}>
+                <Typewriter
+                  text="I get a little shy when meeting new friends."
+                  onDone={() => setIntroPhase(4)}
+                  speedMultiplier={0.8}
+                />
+              </p>
+            )}
+
+            {introPhase >= 4 && (
+              <p style={{
+                textAlign: "center", margin: 0, fontSize: 17, lineHeight: 1,
+                animation: "fade-up 0.3s ease backwards",
+              }}>💜</p>
+            )}
+
+          </div>
+
+          {/* Bugsy — sits at bottom; right paw glows at phase 4 */}
+          <div style={{
+            position: "relative",
+            animation: "bobo-enter 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.2s backwards",
+          }}>
+            <Bobo
+              mood="shy"
+              tint={tint}
+              size={240}
+              glowRightPaw={introPhase === 4 && !burstActive}
             />
 
-            {/* Floating clay icons
-                Mascot radius ≈ 105px. Every icon sits at dist ≥ 148px so
-                the nearest icon edge clears the mascot by at least 25px. */}
-            {([
-              { shape: "book",   size: 42, x:  126, y:  -82, rot:  12, delay: 0.30 },
-              { shape: "math",   size: 44, x: -132, y:  -70, rot: -10, delay: 0.40 },
-              { shape: "flask",  size: 40, x:  128, y:   80, rot:   8, delay: 0.55 },
-              { shape: "pencil", size: 48, x: -136, y:   76, rot:   0, delay: 0.50 },
-              { shape: "music",  size: 35, x:   60, y: -132, rot:  10, delay: 0.65 },
-              { shape: "globe",  size: 35, x:  -60, y:  130, rot:   0, delay: 0.75 },
-            ] as const).map((s, i) => (
+            {/* Click target on Bugsy's right paw + two expanding ping rings */}
+            {introPhase === 4 && !burstActive && (
               <div
-                key={i}
-                aria-hidden
+                onClick={handlePawTap}
                 style={{
                   position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  marginLeft: s.x,
-                  marginTop: s.y,
-                  animation: `pop-in 0.5s cubic-bezier(0.22, 1.5, 0.36, 1) ${s.delay}s backwards`,
-                  pointerEvents: "none",
+                  left: 120, top: 133,
+                  width: 48, height: 48,
+                  borderRadius: "50%",
+                  cursor: "pointer",
+                  zIndex: 10,
                 }}
               >
-                <div
-                  style={{
-                    transform: `rotate(${s.rot}deg)`,
-                    animation: `bobo-float ${2.4 + i * 0.3}s ease-in-out ${s.delay + 0.6}s infinite`,
-                  }}
-                >
-                  <Clay shape={s.shape} size={s.size} />
-                </div>
+                <div style={{
+                  position: "absolute", inset: -10,
+                  borderRadius: "50%",
+                  border: "2.5px solid rgba(192,132,252,0.70)",
+                  animation: "paw-ring-ping 1.6s ease-out infinite",
+                  pointerEvents: "none",
+                }} />
+                <div style={{
+                  position: "absolute", inset: -10,
+                  borderRadius: "50%",
+                  border: "2.5px solid rgba(192,132,252,0.50)",
+                  animation: "paw-ring-ping 1.6s ease-out 0.8s infinite",
+                  pointerEvents: "none",
+                }} />
               </div>
-            ))}
-
-            {/* Sparkles — all at dist > 120px so none sit on the mascot */}
-            <Sparkle size={12} x={-110} y={ -95} delay={0.2} />
-            <Sparkle size={9}  x={ 115} y={ -38} delay={1.0} />
-            <Sparkle size={10} x={  92} y={  112} delay={1.6} />
-            <Sparkle size={8}  x={-112} y={   90} delay={0.6} />
-            <Sparkle size={11} x={  -42} y={ -122} delay={1.3} />
+            )}
           </div>
+
+          {/* Hint text — bold, gold sparkles, MY PAW uppercase */}
+          {introPhase === 4 && !burstActive && (
+            <div style={{
+              marginTop: 6,
+              textAlign: "center",
+              animation: "fade-up 0.5s ease 0.2s backwards",
+              userSelect: "none",
+            }}>
+              <p style={{
+                fontFamily: "var(--font-nunito), system-ui",
+                fontSize: 20, fontWeight: 900,
+                color: "#f0e6ff",
+                margin: 0,
+                letterSpacing: "0.03em",
+                WebkitTextStroke: "0.4px rgba(240,230,255,0.6)",
+                animation: "hint-pulse 2s ease-in-out infinite",
+                display: "inline-block",
+              }}>
+                <span style={{ color: "#FFD166" }}>✦</span>
+                {" "}Tap on{" "}
+                <span style={{
+                  color: "#FFD166",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                }}>my paw</span>
+                {" "}to say hello!{" "}
+                <span style={{ color: "#FFD166" }}>✦</span>
+              </p>
+            </div>
+          )}
         </div>
 
-        {/* ── Bottom content block ─────────────────────────────── */}
-        <div style={{ flexShrink: 0 }}>
-
-          {/* Headline */}
-          <h1
-            style={{
-              fontFamily: "var(--font-nunito), sans-serif",
-              fontSize: 24,
-              fontWeight: 800,
-              lineHeight: 1.22,
-              letterSpacing: -0.5,
-              textAlign: "center",
-              color: "var(--ink)",
-              margin: "0 auto 8px",
-              maxWidth: 320,
-              animation: "fade-up 0.55s ease 0.25s backwards",
-            }}
-          >
-            A safe, fun way for your child to{" "}
-            <span style={g("linear-gradient(135deg, #A78BFA, #7C3AED)")}>learn</span>
-            {" "}and{" "}
-            <span style={g("linear-gradient(135deg, #FF5C8A, #FF8FB1)")}>grow</span>
-          </h1>
-
-          {/* Supporting text */}
-          <p
-            style={{
-              fontFamily: "var(--font-nunito), sans-serif",
-              fontSize: 14,
-              fontWeight: 600,
-              color: "var(--ink-muted)",
-              textAlign: "center",
-              margin: "0 auto 14px",
-              maxWidth: 290,
-              lineHeight: 1.45,
-              animation: "fade-up 0.55s ease 0.35s backwards",
-            }}
-          >
-            Interactive lessons and playful activities designed for curious minds.
-          </p>
-
-          {/* Trust card */}
-          <div
-            style={{
-              background: "#fff",
-              borderRadius: 20,
-              boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
-              border: "1px solid rgba(0,0,0,0.05)",
-              padding: "16px 8px",
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr",
-              marginBottom: 14,
-              animation: "fade-up 0.55s ease 0.42s backwards",
-            }}
-          >
-            {/* Safe & Secure */}
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 6, paddingLeft: 4, paddingRight: 4 }}>
-              <div style={{ width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(145deg, #4DD88A, #26B865)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 8px rgba(38,184,101,0.28)" }}>
-                {/* Shield + check */}
-                <svg width={22} height={22} viewBox="0 0 24 24" fill="none">
-                  <path d="M12 2L4 5.5v5C4 15.1 7.4 19.7 12 21c4.6-1.3 8-5.9 8-10.5v-5L12 2z" fill="rgba(255,255,255,0.25)" stroke="white" strokeWidth="1.8" strokeLinejoin="round"/>
-                  <path d="M8.5 12l2.5 2.5 4.5-4.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-              <span style={{ fontFamily: "var(--font-nunito), sans-serif", fontSize: 11, fontWeight: 800, color: "var(--ink)", lineHeight: 1.2 }}>Safe &amp; secure</span>
-              <span style={{ fontFamily: "var(--font-nunito), sans-serif", fontSize: 10, fontWeight: 600, color: "var(--ink-muted)", lineHeight: 1.3 }}>Kid-friendly environment</span>
-            </div>
-
-            {/* Expert designed */}
-            <div style={{ borderLeft: "1px solid rgba(0,0,0,0.06)", borderRight: "1px solid rgba(0,0,0,0.06)", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 6, paddingLeft: 6, paddingRight: 6 }}>
-              <div style={{ width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(145deg, #4CB8FF, #2096E8)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 8px rgba(32,150,232,0.28)" }}>
-                {/* Graduation cap */}
-                <svg width={22} height={22} viewBox="0 0 24 24" fill="#fff">
-                  <path d="M12 3L1 9l11 6 11-6-11-6z"/>
-                  <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
-                </svg>
-              </div>
-              <span style={{ fontFamily: "var(--font-nunito), sans-serif", fontSize: 11, fontWeight: 800, color: "var(--ink)", lineHeight: 1.2 }}>Expert designed</span>
-              <span style={{ fontFamily: "var(--font-nunito), sans-serif", fontSize: 10, fontWeight: 600, color: "var(--ink-muted)", lineHeight: 1.3 }}>Curriculum by education experts</span>
-            </div>
-
-            {/* Loved by Parents */}
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 6, paddingLeft: 4, paddingRight: 4 }}>
-              <div style={{ width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(145deg, #FF6E8A, #E8284A)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 8px rgba(232,40,74,0.28)" }}>
-                {/* Heart */}
-                <svg width={22} height={22} viewBox="0 0 24 24" fill="#fff">
-                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                </svg>
-              </div>
-              <span style={{ fontFamily: "var(--font-nunito), sans-serif", fontSize: 11, fontWeight: 800, color: "var(--ink)", lineHeight: 1.2 }}>Loved by parents</span>
-              <span style={{ fontFamily: "var(--font-nunito), sans-serif", fontSize: 10, fontWeight: 600, color: "var(--ink-muted)", lineHeight: 1.3 }}>Trusted by thousands</span>
-            </div>
-          </div>
-
-          {/* CTA buttons */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 10,
-              animation: "fade-up 0.55s ease 0.50s backwards",
-            }}
-          >
-            {/* Primary — hot pink with 3D shadow + hover lift */}
-            <button
-              onClick={onGetStarted}
-              style={{
-                width: "100%",
-                height: 56,
-                border: "none",
-                borderRadius: 16,
-                background: "linear-gradient(180deg, #FF6FA3 0%, #FF3E7F 100%)",
-                color: "#fff",
-                fontSize: 17,
-                fontWeight: 800,
-                fontFamily: "var(--font-nunito), sans-serif",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 10,
-                cursor: "pointer",
-                boxShadow: "0 5px 0 #C4235C, 0 8px 24px rgba(255,62,127,0.32)",
-                letterSpacing: 0.2,
-                transition: "transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease",
-              }}
-              onMouseEnter={(e) => {
-                const el = e.currentTarget as HTMLButtonElement;
-                el.style.transform = "translateY(-2px) scale(1.012)";
-                el.style.boxShadow = "0 8px 0 #C4235C, 0 16px 36px rgba(255,62,127,0.42)";
-                el.style.filter = "brightness(1.06)";
-              }}
-              onMouseLeave={(e) => {
-                const el = e.currentTarget as HTMLButtonElement;
-                el.style.transform = "";
-                el.style.boxShadow = "0 5px 0 #C4235C, 0 8px 24px rgba(255,62,127,0.32)";
-                el.style.filter = "";
-              }}
-              onPointerDown={(e) => {
-                const el = e.currentTarget as HTMLButtonElement;
-                el.style.transform = "translateY(3px) scale(1)";
-                el.style.boxShadow = "0 2px 0 #C4235C, 0 4px 12px rgba(255,62,127,0.25)";
-                el.style.filter = "brightness(0.96)";
-              }}
-              onPointerUp={(e) => {
-                const el = e.currentTarget as HTMLButtonElement;
-                el.style.transform = "";
-                el.style.boxShadow = "0 5px 0 #C4235C, 0 8px 24px rgba(255,62,127,0.32)";
-                el.style.filter = "";
-              }}
-              onPointerLeave={(e) => {
-                const el = e.currentTarget as HTMLButtonElement;
-                el.style.transform = "";
-                el.style.boxShadow = "0 5px 0 #C4235C, 0 8px 24px rgba(255,62,127,0.32)";
-                el.style.filter = "";
-              }}
-            >
-              Get Started
-              <svg width={20} height={20} viewBox="0 0 24 24" fill="none">
-                <path d="M5 12H19M13 6L19 12L13 18" stroke="white" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-
-            {/* Secondary — outlined with hover wash */}
-            <button
-              onClick={onHaveAccount}
-              style={{
-                width: "100%",
-                height: 52,
-                border: "2.5px solid #FF3E7F",
-                borderRadius: 16,
-                background: "#fff",
-                color: "#FF3E7F",
-                fontSize: 15,
-                fontWeight: 700,
-                fontFamily: "var(--font-nunito), sans-serif",
-                cursor: "pointer",
-                letterSpacing: -0.1,
-                transition: "transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease",
-              }}
-              onMouseEnter={(e) => {
-                const el = e.currentTarget as HTMLButtonElement;
-                el.style.transform = "translateY(-2px)";
-                el.style.background = "rgba(255,62,127,0.06)";
-                el.style.boxShadow = "0 6px 20px rgba(255,62,127,0.18)";
-                el.style.borderColor = "#FF2070";
-              }}
-              onMouseLeave={(e) => {
-                const el = e.currentTarget as HTMLButtonElement;
-                el.style.transform = "";
-                el.style.background = "#fff";
-                el.style.boxShadow = "";
-                el.style.borderColor = "#FF3E7F";
-              }}
-              onPointerDown={(e) => {
-                const el = e.currentTarget as HTMLButtonElement;
-                el.style.transform = "translateY(2px)";
-                el.style.boxShadow = "";
-                el.style.background = "rgba(255,62,127,0.10)";
-              }}
-              onPointerUp={(e) => {
-                const el = e.currentTarget as HTMLButtonElement;
-                el.style.transform = "";
-                el.style.background = "#fff";
-                el.style.boxShadow = "";
-                el.style.borderColor = "#FF3E7F";
-              }}
-              onPointerLeave={(e) => {
-                const el = e.currentTarget as HTMLButtonElement;
-                el.style.transform = "";
-                el.style.background = "#fff";
-                el.style.boxShadow = "";
-                el.style.borderColor = "#FF3E7F";
-              }}
-            >
-              I already have an account
-            </button>
-          </div>
-
-          {/* Privacy footer */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 5,
-              marginTop: 12,
-              animation: "fade-in 0.6s ease 0.65s backwards",
-            }}
-          >
-            <svg width={12} height={12} viewBox="0 0 24 24" fill="#BDBDBD">
-              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5L12 1z" />
-            </svg>
-            <span
-              style={{
-                fontFamily: "var(--font-nunito), sans-serif",
-                fontSize: 12,
-                fontWeight: 600,
-                color: "#BDBDBD",
-                letterSpacing: -0.1,
-              }}
-            >
-              We respect your privacy. No ads. Ever.
-            </span>
-          </div>
-        </div>
       </div>
+
+      {/* ── High-five burst overlay ── */}
+      {burstActive && (
+        <div style={{
+          position: "absolute", inset: 0,
+          pointerEvents: "none", zIndex: 20,
+          overflow: "hidden",
+        }}>
+          {/* Expanding bloom — covers screen just before Trust appears */}
+          <div style={{
+            position: "absolute",
+            left: "50%", top: "60%",
+            width: 80, height: 80,
+            borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(220,160,255,0.95) 0%, rgba(167,100,255,0.80) 45%, rgba(109,40,217,0.60) 100%)",
+            animation: "screen-bloom 0.95s cubic-bezier(0.22, 1, 0.36, 1) 0s both",
+            pointerEvents: "none",
+          }} />
+
+          {/* Spark particles radiating from Bugsy's right paw */}
+          {([
+            { e: "⭐", x: -72, y: -95,  delay: 0  },
+            { e: "✨", x:   4, y: -108, delay: 35  },
+            { e: "🌟", x:  78, y: -90,  delay: 15  },
+            { e: "⭐", x: -98, y: -28,  delay: 55  },
+            { e: "✨", x:  98, y: -32,  delay: 10  },
+            { e: "🌟", x: -58, y:  58,  delay: 45  },
+            { e: "⭐", x:  64, y:  62,  delay: 25  },
+            { e: "✨", x:   4, y:  82,  delay: 65  },
+            { e: "💜", x: -38, y: -130, delay: 20  },
+            { e: "💜", x:  42, y: -128, delay: 50  },
+          ] as { e: string; x: number; y: number; delay: number }[]).map((p, i) => (
+            <div key={i} style={{
+              position: "absolute",
+              left: "50%", top: "60%",
+              fontSize: 22, lineHeight: 1,
+              ["--tx" as string]: `${p.x}px`,
+              ["--ty" as string]: `${p.y}px`,
+              animation: `burst-out 0.82s ease-out ${p.delay}ms both`,
+            }}>{p.e}</div>
+          ))}
+
+        </div>
+      )}
     </div>
   );
 }

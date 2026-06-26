@@ -388,12 +388,12 @@ textarea {
   100% { opacity: 1; transform: translateY(0); }
 }
 @keyframes screen-in {
-  0%   { opacity: 0; transform: translateX(24px); }
-  100% { opacity: 1; transform: translateX(0); }
+  0%   { opacity: 0; transform: scale(0.93) translateY(22px); }
+  100% { opacity: 1; transform: scale(1)    translateY(0px); }
 }
 @keyframes screen-in-back {
-  0%   { opacity: 0; transform: translateX(-24px); }
-  100% { opacity: 1; transform: translateX(0); }
+  0%   { opacity: 0; transform: scale(0.93) translateY(-22px); }
+  100% { opacity: 1; transform: scale(1)    translateY(0px); }
 }
 @keyframes bobo-bump {
   0%   { transform: scale(1); }
@@ -404,6 +404,97 @@ textarea {
 @keyframes tw-caret {
   0%, 100% { opacity: 0.7; }
   50%      { opacity: 0; }
+}
+@keyframes say-hi-bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+@keyframes say-hi-ping {
+  0%        { transform: scale(1);    opacity: 0.72; }
+  70%, 100% { transform: scale(1.16); opacity: 0; }
+}
+@keyframes say-hi-shimmer {
+  0%        { left: -90%; }
+  55%, 100% { left: 130%; }
+}
+@keyframes wave-hand {
+  0%        { transform: rotate(  0deg); }
+  15%       { transform: rotate( 18deg); }
+  30%       { transform: rotate( -8deg); }
+  45%       { transform: rotate( 16deg); }
+  60%       { transform: rotate( -4deg); }
+  75%       { transform: rotate( 12deg); }
+  100%      { transform: rotate(  0deg); }
+}
+@keyframes cloud-drift {
+  0%, 100% { transform: translate(0px,   0px); }
+  50%      { transform: translate(12px, -4px); }
+}
+@keyframes float-gentle {
+  0%, 100% { transform: translateY(0px); }
+  50%      { transform: translateY(-10px); }
+}
+@keyframes logo-glow {
+  0%, 100% { filter: drop-shadow(0 0 16px rgba(255,180,80,0.55)) drop-shadow(0 4px 28px rgba(167,139,250,0.45)); }
+  50%      { filter: drop-shadow(0 0 28px rgba(255,200,100,0.75)) drop-shadow(0 4px 36px rgba(167,139,250,0.65)); }
+}
+@keyframes paw-bounce {
+  0%, 100% { transform: translateY(0px)  rotate(-8deg) scale(1);    }
+  50%      { transform: translateY(-10px) rotate( 8deg) scale(1.12); }
+}
+@keyframes cta-glow-pulse {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(147,51,234,0.40)); }
+  50%      { filter: drop-shadow(0 0 22px rgba(147,51,234,0.80)) drop-shadow(0 0 40px rgba(167,100,255,0.40)); }
+}
+@keyframes paw-glow-ring {
+  0%, 100% {
+    box-shadow: 0 0 8px 2px rgba(192,132,252,0.55), 0 0 18px 4px rgba(192,132,252,0.28);
+    border-color: rgba(192,132,252,0.75);
+  }
+  50% {
+    box-shadow: 0 0 18px 6px rgba(192,132,252,0.90), 0 0 32px 10px rgba(167,100,255,0.45);
+    border-color: rgba(220,170,255,1.0);
+  }
+}
+@keyframes paw-ring-ping {
+  0%   { transform: scale(1);   opacity: 0.65; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+@keyframes paw-svg-glow {
+  0%, 100% { filter: drop-shadow(0 0 5px rgba(192,132,252,0.80)) drop-shadow(0 0 10px rgba(192,132,252,0.50)); }
+  50%      { filter: drop-shadow(0 0 14px rgba(220,160,255,1.00)) drop-shadow(0 0 24px rgba(192,132,252,0.70)) drop-shadow(0 0 38px rgba(167,100,255,0.45)); }
+}
+@keyframes paw-flicker {
+  0%,  100% { filter: drop-shadow(0 0 4px  rgba(192,132,252,0.50)) drop-shadow(0 0 8px  rgba(192,132,252,0.30)); }
+  6%         { filter: drop-shadow(0 0 22px rgba(220,160,255,1.00)) drop-shadow(0 0 40px rgba(192,132,252,0.90)) drop-shadow(0 0 56px rgba(251,146,60,0.50)); }
+  9%         { filter: drop-shadow(0 0 4px  rgba(192,132,252,0.40)); }
+  14%        { filter: drop-shadow(0 0 20px rgba(220,160,255,1.00)) drop-shadow(0 0 36px rgba(192,132,252,0.85)); }
+  17%        { filter: drop-shadow(0 0 5px  rgba(192,132,252,0.45)); }
+  50%        { filter: drop-shadow(0 0 16px rgba(220,160,255,0.95)) drop-shadow(0 0 28px rgba(192,132,252,0.70)); }
+  52%        { filter: drop-shadow(0 0 4px  rgba(192,132,252,0.40)); }
+  56%        { filter: drop-shadow(0 0 20px rgba(220,160,255,1.00)) drop-shadow(0 0 38px rgba(192,132,252,0.80)) drop-shadow(0 0 52px rgba(244,114,182,0.45)); }
+  60%        { filter: drop-shadow(0 0 5px  rgba(192,132,252,0.45)); }
+}
+@keyframes hint-pulse {
+  0%, 100% { transform: scale(1)    translateY(0px);  color: #c084fc; text-shadow: none; }
+  50%      { transform: scale(1.06) translateY(-4px); color: #e9d5ff; text-shadow: 0 0 14px rgba(192,132,252,0.85); }
+}
+@keyframes burst-out {
+  0%   { transform: translate(-50%, -50%) translate(0px, 0px)           scale(0)   rotate(0deg);  opacity: 1; }
+  55%  { opacity: 1; }
+  100% { transform: translate(-50%, -50%) translate(var(--tx), var(--ty)) scale(1.2) rotate(30deg); opacity: 0; }
+}
+@keyframes screen-bloom {
+  0%   { transform: translate(-50%, -50%) scale(0);  opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(22); opacity: 0; }
+}
+@keyframes high-five-pop {
+  0%   { transform: translate(-50%, -50%) scale(0.3) translateY(12px);  opacity: 0; }
+  28%  { transform: translate(-50%, -50%) scale(1.18) translateY(0px);  opacity: 1; }
+  65%  { transform: translate(-50%, -50%) scale(1)   translateY(-10px); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(0.9) translateY(-28px); opacity: 0; }
 }
 @keyframes bugsy-pop {
   0%   { opacity: 0; transform: translateY(60px) scale(0.6); }
@@ -724,13 +815,47 @@ textarea {
   0%, 100% { opacity: 0.07; transform: scale(0.65); }
   50%      { opacity: 0.24; transform: scale(1.15); }
 }
+@keyframes float-heart {
+  0%, 100% { transform: translateY(0px) rotate(-8deg) scale(1);    opacity: 0.88; }
+  50%       { transform: translateY(-14px) rotate(6deg) scale(1.10); opacity: 1; }
+}
+@keyframes paw-glow {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0px rgba(255,210,52,0), 0 4px 16px rgba(0,0,0,0.4);
+  }
+  50% {
+    transform: scale(1.055);
+    box-shadow: 0 0 28px rgba(255,210,52,0.75), 0 0 60px rgba(255,180,0,0.35), 0 4px 16px rgba(0,0,0,0.4);
+  }
+}
+/* Finger bobs down to tap the paw then lifts */
+@keyframes finger-tap {
+  0%, 18%, 100% { transform: translateY(0px);  }
+  36%           { transform: translateY(16px); }
+  54%           { transform: translateY(16px); }
+  70%           { transform: translateY(0px);  }
+}
+/* Paw squishes on finger-contact then pops back */
+@keyframes paw-compress {
+  0%, 30%, 100% { transform: scale(1);    }
+  38%           { transform: scale(0.82); }
+  52%           { transform: scale(1.16); }
+  62%           { transform: scale(1);    }
+}
+/* Concentric ring ripples from the paw on each tap */
+@keyframes paw-ripple {
+  0%, 30%  { transform: scale(0.35); opacity: 0;    }
+  34%      { transform: scale(0.35); opacity: 0.88; }
+  100%     { transform: scale(2.8);  opacity: 0;    }
+}
 
 
 .screen-wrap > * {
-  animation: screen-in 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: screen-in 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .screen-wrap-back > * {
-  animation: screen-in-back 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: screen-in-back 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* Range slider thumb — coral primary */

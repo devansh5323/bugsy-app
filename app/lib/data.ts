@@ -11,7 +11,8 @@ export type Mood =
   | "excited"  // big payoff moments
   | "worried"  // mildly anxious
   | "hungry"   // wants attention / food
-  | "angry";   // furious — messy fur, steam, red tint
+  | "angry"    // furious — messy fur, steam, red tint
+  | "shy";     // big sparkly eyes, paws at cheeks, rosy blush
 export type Tab = "home" | "projects" | "leaderboard" | "me";
 export type UserType = "parent" | "child";
 export type Relationship = "mom" | "dad" | "guardian";
