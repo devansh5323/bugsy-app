@@ -378,15 +378,22 @@ export function WhoAreYou({
 }) {
   const [phase, setPhase] = useState<Phase>("closed");
   const [wiggleKey, setWiggleKey] = useState(0);
+  const [showLine2, setShowLine2] = useState(false);
   const audioRef = useRef<AudioContext | null>(null);
   const padRef = useRef<{ stop: () => void } | null>(null);
 
-  // Simple two-step reveal: bubble first, then CTA card.
+  // Staggered reveal: header(0.1s) → bugsy(1.4s) → bubble line1(2.4s) → line2(3.1s) → CTA(4.4s)
   useEffect(() => {
-    const t1 = window.setTimeout(() => setPhase("greeting"), 400);
-    const t2 = window.setTimeout(() => setPhase("ready"),    1800);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
+    const t1  = window.setTimeout(() => setPhase("greeting"), 2400);
+    const t1b = window.setTimeout(() => setShowLine2(true),   3100);
+    const t2  = window.setTimeout(() => setPhase("ready"),    4400);
+    return () => { clearTimeout(t1); clearTimeout(t1b); clearTimeout(t2); };
   }, []);
+
+  // Auto-bounce Bugsy when he starts speaking
+  useEffect(() => {
+    if (phase === "greeting") setWiggleKey((k) => k + 1);
+  }, [phase]);
 
   const rank = RANK[phase];
   const showText = rank >= RANK.greeting;
@@ -486,8 +493,8 @@ export function WhoAreYou({
   };
 
   const bugsyWiggleAnim = wiggleKey > 0
-    ? "bugsy-wiggle 0.5s ease-in-out"
-    : "bobo-enter 0.7s cubic-bezier(0.22, 1, 0.36, 1)";
+    ? "bugsy-wiggle 0.6s ease-in-out"
+    : "bobo-enter 1.0s cubic-bezier(0.22, 1, 0.36, 1) 1.4s both";
 
   return (
     <div
@@ -502,135 +509,187 @@ export function WhoAreYou({
         color: "#fff",
       }}
     >
-      <NightRoomBackdrop minimal />
+      <NightRoomBackdrop minimal hideRug />
 
-      {/* ── HEADER ────────────────────────────────────────────── */}
+
+      {/* ── HEADER ─────────────────────────────────────────────── */}
       <div
         style={{
           position: "relative",
           zIndex: 1,
           textAlign: "center",
-          padding: "52px 24px 0",
+          padding: "110px 24px 0",
           width: "100%",
-          animation: "fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both",
+          animation: "fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both",
         }}
       >
-        <h1
-          style={{
-            fontFamily: "var(--font-nunito), system-ui",
-            fontSize: 30,
-            fontWeight: 900,
-            color: "#FFD166",
-            margin: "0 0 6px",
-            letterSpacing: "0.05em",
-            textShadow: "0 2px 14px rgba(255,190,0,0.65)",
-          }}
-        >
-          ★ NEW FRIEND! ★
-        </h1>
+        {/* Stars flanking "Yay!" */}
+        <div style={{ position: "relative", display: "inline-block" }}>
+          <span aria-hidden style={{
+            position: "absolute",
+            left: -36,
+            top: "10%",
+            fontSize: 26,
+            animation: "float-gentle 2.8s ease-in-out infinite",
+            filter: "drop-shadow(0 0 6px rgba(255,210,50,0.9))",
+          }}>⭐</span>
+          <h1
+            style={{
+              fontFamily: "var(--font-nunito), system-ui",
+              fontSize: 56,
+              fontWeight: 900,
+              color: "#FFD234",
+              margin: "0 0 8px",
+              letterSpacing: "0.02em",
+              textShadow:
+                "0 0 8px rgba(255,200,30,1), 0 0 22px rgba(255,180,0,0.90), 0 0 48px rgba(255,160,0,0.60), 0 4px 0 rgba(160,80,0,0.35)",
+              animation: "yay-glow-pulse 2.4s ease-in-out infinite",
+              lineHeight: 1,
+            }}
+          >
+            Yay!
+          </h1>
+          <span aria-hidden style={{
+            position: "absolute",
+            right: -32,
+            top: "10%",
+            fontSize: 22,
+            animation: "float-gentle 3.2s ease-in-out 0.5s infinite",
+            filter: "drop-shadow(0 0 6px rgba(255,210,50,0.9))",
+          }}>⭐</span>
+        </div>
         <p
           style={{
             fontFamily: "var(--font-nunito), system-ui",
-            fontSize: 15,
+            fontSize: 20,
             fontWeight: 700,
-            color: "rgba(255,255,255,0.88)",
+            color: "#ffffff",
             margin: 0,
+            lineHeight: 1.35,
+            textShadow: "0 1px 12px rgba(180,160,255,0.45)",
           }}
         >
-          Bugsy is excited to play with you!
+          Bugsy is so happy<br />you said hello!
         </p>
       </div>
 
-      {/* ── MIDDLE SCENE ──────────────────────────────────────── */}
+      {/* ── MIDDLE SCENE ────────────────────────────────────────── */}
       <div
         style={{
           position: "relative",
           zIndex: 1,
           flex: 1,
+          width: "100%",
+          minHeight: 0,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          width: "100%",
-          padding: "0 12px",
         }}
       >
-        {/* Floating hearts */}
-        <span aria-hidden style={{ position: "absolute", top: "10%",  right: "14%", fontSize: 26, animation: "float-gentle 2.6s ease-in-out infinite" }}>💗</span>
-        <span aria-hidden style={{ position: "absolute", top: "38%",  right:  "8%", fontSize: 18, animation: "float-gentle 3.1s ease-in-out 0.7s infinite" }}>💗</span>
-        <span aria-hidden style={{ position: "absolute", top: "62%",  left:  "10%", fontSize: 15, animation: "float-gentle 2.9s ease-in-out 0.35s infinite" }}>💗</span>
-        <span aria-hidden style={{ position: "absolute", top: "18%",  left:  "16%", fontSize: 13, animation: "float-gentle 3.4s ease-in-out 1.1s infinite" }}>💜</span>
+        {/* Floating hearts — positions matching reference */}
+        <span aria-hidden style={{ position: "absolute", top: "12%", right: "10%", fontSize: 32, animation: "float-gentle 2.6s ease-in-out infinite",         zIndex: 3, pointerEvents: "none" }}>🩷</span>
+        <span aria-hidden style={{ position: "absolute", top: "36%", right: "6%",  fontSize: 20, animation: "float-gentle 3.1s ease-in-out 0.6s infinite",   zIndex: 3, pointerEvents: "none" }}>💗</span>
+        <span aria-hidden style={{ position: "absolute", top: "58%", right: "14%", fontSize: 14, animation: "float-gentle 2.8s ease-in-out 1.1s infinite",   zIndex: 3, pointerEvents: "none" }}>🩷</span>
+        <span aria-hidden style={{ position: "absolute", top: "50%", left:  "7%",  fontSize: 14, animation: "float-gentle 3.3s ease-in-out 0.3s infinite",   zIndex: 3, pointerEvents: "none" }}>💗</span>
+        <span aria-hidden style={{ position: "absolute", top: "68%", left:  "12%", fontSize: 11, animation: "float-gentle 2.9s ease-in-out 1.5s infinite",   zIndex: 3, pointerEvents: "none" }}>🩷</span>
 
-        {/* Speech bubble — left side, tail points RIGHT toward Bugsy */}
-        {showText && (
-          <div
-            style={{
-              position: "relative",
-              flexShrink: 0,
-              maxWidth: 148,
-              padding: "14px 18px",
-              borderRadius: 20,
-              background: "#fff9f0",
-              boxShadow: "0 8px 24px rgba(0,0,0,0.28)",
-              marginRight: 14,
-              animation: "bubble-pop 0.4s cubic-bezier(0.22, 1.5, 0.36, 1)",
-            }}
-          >
-            <p style={{ fontFamily: "var(--font-nunito), system-ui", fontSize: 17, fontWeight: 800, color: "#7C3AED", margin: "0 0 3px", lineHeight: 1.3 }}>
-              Yay! 🩷
-            </p>
-            <p style={{ fontFamily: "var(--font-nunito), system-ui", fontSize: 17, fontWeight: 800, color: "#1e1430", margin: "0 0 6px", lineHeight: 1.3 }}>
-              You said<br />hello!
-            </p>
-            <p style={{ textAlign: "center", margin: 0, fontSize: 20 }}>💜</p>
-            {/* Tail pointing RIGHT toward Bugsy */}
-            <span
-              aria-hidden
+        {/* Circular glow mat under Bugsy */}
+        <div aria-hidden style={{
+          position: "absolute",
+          bottom: "8%",
+          left: "50%",
+          transform: "translateX(-10%)",
+          width: 220,
+          height: 72,
+          borderRadius: "50%",
+          background: "radial-gradient(ellipse, rgba(210,30,55,0.82) 0%, rgba(170,15,38,0.58) 42%, rgba(130,0,25,0.18) 72%, transparent 100%)",
+          zIndex: 0,
+          pointerEvents: "none",
+          filter: "blur(2px)",
+        }} />
+
+
+        {/* Speech bubble + Bugsy in a centered flex row */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0, zIndex: 2, position: "relative" }}>
+
+          {/* Speech bubble on the left */}
+          {showText && (
+            <div
               style={{
-                position: "absolute",
-                right: -8,
-                top: "38%",
-                transform: "translateY(-50%) rotate(45deg)",
-                width: 16,
-                height: 16,
-                background: "#fff9f0",
-                borderTop: "none",
-                borderLeft: "none",
-                borderRight: "1px solid rgba(0,0,0,0.06)",
-                borderBottom: "1px solid rgba(0,0,0,0.06)",
-                borderRadius: "0 0 3px 0",
+                flexShrink: 0,
+                maxWidth: 148,
+                padding: "14px 18px 12px",
+                borderRadius: 22,
+                background: "#fff8f0",
+                boxShadow: "0 8px 28px rgba(0,0,0,0.32), 0 2px 8px rgba(0,0,0,0.14)",
+                animation: "bubble-pop 0.4s cubic-bezier(0.22, 1.5, 0.36, 1)",
+                position: "relative",
+                marginRight: 8,
               }}
-            />
-          </div>
-        )}
+            >
+              <p style={{ fontFamily: "var(--font-nunito), system-ui", fontSize: 19, fontWeight: 800, color: "#7C3AED", margin: "0 0 2px", lineHeight: 1.3 }}>Yay! 💜</p>
+              <p style={{ fontFamily: "var(--font-nunito), system-ui", fontSize: 19, fontWeight: 800, color: "#1e1430", margin: "0 0 6px", lineHeight: 1.3 }}>
+                {["Let's", "play", "together!"].map((word, i) => (
+                  <span
+                    key={i}
+                    style={{
+                      display: "inline-block",
+                      marginRight: i < 2 ? "0.28em" : 0,
+                      opacity: 0,
+                      animation: showLine2
+                        ? `word-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) ${i * 220}ms forwards`
+                        : "none",
+                    }}
+                  >
+                    {word}
+                  </span>
+                ))}
+              </p>
+              <p style={{ textAlign: "center", margin: 0, fontSize: 22, lineHeight: 1, opacity: 0, animation: showLine2 ? `word-pop 0.4s ease ${3 * 220}ms forwards` : "none" }}>💜</p>
+              {/* Triangle tail pointing right toward Bugsy */}
+              <div style={{
+                position: "absolute",
+                right: -13,
+                top: "50%",
+                transform: "translateY(-50%)",
+                width: 0,
+                height: 0,
+                borderTop: "11px solid transparent",
+                borderBottom: "11px solid transparent",
+                borderLeft: "14px solid #fff8f0",
+              }} />
+            </div>
+          )}
 
-        {/* Bugsy in cheer mode */}
-        <div
-          onPointerDown={onPet}
-          role="button"
-          aria-label="Pet Bugsy"
-          style={{ cursor: "pointer", touchAction: "manipulation", flexShrink: 0 }}
-        >
+          {/* Bugsy */}
           <div
-            key={`bugsy-${wiggleKey}`}
-            style={{ animation: bugsyWiggleAnim, transformOrigin: "bottom center" }}
+            onPointerDown={onPet}
+            role="button"
+            aria-label="Pet Bugsy"
+            style={{ flexShrink: 0, cursor: "pointer", touchAction: "manipulation" }}
           >
-            <Bobo mood="cheer" tint={tint} size={190} />
+            <div
+              key={`bugsy-${wiggleKey}`}
+              style={{ animation: bugsyWiggleAnim, transformOrigin: "bottom center" }}
+            >
+              <Bobo mood="excited" tint={tint} size={200} tailWag />
+            </div>
           </div>
         </div>
       </div>
 
-      {/* ── BOTTOM CARD ───────────────────────────────────────── */}
+      {/* ── BOTTOM CARD ─────────────────────────────────────────── */}
       <div
         style={{
           position: "relative",
           zIndex: 1,
           width: "100%",
-          background: "#f5f1ea",
-          borderRadius: "28px 28px 0 0",
-          padding: "20px 16px 28px",
+          background: "#f2ede4",
+          borderRadius: "26px 26px 0 0",
+          padding: "16px 12px 20px",
           boxSizing: "border-box",
           opacity: showCTA ? 1 : 0,
-          transform: showCTA ? "translateY(0)" : "translateY(24px)",
+          transform: showCTA ? "translateY(0)" : "translateY(28px)",
           transition: "opacity 0.5s ease, transform 0.5s ease",
           pointerEvents: showCTA ? "auto" : "none",
         }}
@@ -638,17 +697,16 @@ export function WhoAreYou({
         <p
           style={{
             fontFamily: "var(--font-nunito), system-ui",
-            fontSize: 18,
+            fontSize: 17,
             fontWeight: 800,
             color: "#1e1430",
             textAlign: "center",
-            margin: "0 0 14px",
+            margin: "0 0 12px",
           }}
         >
           Who&apos;s joining me today? 💜
         </p>
 
-        {/* Two option cards */}
         <div style={{ display: "flex", gap: 10 }}>
 
           {/* ── It's Me (child) ── */}
@@ -656,68 +714,35 @@ export function WhoAreYou({
             onClick={() => pick("child")}
             style={{
               flex: 1,
-              borderRadius: 20,
-              background: "linear-gradient(155deg, #8B5CF6 0%, #6D28D9 100%)",
+              borderRadius: 18,
+              background: "linear-gradient(168deg, #7C52D9 0%, #5A24C0 100%)",
               border: "none",
               cursor: "pointer",
-              padding: 0,
-              minHeight: 174,
+              padding: "12px 8px 10px",
+              minHeight: 188,
               position: "relative",
               overflow: "hidden",
-              boxShadow: "0 6px 20px rgba(109,40,217,0.45)",
+              boxShadow: "0 6px 22px rgba(90,36,192,0.50)",
               touchAction: "manipulation",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
             }}
           >
-            <span aria-hidden style={{ position: "absolute", top: 10, left: 12, fontSize: 13, opacity: 0.9 }}>⭐</span>
-            <span aria-hidden style={{ position: "absolute", top: 14, right: 16, fontSize: 9,  opacity: 0.8 }}>⭐</span>
-            <span aria-hidden style={{ position: "absolute", top: 36, right: 10, fontSize: 11, opacity: 0.75 }}>⭐</span>
-            {/* Child illustration */}
-            <div style={{ paddingTop: 22, textAlign: "center", lineHeight: 1 }}>
-              <svg viewBox="0 0 80 90" width="72" height="81" aria-hidden>
-                {/* hair */}
-                <ellipse cx="40" cy="26" rx="20" ry="14" fill="#5D2E0C" />
-                <rect x="20" y="26" width="4" height="22" rx="2" fill="#5D2E0C" />
-                {/* head */}
-                <ellipse cx="40" cy="32" rx="18" ry="18" fill="#F5C5A3" />
-                {/* eyes */}
-                <circle cx="33" cy="30" r="3" fill="#1e1430" />
-                <circle cx="47" cy="30" r="3" fill="#1e1430" />
-                <circle cx="34" cy="29" r="1" fill="white" />
-                <circle cx="48" cy="29" r="1" fill="white" />
-                {/* smile */}
-                <path d="M34 38 Q40 44 46 38" stroke="#C07050" strokeWidth="2" fill="none" strokeLinecap="round" />
-                {/* body */}
-                <rect x="28" y="48" width="24" height="28" rx="8" fill="#A855F7" />
-                {/* raised arm */}
-                <path d="M28 52 Q16 44 14 36" stroke="#F5C5A3" strokeWidth="8" strokeLinecap="round" fill="none" />
-                <circle cx="14" cy="34" r="6" fill="#F5C5A3" />
-                {/* other arm */}
-                <path d="M52 54 Q60 52 62 58" stroke="#F5C5A3" strokeWidth="8" strokeLinecap="round" fill="none" />
-                {/* legs */}
-                <rect x="30" y="74" width="8" height="14" rx="4" fill="#7C3AED" />
-                <rect x="42" y="74" width="8" height="14" rx="4" fill="#7C3AED" />
-              </svg>
+            <span aria-hidden style={{ position: "absolute", top: 10, left: 14, fontSize: 14, opacity: 0.90 }}>⭐</span>
+            <span aria-hidden style={{ position: "absolute", top: 28, right: 12, fontSize: 10, opacity: 0.82 }}>⭐</span>
+            <span aria-hidden style={{ position: "absolute", top: 12, right: 30, fontSize: 11, opacity: 0.76 }}>⭐</span>
+            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div style={{
+                width: 68, height: 68, borderRadius: "50%",
+                background: "#F5EFE6",
+                boxShadow: "0 4px 14px rgba(0,0,0,0.18)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 42, lineHeight: 1,
+              }}>👧</div>
             </div>
-            {/* label */}
-            <div
-              style={{
-                background: "rgba(0,0,0,0.22)",
-                margin: "8px 10px 10px",
-                borderRadius: 12,
-                padding: "9px 10px",
-              }}
-            >
-              <span
-                style={{
-                  fontFamily: "var(--font-nunito), system-ui",
-                  fontSize: 16,
-                  fontWeight: 900,
-                  color: "white",
-                  letterSpacing: "0.01em",
-                }}
-              >
-                It&apos;s Me
-              </span>
+            <div style={{ width: "100%", background: "#4A18A8", borderRadius: 13, padding: "10px 8px", marginTop: 2 }}>
+              <span style={{ fontFamily: "var(--font-nunito), system-ui", fontSize: 17, fontWeight: 900, color: "white" }}>It&apos;s Me</span>
             </div>
           </button>
 
@@ -726,89 +751,42 @@ export function WhoAreYou({
             onClick={() => pick("parent")}
             style={{
               flex: 1,
-              borderRadius: 20,
-              background: "linear-gradient(155deg, #FBBF24 0%, #D97706 100%)",
+              borderRadius: 18,
+              background: "linear-gradient(168deg, #F5BA20 0%, #D99000 100%)",
               border: "none",
               cursor: "pointer",
-              padding: 0,
-              minHeight: 174,
+              padding: "12px 6px 10px",
+              minHeight: 188,
               position: "relative",
               overflow: "hidden",
-              boxShadow: "0 6px 20px rgba(217,119,6,0.45)",
+              boxShadow: "0 6px 22px rgba(217,144,0,0.50)",
               touchAction: "manipulation",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
             }}
           >
-            <span aria-hidden style={{ position: "absolute", top: 10, left: 12, fontSize: 13, opacity: 0.9 }}>⭐</span>
-            <span aria-hidden style={{ position: "absolute", top: 16, right: 14, fontSize: 10, opacity: 0.8 }}>⭐</span>
-            {/* Parent couple illustration */}
-            <div style={{ paddingTop: 16, textAlign: "center", lineHeight: 1, display: "flex", justifyContent: "center", gap: 4 }}>
-              <svg viewBox="0 0 88 90" width="80" height="82" aria-hidden>
-                {/* Woman */}
-                {/* hair */}
-                <ellipse cx="28" cy="20" rx="14" ry="10" fill="#7B3F00" />
-                <path d="M14 20 Q12 36 16 44" stroke="#7B3F00" strokeWidth="4" fill="none" />
-                <path d="M42 20 Q44 36 40 44" stroke="#7B3F00" strokeWidth="4" fill="none" />
-                {/* head */}
-                <ellipse cx="28" cy="24" rx="13" ry="13" fill="#F5C5A3" />
-                {/* eyes */}
-                <circle cx="23" cy="22" r="2.2" fill="#1e1430" />
-                <circle cx="33" cy="22" r="2.2" fill="#1e1430" />
-                <circle cx="23.8" cy="21.3" r="0.8" fill="white" />
-                <circle cx="33.8" cy="21.3" r="0.8" fill="white" />
-                {/* smile */}
-                <path d="M23 29 Q28 33 33 29" stroke="#C07050" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-                {/* body */}
-                <rect x="18" y="36" width="20" height="26" rx="6" fill="#FBBF24" />
-                {/* arm toward man */}
-                <path d="M38 44 Q50 46 54 50" stroke="#F5C5A3" strokeWidth="7" strokeLinecap="round" fill="none" />
-                {/* other arm */}
-                <path d="M18 42 Q10 40 8 46" stroke="#F5C5A3" strokeWidth="7" strokeLinecap="round" fill="none" />
-                {/* legs */}
-                <rect x="20" y="60" width="6" height="12" rx="3" fill="#D97706" />
-                <rect x="30" y="60" width="6" height="12" rx="3" fill="#D97706" />
-
-                {/* Man */}
-                {/* hair */}
-                <ellipse cx="64" cy="20" rx="15" ry="9" fill="#3D2000" />
-                {/* head */}
-                <ellipse cx="64" cy="25" rx="14" ry="14" fill="#E8B090" />
-                {/* beard */}
-                <path d="M51 32 Q52 40 64 42 Q76 40 77 32" fill="#3D2000" opacity="0.55" />
-                {/* eyes */}
-                <circle cx="58" cy="22" r="2.4" fill="#1e1430" />
-                <circle cx="70" cy="22" r="2.4" fill="#1e1430" />
-                <circle cx="58.8" cy="21.3" r="0.9" fill="white" />
-                <circle cx="70.8" cy="21.3" r="0.9" fill="white" />
-                {/* body */}
-                <rect x="52" y="38" width="24" height="26" rx="6" fill="#16A34A" />
-                {/* arm toward woman */}
-                <path d="M52 46 Q44 47 40 50" stroke="#E8B090" strokeWidth="8" strokeLinecap="round" fill="none" />
-                {/* other arm */}
-                <path d="M76 44 Q82 42 84 48" stroke="#E8B090" strokeWidth="7" strokeLinecap="round" fill="none" />
-                {/* legs */}
-                <rect x="55" y="62" width="7" height="12" rx="3" fill="#15803D" />
-                <rect x="66" y="62" width="7" height="12" rx="3" fill="#15803D" />
-              </svg>
+            <span aria-hidden style={{ position: "absolute", top: 10, left: 14, fontSize: 14, opacity: 0.90 }}>⭐</span>
+            <span aria-hidden style={{ position: "absolute", top: 26, right: 12, fontSize: 10, opacity: 0.82 }}>⭐</span>
+            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+              <div style={{
+                width: 68, height: 68, borderRadius: "50%",
+                background: "#F5EFE6",
+                boxShadow: "0 4px 14px rgba(0,0,0,0.18)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 42, lineHeight: 1,
+              }}>👩</div>
+              <div style={{ fontSize: 18, opacity: 0.85 }}>💛</div>
+              <div style={{
+                width: 68, height: 68, borderRadius: "50%",
+                background: "#F5EFE6",
+                boxShadow: "0 4px 14px rgba(0,0,0,0.18)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 42, lineHeight: 1,
+              }}>👨</div>
             </div>
-            {/* label */}
-            <div
-              style={{
-                background: "rgba(0,0,0,0.18)",
-                margin: "4px 10px 10px",
-                borderRadius: 12,
-                padding: "7px 8px",
-              }}
-            >
-              <span
-                style={{
-                  fontFamily: "var(--font-nunito), system-ui",
-                  fontSize: 13,
-                  fontWeight: 900,
-                  color: "white",
-                  letterSpacing: "0.01em",
-                  lineHeight: 1.3,
-                }}
-              >
+            <div style={{ width: "100%", background: "#C07800", borderRadius: 13, padding: "8px 6px", marginTop: 2 }}>
+              <span style={{ fontFamily: "var(--font-nunito), system-ui", fontSize: 14, fontWeight: 900, color: "white", lineHeight: 1.35, display: "block" }}>
                 A Grown-up<br />Is Helping
               </span>
             </div>
@@ -816,20 +794,6 @@ export function WhoAreYou({
         </div>
 
         {/* Pagination dots */}
-        <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 14 }}>
-          {[0, 1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              style={{
-                width: i === 0 ? 22 : 8,
-                height: 8,
-                borderRadius: 4,
-                background: i === 0 ? "#7C3AED" : "rgba(0,0,0,0.18)",
-                transition: "width 0.3s ease",
-              }}
-            />
-          ))}
-        </div>
       </div>
     </div>
   );

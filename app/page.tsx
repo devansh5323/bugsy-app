@@ -34,7 +34,11 @@ import {
 } from "./components/onboarding/ChildFlow";
 import { LoginScreen } from "./components/onboarding/LoginScreen";
 import { WhoAreYou } from "./components/onboarding/WhoAreYou";
-import { Splash, Welcome, TrustScreen } from "./components/onboarding/Welcome";
+import { ParentIntro } from "./components/onboarding/ParentIntro";
+import { ParentJourney } from "./components/onboarding/ParentJourney";
+import { ParentUnderstand } from "./components/onboarding/ParentUnderstand";
+import { TellMeAboutChild } from "./components/onboarding/TellMeAboutChild";
+import { Splash, Welcome } from "./components/onboarding/Welcome";
 import {
   ChildAlmostDone,
   ChildBedtime,
@@ -64,7 +68,6 @@ import { ScreenHomeCare, ScreenCatometer } from "./components/CareScreens";
 type Stage =
   | { kind: "splash" }
   | { kind: "welcome" }
-  | { kind: "trust" }
   | { kind: "who" }
   | { kind: "login" } // "I already have an account" path from welcome
   | { kind: "parent"; step: number }
@@ -423,12 +426,24 @@ export default function Home() {
     }
   };
 
-  const direction =
-    (stage.kind === "parent" && stage.step < prevStep) ||
-    (stage.kind === "child" && stage.step < prevStep) ||
-    (stage.kind === "handover" && stage.step < prevStep)
-      ? "screen-wrap-back"
-      : "screen-wrap";
+  const direction = (() => {
+    // Happy bounce when the grown-up first enters the parent flow from WhoAreYou
+    if (stage.kind === "parent" && stage.step === 0 && prevStep === 0) {
+      return "screen-happy-wrap";
+    }
+    // Cinematic portal entrance into the journey overview
+    if (stage.kind === "parent" && stage.step === 1 && prevStep === 0) {
+      return "screen-adventure-wrap";
+    }
+    if (
+      (stage.kind === "parent"  && stage.step < prevStep) ||
+      (stage.kind === "child"   && stage.step < prevStep) ||
+      (stage.kind === "handover"&& stage.step < prevStep)
+    ) {
+      return "screen-wrap-back";
+    }
+    return "screen-wrap";
+  })();
 
   // Per-flow progress for the top progress bar. Each flow has its
   // own arc — parent fills 0→100% across their setup, then resets
@@ -449,17 +464,8 @@ export default function Home() {
       return (
         <Welcome
           tint={TINT}
-          onGetStarted={() => setStage({ kind: "trust" })}
+          onGetStarted={() => setStage({ kind: "who" })}
           onHaveAccount={() => setStage({ kind: "login" })}
-        />
-      );
-    }
-
-    if (stage.kind === "trust") {
-      return (
-        <TrustScreen
-          tint={TINT}
-          onNext={() => setStage({ kind: "who" })}
         />
       );
     }
@@ -495,11 +501,52 @@ export default function Home() {
       switch (stage.step) {
         // ── Meet Bugsy: greeting + pet, then who he is ──
         case 0:
-          return <ParentWelcome tint={TINT} onNext={advanceParent} onBack={back} />;
+          return (
+            <ParentIntro
+              tint={TINT}
+              parentName={parentName}
+              setParentName={setParentName}
+              relationship={relationship}
+              setRelationship={setRelationship}
+              onNext={advanceParent}
+              onBack={back}
+            />
+          );
         case 1:
+          return (
+            <ParentJourney
+              tint={TINT}
+              childName={childName}
+              onNext={advanceParent}
+              onBack={back}
+            />
+          );
+        case 2:
+          return (
+            <ParentUnderstand
+              tint={TINT}
+              childName={childName}
+              parentName={parentName}
+              onNext={advanceParent}
+              onBack={back}
+            />
+          );
+        case 3:
+          return (
+            <TellMeAboutChild
+              tint={TINT}
+              childName={childName}
+              setChildName={setChildName}
+              childAge={childAge}
+              setChildAge={setChildAge}
+              onNext={advanceParent}
+              onBack={back}
+            />
+          );
+        case 4:
           return <WhoIsBugsy tint={TINT} onNext={advanceParent} onBack={back} />;
         // ── Collect: parent identity, child, concerns, goals ──
-        case 2:
+        case 5:
           return (
             <ParentName
               tint={TINT}
@@ -511,7 +558,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 3:
+        case 6:
           return (
             <ParentChildSetup
               tint={TINT}
@@ -524,7 +571,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 4:
+        case 7:
           return (
             <ParentNoticing
               tint={TINT}
@@ -535,7 +582,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 5:
+        case 8:
           return (
             <ParentGoals
               tint={TINT}
@@ -547,7 +594,7 @@ export default function Home() {
             />
           );
         // ── Sign in, then hand over to the child ──
-        case 6:
+        case 9:
           return (
             <ParentLogin
               tint={TINT}
@@ -556,7 +603,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 7:
+        case 10:
           return (
             <ParentDone
               tint={TINT}
@@ -920,8 +967,6 @@ export default function Home() {
       ? "splash"
       : stage.kind === "welcome"
       ? "welcome"
-      : stage.kind === "trust"
-      ? "trust"
       : stage.kind === "who"
       ? "who"
       : stage.kind === "login"

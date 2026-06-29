@@ -42,6 +42,9 @@ type BoboProps = {
   // When true, the right paw (shy pose) pulses with a purple glow to
   // signal to the user that they should tap it.
   glowRightPaw?: boolean;
+  // When true, suppresses the sparkle stars rendered around the face
+  // in excited mood.
+  noSparkles?: boolean;
 };
 
 // Hats sit above the ears — y centred around -120
@@ -111,7 +114,7 @@ function Hat({ kind }: { kind: string }) {
   }
 }
 
-export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, hat, angerLevel, eyeOpen, tailWag, walking, mouthOpen, frazzled, glowRightPaw }: BoboProps) {
+export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, hat, angerLevel, eyeOpen, tailWag, walking, mouthOpen, frazzled, glowRightPaw, noSparkles }: BoboProps) {
   const lidControlled = eyeOpen !== undefined;
   const eyeOpenClamped = Math.max(0, Math.min(1, eyeOpen ?? 1));
   // Continuous anger 0..1. mood="angry" implies 1 when angerLevel
@@ -779,7 +782,7 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
           )}
 
           {/* Excited — sparkle stars around the face */}
-          {mood === "excited" && (
+          {mood === "excited" && !noSparkles && (
             <g fill="oklch(80% 0.16 90)" stroke="oklch(55% 0.16 70)" strokeWidth="1">
               <path d="M -78 -52 l 3 -7 l 3 7 l 7 3 l -7 3 l -3 7 l -3 -7 l -7 -3 z"/>
               <path d="M 78 -60 l 2.5 -6 l 2.5 6 l 6 2.5 l -6 2.5 l -2.5 6 l -2.5 -6 l -6 -2.5 z"/>

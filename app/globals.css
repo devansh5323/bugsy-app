@@ -857,6 +857,33 @@ textarea {
 .screen-wrap-back > * {
   animation: screen-in-back 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
+@keyframes screen-happy-in {
+  from { opacity: 0; transform: scale(0.84) translateY(32px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0px);  }
+}
+@keyframes card-fly-tl { from { opacity:0; transform: translate(calc( 50% + 4px), calc( 50% + 4px)) scale(0.45); } to { opacity:1; transform: translate(0,0) scale(1); } }
+@keyframes card-fly-tr { from { opacity:0; transform: translate(calc(-50% - 4px), calc( 50% + 4px)) scale(0.45); } to { opacity:1; transform: translate(0,0) scale(1); } }
+@keyframes card-fly-bl { from { opacity:0; transform: translate(calc( 50% + 4px), calc(-50% - 4px)) scale(0.45); } to { opacity:1; transform: translate(0,0) scale(1); } }
+@keyframes card-fly-br { from { opacity:0; transform: translate(calc(-50% - 4px), calc(-50% - 4px)) scale(0.45); } to { opacity:1; transform: translate(0,0) scale(1); } }
+@keyframes word-pop {
+  from { opacity: 0; transform: translateY(10px) scale(0.8); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);   }
+}
+@keyframes yay-glow-pulse {
+  0%, 100% { text-shadow: 0 0 8px rgba(255,200,30,1), 0 0 22px rgba(255,180,0,0.90), 0 0 48px rgba(255,160,0,0.60), 0 4px 0 rgba(160,80,0,0.35); }
+  50%       { text-shadow: 0 0 14px rgba(255,220,60,1), 0 0 36px rgba(255,190,0,1),   0 0 72px rgba(255,170,0,0.80), 0 4px 0 rgba(160,80,0,0.35); }
+}
+.screen-happy-wrap > * {
+  animation: screen-happy-in 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes screen-adventure-in {
+  0%   { clip-path: circle(6% at 50% 42%);  opacity: 0.4; }
+  18%  { opacity: 1; }
+  100% { clip-path: circle(160% at 50% 42%); opacity: 1;   }
+}
+.screen-adventure-wrap > * {
+  animation: screen-adventure-in 0.70s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
 /* Range slider thumb — coral primary */
 .range-input {
@@ -897,6 +924,38 @@ textarea {
   border-radius: 50%;
   filter: blur(40px);
   opacity: 0.35;
+}
+
+/* ── ParentJourney milestone animations ─────────────────────────────── */
+@keyframes road-draw {
+  from { clip-path: inset(0 0 100% 0); }
+  to   { clip-path: inset(0 0 0%   0); }
+}
+@keyframes journey-slide-left {
+  from { opacity: 0; transform: translateX(-32px) scale(0.95); }
+  to   { opacity: 1; transform: translateX(0)     scale(1);    }
+}
+@keyframes journey-slide-right {
+  from { opacity: 0; transform: translateX(32px) scale(0.95); }
+  to   { opacity: 1; transform: translateX(0)    scale(1);    }
+}
+@keyframes journey-paws-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+@keyframes bugsy-think-tilt {
+  0%, 100% { transform: rotate(-6deg) translateY(0px);   }
+  50%       { transform: rotate( 6deg) translateY(-4px);  }
+}
+@keyframes bugsy-bounce-cheer {
+  0%, 100% { transform: translateY(0px)  scaleY(1);    }
+  40%       { transform: translateY(-10px) scaleY(1.04); }
+  60%       { transform: translateY(-6px)  scaleY(1.02); }
+}
+@keyframes bugsy-excited-pop {
+  0%, 100% { transform: translateY(0px)   rotate(0deg)   scale(1);    }
+  25%       { transform: translateY(-12px) rotate(-5deg)  scale(1.06); }
+  75%       { transform: translateY(-8px)  rotate( 5deg)  scale(1.04); }
 }
 
 /* Respect reduced motion — the design system's springy easing and
