@@ -38,6 +38,7 @@ import { ParentIntro } from "./components/onboarding/ParentIntro";
 import { ParentJourney } from "./components/onboarding/ParentJourney";
 import { ParentUnderstand } from "./components/onboarding/ParentUnderstand";
 import { TellMeAboutChild } from "./components/onboarding/TellMeAboutChild";
+import { QuestionnaireScreen } from "./components/onboarding/QuestionnaireScreen";
 import { Splash, Welcome } from "./components/onboarding/Welcome";
 import {
   ChildAlmostDone,
@@ -544,9 +545,17 @@ export default function Home() {
             />
           );
         case 4:
+          return (
+            <QuestionnaireScreen
+              childName={childName}
+              onNext={advanceParent}
+              onBack={back}
+            />
+          );
+        case 5:
           return <WhoIsBugsy tint={TINT} onNext={advanceParent} onBack={back} />;
         // ── Collect: parent identity, child, concerns, goals ──
-        case 5:
+        case 6:
           return (
             <ParentName
               tint={TINT}
@@ -558,7 +567,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 6:
+        case 7:
           return (
             <ParentChildSetup
               tint={TINT}
@@ -571,7 +580,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 7:
+        case 8:
           return (
             <ParentNoticing
               tint={TINT}
@@ -582,7 +591,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 8:
+        case 9:
           return (
             <ParentGoals
               tint={TINT}
@@ -594,7 +603,7 @@ export default function Home() {
             />
           );
         // ── Sign in, then hand over to the child ──
-        case 9:
+        case 10:
           return (
             <ParentLogin
               tint={TINT}
@@ -603,7 +612,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 10:
+        case 11:
           return (
             <ParentDone
               tint={TINT}
