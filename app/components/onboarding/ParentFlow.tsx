@@ -29,7 +29,7 @@ import {
 //   5 ParentGoals      — what they'd love to improve
 //   6 ParentLogin      — sign in
 //   7 ParentDone       — handoff to the child
-export const PARENT_STEPS = 12;
+export const PARENT_STEPS = 14;
 
 type Common = { tint: number; onBack?: () => void };
 

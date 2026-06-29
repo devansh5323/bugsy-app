@@ -39,6 +39,9 @@ import { ParentJourney } from "./components/onboarding/ParentJourney";
 import { ParentUnderstand } from "./components/onboarding/ParentUnderstand";
 import { TellMeAboutChild } from "./components/onboarding/TellMeAboutChild";
 import { QuestionnaireScreen } from "./components/onboarding/QuestionnaireScreen";
+import { AssessmentCompleteScreen } from "./components/onboarding/AssessmentCompleteScreen";
+import { JourneyCreatedScreen } from "./components/onboarding/JourneyCreatedScreen";
+import { BondWithBugsy } from "./components/onboarding/BondWithBugsy";
 import { Splash, Welcome } from "./components/onboarding/Welcome";
 import {
   ChildAlmostDone,
@@ -553,9 +556,25 @@ export default function Home() {
             />
           );
         case 5:
+          return (
+            <AssessmentCompleteScreen
+              childName={childName}
+              onNext={advanceParent}
+              onBack={back}
+            />
+          );
+        case 6:
+          return (
+            <JourneyCreatedScreen
+              childName={childName}
+              onNext={advanceParent}
+              onBack={back}
+            />
+          );
+        case 7:
           return <WhoIsBugsy tint={TINT} onNext={advanceParent} onBack={back} />;
         // ── Collect: parent identity, child, concerns, goals ──
-        case 6:
+        case 8:
           return (
             <ParentName
               tint={TINT}
@@ -567,7 +586,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 7:
+        case 9:
           return (
             <ParentChildSetup
               tint={TINT}
@@ -580,7 +599,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 8:
+        case 10:
           return (
             <ParentNoticing
               tint={TINT}
@@ -591,7 +610,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 9:
+        case 11:
           return (
             <ParentGoals
               tint={TINT}
@@ -603,7 +622,7 @@ export default function Home() {
             />
           );
         // ── Sign in, then hand over to the child ──
-        case 10:
+        case 12:
           return (
             <ParentLogin
               tint={TINT}
@@ -612,7 +631,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 11:
+        case 13:
           return (
             <ParentDone
               tint={TINT}
@@ -629,11 +648,23 @@ export default function Home() {
     if (stage.kind === "child") {
       const friend = childName.trim() || "friend";
       switch (stage.step) {
+        // ── Bond with Bugsy: collect name + birthday ──
+        case 0:
+          return (
+            <BondWithBugsy
+              childName={childName}
+              setChildName={setChildName}
+              childAge={childAge}
+              setChildAge={setChildAge}
+              onNext={advanceChild}
+              onBack={backChild}
+            />
+          );
         // ── Meet Bugsy in his room: he asks the child's name, then
         // they play hide-and-seek to find him. ──
-        case 0:
-          return <ChildDoorway tint={TINT} childName={friend} onNext={advanceChild} onBack={backChild} />;
         case 1:
+          return <ChildDoorway tint={TINT} childName={friend} onNext={advanceChild} onBack={backChild} />;
+        case 2:
           return (
             <ChildHideSeek
               tint={TINT}
@@ -643,7 +674,7 @@ export default function Home() {
               onBack={backChild}
             />
           );
-        case 2:
+        case 3:
           // Cuddle Bugsy → age → "play one more game with me?" invite.
           return (
             <ChildPetMeet
@@ -657,7 +688,7 @@ export default function Home() {
             />
           );
         // ── Age question on the football park (no football) ──
-        case 3:
+        case 4:
           return (
             <ChildAgeQuestion
               tint={TINT}
@@ -669,7 +700,7 @@ export default function Home() {
             />
           );
         // ── First mission location — the kitchen ──
-        case 4:
+        case 5:
           return (
             <ChildKitchen
               tint={TINT}
@@ -679,16 +710,16 @@ export default function Home() {
             />
           );
         // ── First mission: Snack Catch (drag the cat, catch good food) ──
-        case 5:
+        case 6:
           return <SnackCatchGame tint={TINT} onExit={advanceChild} onEarnXp={awardXp} />;
         // ── Dark force arrives → calm Bugsy through the storm ──
-        case 6:
+        case 7:
           return <ChildCalmBugsy tint={TINT} childName={childName} onNext={advanceChild} onBack={backChild} />;
         // ── It's getting late: when will you come back tomorrow? ──
-        case 7:
+        case 8:
           return <ChildPromise tint={TINT} childName={childName} onNext={advanceChild} onBack={backChild} />;
         // ── A little about them ──
-        case 8:
+        case 9:
           return (
             <ChildDailyGoal
               tint={TINT}
@@ -700,9 +731,9 @@ export default function Home() {
             />
           );
         // ── Night falls: goodnight, see you tomorrow → Bugsy sleeps ──
-        case 9:
-          return <ChildBedtime tint={TINT} childName={childName} onNext={advanceChild} onBack={backChild} />;
         case 10:
+          return <ChildBedtime tint={TINT} childName={childName} onNext={advanceChild} onBack={backChild} />;
+        case 11:
           return (
             <ChildAlmostDone
               tint={TINT}
@@ -711,7 +742,7 @@ export default function Home() {
               onBack={backChild}
             />
           );
-        case 11:
+        case 12:
           return (
             <ChildAdultLogin
               tint={TINT}
@@ -720,7 +751,7 @@ export default function Home() {
               onBack={backChild}
             />
           );
-        case 12:
+        case 13:
           return (
             <ChildParentDetails
               tint={TINT}
@@ -735,7 +766,7 @@ export default function Home() {
           );
         // ── Grown-up shares what they're noticing, then Bugsy's
         // response (same beats as the parent flow) ──
-        case 13:
+        case 14:
           return (
             <ParentNoticing
               tint={TINT}

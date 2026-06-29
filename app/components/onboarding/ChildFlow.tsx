@@ -31,7 +31,7 @@ import {
 //   2 ChildPetMeet       7 ChildPromise     12 ChildParentDetails
 //   3 ChildAgeQuestion   8 ChildDailyGoal   13 ParentNoticing
 //   4 ChildKitchen       9 ChildBedtime
-export const CHILD_STEPS = 14;
+export const CHILD_STEPS = 15;
 
 type Common = { tint: number };
 
