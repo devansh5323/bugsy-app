@@ -11,12 +11,12 @@ const LINE1 = "Let me tell you about myself...";
 const LINE2 = "I'm your child's pet companion- Together we grow, mastering one skill at a time";
 
 const STAGES = [
-  { day: "Day 1",  size: 40, lines: ["Tiny steps,", "big adventures", "begin!"],            gold: false },
-  { day: "Day 3",  size: 50, lines: ["Growing curiosity,", "building", "confidence."],       gold: false },
-  { day: "Day 6",  size: 60, lines: ["More playful,", "more agile,", "more confident!"],     gold: false },
-  { day: "Day 9",  size: 70, lines: ["Growing", "stronger", "every day!"],                   gold: false },
-  { day: "Day 12", size: 80, lines: ["Almost there!", "Shining brighter", "every day."],     gold: false },
-  { day: "Day 14", size: 92, lines: ["FULLY GROWN!", "Confident.", "Calm. Ready", "for anything!"], gold: true },
+  { day: "Day 1",  size: 34, desc: "Tiny steps, big adventures begin!",             gold: false },
+  { day: "Day 3",  size: 40, desc: "Growing curiosity, building confidence.",         gold: false },
+  { day: "Day 6",  size: 48, desc: "More playful, more agile, more confident!",      gold: false },
+  { day: "Day 9",  size: 56, desc: "Growing stronger every day!",                    gold: false },
+  { day: "Day 12", size: 64, desc: "Almost there! Shining brighter every day.",      gold: false },
+  { day: "Day 14", size: 74, desc: "FULLY GROWN! Confident. Calm. Ready for anything!", gold: true },
 ];
 
 export function ParentJourney({
@@ -62,9 +62,9 @@ export function ParentJourney({
       setTimeout(() => setPhase(3), doneAt);
       setTimeout(() => setShowTimeline(true), doneAt + 400);
       STAGES.forEach((_, i) =>
-        setTimeout(() => setStageCount(i + 1), doneAt + 800 + i * 350)
+        setTimeout(() => setStageCount(i + 1), doneAt + 800 + i * 500)
       );
-      setTimeout(() => setShowButton(true), doneAt + 800 + STAGES.length * 350 + 350);
+      setTimeout(() => setShowButton(true), doneAt + 800 + STAGES.length * 500 + 500);
     }
   }, [phase]);
 
@@ -247,94 +247,71 @@ export function ParentJourney({
               <span style={{ color: "#FFD700", fontSize: 15 }}>✦</span>
             </motion.div>
 
-            {/* Stages row (horizontally scrollable) */}
+            {/* Stages — vertical list */}
             <div style={{
-              display: "flex",
-              alignItems: "flex-end",
-              padding: "6px 10px 0",
-              flexShrink: 0,
-              overflowX: "auto",
-              scrollbarWidth: "none" as const,
+              display: "flex", flexDirection: "column",
+              padding: "6px 14px 0",
+              flexShrink: 0, gap: 0,
             }}>
               {STAGES.map((stage, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "flex-end", flexShrink: 0 }}>
-                  {/* Stage column */}
-                  <div style={{ width: stage.size + 14, flexShrink: 0, minHeight: 10 }}>
-                    <AnimatePresence>
-                      {stageCount > i && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 28, scale: 0.78 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          transition={{ type: "spring", stiffness: 270, damping: 22 }}
-                          style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
-                        >
-                          {/* Cat */}
-                          <div style={{ pointerEvents: "none" }}>
-                            <Bobo
-                              mood={stage.gold ? "excited" : "happy"}
-                              tint={tint}
-                              size={stage.size}
-                              animate={stage.gold}
-                              tailWag={stage.gold}
-                            />
-                          </div>
-                          {/* Paw + day label */}
-                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 2 }}>
-                            <span style={{ fontSize: 11, lineHeight: 1 }}>🐾</span>
+                <div key={i} style={{ display: "flex", flexDirection: "column" }}>
+                  <AnimatePresence>
+                    {stageCount > i && (
+                      <motion.div
+                        initial={{ opacity: 0, x: -24, scale: 0.92 }}
+                        animate={{ opacity: 1, x: 0, scale: 1 }}
+                        transition={{ type: "spring", stiffness: 240, damping: 24 }}
+                        style={{
+                          display: "flex", alignItems: "center", gap: 12,
+                          padding: "10px 12px",
+                          background: stage.gold ? "rgba(255,200,0,0.11)" : "rgba(255,255,255,0.08)",
+                          border: `1.5px solid ${stage.gold ? "rgba(255,210,0,0.38)" : "rgba(255,255,255,0.13)"}`,
+                          borderRadius: 16,
+                          boxShadow: stage.gold ? "0 0 18px rgba(255,200,0,0.22)" : "none",
+                        }}
+                      >
+                        {/* Cat */}
+                        <div style={{ width: 82, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, pointerEvents: "none" }}>
+                          <Bobo
+                            mood={stage.gold ? "excited" : "happy"}
+                            tint={tint}
+                            size={stage.size}
+                            animate={stage.gold}
+                            tailWag={stage.gold}
+                          />
+                        </div>
+                        {/* Info */}
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 4 }}>
+                            <span style={{ fontSize: 14 }}>🐾</span>
                             <span style={{
-                              fontFamily: F, fontSize: 9.5, fontWeight: 800,
-                              color: stage.gold ? "#FFD700" : "rgba(255,255,255,0.80)",
-                              marginTop: 1, whiteSpace: "nowrap",
+                              fontFamily: F, fontSize: 12.5, fontWeight: 900,
+                              color: stage.gold ? "#FFD700" : "rgba(255,255,255,0.72)",
                             }}>{stage.day}</span>
                           </div>
-                          {/* Text card */}
-                          <motion.div
-                            initial={{ opacity: 0, y: 8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.14, type: "spring", stiffness: 260, damping: 24 }}
-                            style={{
-                              marginTop: 5,
-                              background: stage.gold ? "rgba(255,200,0,0.13)" : "rgba(255,255,255,0.10)",
-                              border: `1px solid ${stage.gold ? "rgba(255,210,0,0.42)" : "rgba(255,255,255,0.16)"}`,
-                              borderRadius: 8,
-                              padding: "5px 3px 6px",
-                              width: stage.size + 12,
-                              minHeight: 60,
-                              display: "flex", flexDirection: "column",
-                              alignItems: "center", justifyContent: "center",
-                              boxShadow: stage.gold ? "0 0 12px rgba(255,200,0,0.22)" : "none",
-                            }}
-                          >
-                            {stage.lines.map((line, j) => (
-                              <span key={j} style={{
-                                fontFamily: F,
-                                fontSize: 8.5,
-                                lineHeight: 1.38,
-                                fontWeight: (j === 0 && stage.gold) ? 900 : 650,
-                                color: (j === 0 && stage.gold) ? "#FFD700" : "#fff",
-                                textAlign: "center",
-                                display: "block",
-                              }}>{line}</span>
-                            ))}
-                          </motion.div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
+                          <p style={{
+                            fontFamily: F, fontSize: 13.5, fontWeight: 700, lineHeight: 1.4,
+                            color: stage.gold ? "#FFE082" : "#fff",
+                            margin: 0,
+                          }}>{stage.desc}</p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
-                  {/* Arrow between stages */}
+                  {/* Down arrow between stages */}
                   {i < STAGES.length - 1 && (
                     <AnimatePresence>
                       {stageCount > i + 1 && (
                         <motion.div
-                          initial={{ opacity: 0, scale: 0.4 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ type: "spring", stiffness: 280, damping: 22 }}
+                          initial={{ opacity: 0, y: -6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, ease: "easeOut" }}
                           style={{
-                            fontSize: 15, color: "#FF9E2C",
-                            marginBottom: 74, flexShrink: 0, padding: "0 1px",
+                            textAlign: "center", color: "#FF9E2C",
+                            fontSize: 18, padding: "3px 0", lineHeight: 1,
                           }}
-                        >→</motion.div>
+                        >↓</motion.div>
                       )}
                     </AnimatePresence>
                   )}
