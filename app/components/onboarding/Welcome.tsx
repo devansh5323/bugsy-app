@@ -84,32 +84,65 @@ function useAmbientMusic() {
   return { on, toggle };
 }
 
+// ── Purple cloud shape ───────────────────────────────────────────
+function Cloud({ size = 1, opacity = 1 }: { size?: number; opacity?: number }) {
+  const w = 130 * size, h = 56 * size;
+  const c = `rgba(82,68,155,${(0.82 * opacity).toFixed(2)})`;
+  const d = `rgba(62,50,128,${(0.88 * opacity).toFixed(2)})`;
+  return (
+    <div style={{ position: "relative", width: w, height: h, pointerEvents: "none" }}>
+      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: h * 0.56, borderRadius: h * 0.28, background: d }} />
+      <div style={{ position: "absolute", bottom: h * 0.34, left: w * 0.06, width: w * 0.35, height: w * 0.35, borderRadius: "50%", background: c }} />
+      <div style={{ position: "absolute", bottom: h * 0.42, left: w * 0.24, width: w * 0.46, height: w * 0.46, borderRadius: "50%", background: `rgba(95,80,168,${(0.9 * opacity).toFixed(2)})` }} />
+      <div style={{ position: "absolute", bottom: h * 0.34, left: w * 0.58, width: w * 0.32, height: w * 0.32, borderRadius: "50%", background: c }} />
+    </div>
+  );
+}
+
 // ── Splash / teaser screen (shown before Welcome) ────────────────
 export function Splash({ onEnter }: { onEnter: () => void }) {
   const { on: musicOn, toggle: toggleMusic } = useAmbientMusic();
+  const FF = "var(--font-nunito), system-ui";
 
+  // Each letter: main face color + 5 depth-wall colors (darkest → closest)
   const LETTERS = [
-    { char: "F", color: "#FF9F1C", shadow: "#B35300" },
-    { char: "U", color: "#FF3D79", shadow: "#990038" },
-    { char: "M", color: "#00C8BE", shadow: "#006E6A" },
-    { char: "I", color: "#5B8CF8", shadow: "#1A42B0", hasStar: true },
+    { char: "F", main: "#FFBA15",
+      depths: ["#3D1800", "#5A2400", "#7A3200", "#A04400", "#C45600"] },
+    { char: "U", main: "#FF3D72",
+      depths: ["#280010", "#44001E", "#680030", "#900040", "#B80050"] },
+    { char: "M", main: "#00D4BE",
+      depths: ["#001A18", "#002E2A", "#004840", "#006656", "#008470"] },
+    { char: "I", main: "#7EB8FF", hasStar: true,
+      depths: ["#040E2C", "#0A1A4E", "#122870", "#1C3C98", "#2850C2"] },
   ];
 
-  const make3D = (shadowColor: string) =>
-    `0 2px 0 ${shadowColor}, 0 4px 0 ${shadowColor}, 0 6px 0 ${shadowColor}, 0 8px 0 ${shadowColor}, 0 10px 22px rgba(0,0,0,0.55)`;
-
-  const SPARKLES = [
-    { top: 124, left: "16%",  color: "#FCD34D", size: 16 },
-    { top: 134, right: "12%", color: "#FF8AD8", size: 13 },
-    { top: 230, left: "10%",  color: "#FCD34D", size: 12 },
-    { top: 224, right: "8%",  color: "#A78BFA", size: 18 },
+  const STARS = [
+    { top: 178, left: "7%",   size: 24, color: "#FFD700", delay: 0.0 },
+    { top: 190, right: "5%",  size: 20, color: "#FFD700", delay: 0.3 },
+    { top: 290, left: "4%",   size: 13, color: "#FCD34D", delay: 0.6 },
+    { top: 278, right: "3%",  size: 16, color: "#C4B5FD", delay: 0.9 },
+    { top: 390, left: "12%",  size: 10, color: "#FFF9C4", delay: 0.4 },
+    { top: 372, right: "11%", size: 10, color: "#FFF9C4", delay: 0.7 },
   ];
 
   return (
     <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
       <NightRoomBackdrop minimal hideRug hideFloor />
 
-      {/* ── music toggle ── */}
+
+
+      {/* ── Clouds ── */}
+      <div style={{ position: "absolute", top: 188, left: -28, zIndex: 3 }}>
+        <Cloud size={0.92} opacity={0.78} />
+      </div>
+      <div style={{ position: "absolute", top: 248, right: -36, zIndex: 3 }}>
+        <Cloud size={0.82} opacity={0.68} />
+      </div>
+      <div style={{ position: "absolute", bottom: 190, left: -44, zIndex: 3 }}>
+        <Cloud size={1.05} opacity={0.60} />
+      </div>
+
+      {/* ── Music toggle ── */}
       <div
         role="button"
         aria-label={musicOn ? "Mute music" : "Play music"}
@@ -117,7 +150,7 @@ export function Splash({ onEnter }: { onEnter: () => void }) {
         style={{
           position: "absolute", top: 52, right: 20, zIndex: 10,
           width: 46, height: 46, borderRadius: "50%",
-          background: "#5B21B6",
+          background: "#6D28D9",
           display: "flex", alignItems: "center", justifyContent: "center",
           cursor: "pointer",
           boxShadow: "0 4px 16px rgba(91,33,182,0.55)",
@@ -134,185 +167,180 @@ export function Splash({ onEnter }: { onEnter: () => void }) {
 
       {/* ── FUMI 3D bubble letters ── */}
       <motion.div
-        initial={{ opacity: 0, y: 24 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ delay: 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         style={{
-          position: "absolute", top: 130, left: 0, right: 0, zIndex: 5,
-          display: "flex", justifyContent: "center", alignItems: "flex-end", gap: 8,
+          position: "absolute", top: 165, left: 0, right: 0, zIndex: 5,
+          display: "flex", justifyContent: "center", alignItems: "flex-end", gap: 6,
         }}
       >
         {LETTERS.map((l, i) => (
           <motion.div
             key={l.char}
-            initial={{ opacity: 0, y: 36 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.18 + i * 0.09, type: "spring", stiffness: 300, damping: 24 }}
-            style={{ position: "relative" }}
+            initial={{ opacity: 0, y: 44, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ delay: 0.16 + i * 0.09, type: "spring", stiffness: 280, damping: 22 }}
+            style={{ position: "relative", display: "inline-block" }}
           >
+            {/* 3D wall layers — darkest first (deepest), lightest last (closest face) */}
+            {l.depths.map((depthColor, n) => (
+              <span
+                key={n}
+                aria-hidden
+                style={{
+                  position: "absolute",
+                  top: (l.depths.length - n) * 2,
+                  left: 0,
+                  fontFamily: FF, fontSize: 96, fontWeight: 900, lineHeight: 1,
+                  color: depthColor,
+                  display: "block", userSelect: "none", pointerEvents: "none",
+                  whiteSpace: "nowrap",
+                }}
+              >{l.char}</span>
+            ))}
+            {/* Main face with highlight */}
             <span style={{
-              fontFamily: "var(--font-nunito), system-ui",
-              fontSize: 96, fontWeight: 900, lineHeight: 1,
-              color: l.color, display: "inline-block",
-              textShadow: make3D(l.shadow),
-              WebkitTextStroke: "1px rgba(255,255,255,0.15)",
-            }}>
-              {l.char}
-            </span>
+              position: "relative", zIndex: 6,
+              fontFamily: FF, fontSize: 96, fontWeight: 900, lineHeight: 1,
+              color: l.main, display: "block",
+              textShadow: "-2px -3px 0 rgba(255,255,255,0.32), 1px 1px 0 rgba(255,255,255,0.10)",
+              whiteSpace: "nowrap",
+            }}>{l.char}</span>
             {l.hasStar && (
               <span style={{
-                position: "absolute", top: -20, right: -16,
-                fontSize: 26, lineHeight: 1, pointerEvents: "none",
+                position: "absolute", top: -22, right: -18,
+                fontSize: 26, lineHeight: 1, zIndex: 7, pointerEvents: "none",
               }}>⭐</span>
             )}
           </motion.div>
         ))}
       </motion.div>
 
-      {/* ── Scattered sparkle marks around FUMI ── */}
-      {SPARKLES.map((s, i) => (
+      {/* ── Scattered gold / purple stars ── */}
+      {STARS.map((s, i) => (
         <motion.span
           key={i}
-          animate={{ scale: [1, 1.35, 1], opacity: [0.65, 1, 0.65] }}
-          transition={{ duration: 2.2 + i * 0.3, repeat: Infinity, ease: "easeInOut", delay: i * 0.55 }}
+          animate={{ scale: [1, 1.4, 1], opacity: [0.7, 1, 0.7] }}
+          transition={{ duration: 2.4 + i * 0.25, repeat: Infinity, ease: "easeInOut", delay: s.delay }}
           style={{
-            position: "absolute",
-            top: s.top,
-            left: (s as { top: number; color: string; size: number; left?: string; right?: string }).left,
-            right: (s as { top: number; color: string; size: number; left?: string; right?: string }).right,
+            position: "absolute", top: s.top,
+            left: (s as { top: number; size: number; color: string; delay: number; left?: string; right?: string }).left,
+            right: (s as { top: number; size: number; color: string; delay: number; left?: string; right?: string }).right,
             color: s.color, fontSize: s.size,
             zIndex: 6, pointerEvents: "none", lineHeight: 1,
           }}
         >✦</motion.span>
       ))}
 
-      {/* ── Small purple star ── */}
+      {/* ── Purple star divider ── */}
       <motion.div
         initial={{ opacity: 0, scale: 0 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.58, type: "spring", stiffness: 280, damping: 20 }}
+        transition={{ delay: 0.55, type: "spring", stiffness: 280, damping: 18 }}
         style={{
-          position: "absolute", top: 262, left: 0, right: 0, zIndex: 5,
-          textAlign: "center", color: "#A78BFA", fontSize: 24, lineHeight: 1,
+          position: "absolute", top: 278, left: 0, right: 0, zIndex: 5,
+          textAlign: "center", color: "#A78BFA", fontSize: 22, lineHeight: 1,
         }}
       >★</motion.div>
 
       {/* ── Tagline ── */}
       <motion.div
-        initial={{ opacity: 0, y: 14 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.48, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ delay: 0.44, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         style={{
-          position: "absolute", top: 296, left: 16, right: 16, zIndex: 5,
-          textAlign: "center", fontFamily: "var(--font-nunito), system-ui",
+          position: "absolute", top: 308, left: 16, right: 16, zIndex: 5,
+          textAlign: "center", fontFamily: FF,
         }}
       >
-        <div style={{ fontSize: 23, fontWeight: 800, color: "#fff", lineHeight: 1.4, marginBottom: 2 }}>
+        <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", lineHeight: 1.45, marginBottom: 3 }}>
           Small adventures.
         </div>
-        <div style={{ fontSize: 23, fontWeight: 800, lineHeight: 1.4 }}>
+        <div style={{ fontSize: 22, fontWeight: 800, lineHeight: 1.45 }}>
           <span style={{ color: "#FCD34D" }}>Big </span>
           <span style={{ color: "#C084FC" }}>life </span>
           <span style={{ color: "#34D399" }}>skills.</span>
         </div>
       </motion.div>
 
-      {/* ── Garden ground ── */}
-      <div style={{
-        position: "absolute", bottom: 0, left: 0, right: 0,
-        height: 210, zIndex: 2, pointerEvents: "none",
-        background: "linear-gradient(180deg, transparent 0%, rgba(6,18,10,0.88) 28%, #080f0a 100%)",
-      }}>
-        {/* Moonlit circular stone path */}
-        <div style={{
-          position: "absolute", bottom: 28, left: "50%",
-          transform: "translateX(-50%)",
-          width: 280, height: 100, borderRadius: "50%",
-          background: "radial-gradient(ellipse, rgba(80,90,110,0.55) 0%, rgba(30,36,50,0.3) 60%, transparent 100%)",
-        }} />
-        <div style={{
-          position: "absolute", bottom: 36, left: "50%",
-          transform: "translateX(-50%)",
-          width: 240, height: 82, borderRadius: "50%",
-          border: "1.5px solid rgba(140,150,180,0.22)",
-          boxSizing: "border-box" as const,
-        }} />
-        {/* Side foliage */}
-        {[
-          { bottom: 88, left:  10 }, { bottom: 68, left:  28 }, { bottom: 78, left:   0 },
-          { bottom: 88, right: 10 }, { bottom: 68, right: 28 }, { bottom: 78, right:  0 },
-        ].map((pos, i) => (
-          <span key={i} style={{
-            position: "absolute",
-            bottom: pos.bottom,
-            left:  (pos as { bottom: number; left?: number; right?: number }).left,
-            right: (pos as { bottom: number; left?: number; right?: number }).right,
-            fontSize: i % 3 === 0 ? 22 : 18,
-            lineHeight: 1, userSelect: "none",
-          }}>{i % 2 === 0 ? "🌸" : "🌿"}</span>
-        ))}
-      </div>
+      {/* ── Gold star between tagline and cat ── */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.6, type: "spring", stiffness: 260, damping: 18 }}
+        style={{
+          position: "absolute", top: 388, left: 0, right: 0, zIndex: 5,
+          textAlign: "center", fontSize: 26, lineHeight: 1,
+        }}
+      >⭐</motion.div>
 
-      {/* ── Bobo cat on the path ── */}
+      {/* ── Ground glow (moonbeam pool) ── */}
       <div style={{
-        position: "absolute", bottom: 148, left: "50%",
+        position: "absolute", bottom: 136, left: "50%",
+        transform: "translateX(-50%)",
+        width: 240, height: 64, borderRadius: "50%",
+        background: "radial-gradient(ellipse, rgba(185,165,255,0.38) 0%, rgba(160,140,240,0.14) 55%, transparent 100%)",
+        filter: "blur(12px)",
+        zIndex: 4, pointerEvents: "none",
+      }} />
+
+      {/* ── Bobo cat ── */}
+      <div style={{
+        position: "absolute", bottom: 140, left: "50%",
         transform: "translateX(-50%)",
         zIndex: 5,
       }}>
         <motion.div
-          initial={{ opacity: 0, scale: 0.82, y: 20 }}
+          initial={{ opacity: 0, scale: 0.78, y: 22 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ type: "spring", stiffness: 210, damping: 20, delay: 0.35 }}
+          transition={{ type: "spring", stiffness: 200, damping: 20, delay: 0.32 }}
           style={{ position: "relative" }}
         >
-          {/* Cast shadow — shrinks as cat floats up */}
+          {/* Cast shadow */}
           <motion.div
-            animate={{ scaleX: [1, 0.78, 1], opacity: [0.55, 0.3, 0.55] }}
-            transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut", delay: 1.4 }}
+            animate={{ scaleX: [1, 0.76, 1], opacity: [0.55, 0.28, 0.55] }}
+            transition={{ duration: 3.8, repeat: Infinity, ease: "easeInOut", delay: 1.4 }}
             style={{
-              position: "absolute", bottom: -2, left: "50%",
+              position: "absolute", bottom: 0, left: "50%",
               transform: "translateX(-50%)",
-              width: 140, height: 22, borderRadius: "50%",
-              background: "rgba(0,0,0,0.65)",
-              filter: "blur(8px)",
-              zIndex: 0,
-              pointerEvents: "none",
+              width: 148, height: 24, borderRadius: "50%",
+              background: "rgba(0,0,0,0.62)", filter: "blur(9px)",
+              zIndex: 0, pointerEvents: "none",
             }}
           />
-
-          {/* Floating cat with 3D drop-shadow + purple glow */}
+          {/* Floating cat with 3D filter */}
           <motion.div
-            animate={{ y: [0, -10, 0] }}
-            transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut", delay: 1.4 }}
+            animate={{ y: [0, -11, 0] }}
+            transition={{ duration: 3.8, repeat: Infinity, ease: "easeInOut", delay: 1.4 }}
             style={{
               position: "relative", zIndex: 1,
-              filter: "drop-shadow(0 12px 20px rgba(0,0,0,0.65)) drop-shadow(0 0 16px rgba(167,139,250,0.45))",
+              filter: "drop-shadow(0 14px 22px rgba(0,0,0,0.68)) drop-shadow(0 0 18px rgba(167,139,250,0.48))",
             }}
           >
-            <Bobo mood="happy" tint={280} size={205} animate tailWag />
+            <Bobo mood="happy" tint={280} size={220} animate tailWag />
           </motion.div>
         </motion.div>
       </div>
 
       {/* ── CTA button ── */}
       <div style={{
-        position: "absolute", bottom: 46, left: 20, right: 20, zIndex: 10,
+        position: "absolute", bottom: 42, left: 20, right: 20, zIndex: 10,
       }}>
         <motion.button
           onClick={onEnter}
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.68, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ delay: 0.66, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
           whileTap={{ scale: 0.975 }}
           style={{
             position: "relative", overflow: "hidden",
-            width: "100%", height: 62, borderRadius: 31,
-            background: "linear-gradient(180deg, #9D6FE8 0%, #7C3AED 100%)",
+            width: "100%", height: 64, borderRadius: 32,
+            background: "linear-gradient(180deg, #9A6CE6 0%, #7C3AED 100%)",
             border: "none", cursor: "pointer",
-            fontFamily: "var(--font-nunito), system-ui",
-            fontSize: 19, fontWeight: 900, color: "#fff",
+            fontFamily: FF, fontSize: 19, fontWeight: 900, color: "#fff",
             letterSpacing: "0.02em",
-            boxShadow: "0 6px 0 #5B21B6, 0 10px 32px rgba(109,40,217,0.55)",
+            boxShadow: "0 7px 0 #5018B8, 0 12px 36px rgba(109,40,217,0.58)",
             display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
             touchAction: "manipulation",
           }}
@@ -320,35 +348,22 @@ export function Splash({ onEnter }: { onEnter: () => void }) {
           <motion.span
             aria-hidden
             animate={{ x: ["-120%", "220%"] }}
-            transition={{ duration: 1.6, repeat: Infinity, repeatDelay: 2.0, ease: "easeInOut" }}
+            transition={{ duration: 1.7, repeat: Infinity, repeatDelay: 2.2, ease: "easeInOut" }}
             style={{
               position: "absolute", inset: 0,
-              background: "linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.22) 50%, transparent 65%)",
-              borderRadius: 31, pointerEvents: "none",
+              background: "linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.20) 50%, transparent 65%)",
+              borderRadius: 32, pointerEvents: "none",
             }}
           />
-          <span style={{ color: "#FCD34D", fontSize: 14, letterSpacing: "0.05em" }}>✦✦</span>
           Start Your Adventure
           <motion.span
             animate={{ x: [0, 5, 0] }}
-            transition={{ duration: 0.9, repeat: Infinity, repeatDelay: 1.2, ease: "easeInOut" }}
+            transition={{ duration: 1.0, repeat: Infinity, repeatDelay: 1.2, ease: "easeInOut" }}
             style={{ fontSize: 20, lineHeight: 1, fontWeight: 400, display: "inline-block" }}
           >→</motion.span>
         </motion.button>
       </div>
 
-      {/* ── Pagination dots ── */}
-      <div style={{
-        position: "absolute", bottom: 16, left: 0, right: 0, zIndex: 10,
-        display: "flex", justifyContent: "center", alignItems: "center", gap: 7,
-      }}>
-        {[0, 1, 2, 3].map(i => (
-          <div key={i} style={{
-            width: i === 0 ? 22 : 7, height: 7, borderRadius: 4,
-            background: i === 0 ? "#fff" : "rgba(255,255,255,0.32)",
-          }} />
-        ))}
-      </div>
     </div>
   );
 }
