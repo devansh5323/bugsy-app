@@ -11,12 +11,12 @@ const LINE1 = "Let me tell you about myself...";
 const LINE2 = "I'm your child's pet companion- Together we grow, mastering one skill at a time";
 
 const STAGES = [
-  { num: 1,  size: 38, text: "Tiny steps,\nbig adventures begin!",         hl: null,         hlColor: "",        icon: "⭐", gold: false },
-  { num: 3,  size: 46, text: "Growing curiosity,\nbuilding confidence.",    hl: "confidence", hlColor: "#FF9E2C", icon: "💗", gold: false },
-  { num: 6,  size: 54, text: "More playful,\nmore agile, more confident!",  hl: "confident",  hlColor: "#FF9E2C", icon: "⚡", gold: false },
-  { num: 9,  size: 62, text: "Growing stronger\nevery day!",                hl: "stronger",   hlColor: "#4ADE80", icon: "📈", gold: false },
-  { num: 12, size: 70, text: "Almost there!\nShining brighter every day.",  hl: "brighter",   hlColor: "#FF9E2C", icon: "☀️", gold: false },
-  { num: 14, size: 80, text: "Confident. Calm.\nReady for anything!",       hl: null,         hlColor: "",        icon: "🏆", gold: true  },
+  { num: 1,  size: 30, text: "Tiny steps,\nbig adventures begin!",         hl: null,         hlColor: "",        icon: "⭐", gold: false },
+  { num: 3,  size: 36, text: "Growing curiosity,\nbuilding confidence.",    hl: "confidence", hlColor: "#FF9E2C", icon: "💗", gold: false },
+  { num: 6,  size: 42, text: "More playful,\nmore agile, more confident!",  hl: "confident",  hlColor: "#FF9E2C", icon: "⚡", gold: false },
+  { num: 9,  size: 48, text: "Growing stronger\nevery day!",                hl: "stronger",   hlColor: "#4ADE80", icon: "📈", gold: false },
+  { num: 12, size: 54, text: "Almost there!\nShining brighter every day.",  hl: "brighter",   hlColor: "#FF9E2C", icon: "☀️", gold: false },
+  { num: 14, size: 62, text: "Confident. Calm.\nReady for anything!",       hl: null,         hlColor: "",        icon: "🏆", gold: true  },
 ];
 
 function StageDesc({ text, hl, hlColor }: { text: string; hl: string | null; hlColor: string }) {
@@ -209,41 +209,41 @@ export function ParentJourney({
         )}
       </AnimatePresence>
 
-      {/* ── Timeline view ── */}
+      {/* ── Timeline view — single page, no scroll ── */}
       <AnimatePresence>
         {showTimeline && (
           <motion.div
             key="timeline"
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             style={{
               position: "absolute", inset: 0, zIndex: 8,
               display: "flex", flexDirection: "column",
-              overflowY: "auto", paddingBottom: 106,
+              overflow: "hidden",
             }}
           >
             {/* Cat (left) + LINE2 bubble (right) */}
             <div style={{
               display: "flex", alignItems: "flex-start",
-              padding: "74px 14px 0 10px", gap: 10, flexShrink: 0,
+              padding: "58px 12px 0 8px", gap: 8, flexShrink: 0,
             }}>
               <div style={{ flexShrink: 0, pointerEvents: "none" }}>
                 <motion.div
-                  animate={{ y: [0, -7, 0] }}
+                  animate={{ y: [0, -6, 0] }}
                   transition={{ duration: 3.0, repeat: Infinity, ease: "easeInOut" }}
                 >
-                  <Bobo mood="happy" tint={tint} size={108} animate />
+                  <Bobo mood="happy" tint={tint} size={80} animate />
                 </motion.div>
               </div>
               <div style={{
-                flex: 1, background: "#fff", borderRadius: 18,
-                padding: "13px 15px 14px",
+                flex: 1, background: "#fff", borderRadius: 16,
+                padding: "11px 14px 12px",
                 boxShadow: "0 6px 28px rgba(0,0,0,0.22)",
-                position: "relative", marginTop: 10,
+                position: "relative", marginTop: 6,
               }}>
-                <div style={{ position: "absolute", left: -11, top: 18, width: 0, height: 0, borderTop: "9px solid transparent", borderBottom: "9px solid transparent", borderRight: "11px solid #fff" }} />
-                <p style={{ fontFamily: F, fontSize: 14, fontWeight: 800, color: "#1a0f40", margin: 0, lineHeight: 1.38 }}>
+                <div style={{ position: "absolute", left: -11, top: 16, width: 0, height: 0, borderTop: "9px solid transparent", borderBottom: "9px solid transparent", borderRight: "11px solid #fff" }} />
+                <p style={{ fontFamily: F, fontSize: 13.5, fontWeight: 800, color: "#1a0f40", margin: 0, lineHeight: 1.35 }}>
                   {LINE2} 💜
                 </p>
               </div>
@@ -251,176 +251,178 @@ export function ParentJourney({
 
             {/* "Watch me grow with your child!" */}
             <motion.div
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.4 }}
               style={{
                 display: "flex", alignItems: "center", justifyContent: "center",
-                gap: 8, padding: "14px 16px 10px", flexShrink: 0,
+                gap: 7, padding: "8px 16px 4px", flexShrink: 0,
               }}
             >
-              <span style={{ fontSize: 20 }}>✨</span>
-              <span style={{ fontFamily: F, fontSize: 17, fontWeight: 900, color: "#fff" }}>
+              <span style={{ fontSize: 18 }}>✨</span>
+              <span style={{ fontFamily: F, fontSize: 16, fontWeight: 900, color: "#fff" }}>
                 Watch me grow with your child!
               </span>
-              <span style={{ fontSize: 20 }}>✨</span>
+              <span style={{ fontSize: 18 }}>✨</span>
             </motion.div>
 
-            {/* Stages — vertical list */}
+            {/* Stages — fills remaining space, no scroll */}
             <div style={{
+              flex: 1, minHeight: 0,
               display: "flex", flexDirection: "column",
-              padding: "0 14px",
-              flexShrink: 0,
+              padding: "0 12px",
             }}>
-              {STAGES.map((stage, i) => (
-                <div key={i} style={{ display: "flex", flexDirection: "column" }}>
-                  <AnimatePresence>
-                    {stageCount > i && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 20, scale: 0.94 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        transition={{ type: "spring", stiffness: 240, damping: 24 }}
-                        style={{
-                          display: "flex", alignItems: "center", gap: 10,
-                          padding: "11px 12px 11px 8px",
-                          background: stage.gold ? "rgba(20,13,4,0.90)" : "rgba(12,8,34,0.82)",
-                          border: `1.5px solid ${stage.gold ? "rgba(255,175,0,0.60)" : "rgba(70,50,150,0.60)"}`,
-                          borderRadius: 18,
-                          boxShadow: stage.gold
-                            ? "0 0 22px rgba(255,160,0,0.28), 0 4px 14px rgba(0,0,0,0.45)"
-                            : "0 4px 14px rgba(0,0,0,0.38)",
-                        }}
-                      >
-                        {/* Cat + platform + paw */}
-                        <div style={{
-                          width: 88, flexShrink: 0,
-                          display: "flex", flexDirection: "column", alignItems: "center",
-                          pointerEvents: "none",
-                        }}>
-                          <Bobo
-                            mood={stage.gold ? "excited" : "happy"}
-                            tint={tint}
-                            size={stage.size}
-                            animate={stage.gold}
-                            tailWag={stage.gold}
-                          />
-                          {/* Platform */}
-                          <div style={{
-                            width: stage.size * 1.25, height: 11, borderRadius: "50%",
-                            background: stage.gold
-                              ? "radial-gradient(ellipse, rgba(255,200,60,0.9) 0%, rgba(180,100,0,0.7) 100%)"
-                              : "radial-gradient(ellipse, rgba(110,70,210,0.9) 0%, rgba(60,30,140,0.7) 100%)",
-                            marginTop: -5,
+              {STAGES.flatMap((stage, i) => {
+                const row = (
+                  <div key={`slot-${i}`} style={{ flex: 1, minHeight: 0, display: "flex", alignItems: "stretch" }}>
+                    <AnimatePresence>
+                      {stageCount > i && (
+                        <motion.div
+                          key={`card-${i}`}
+                          initial={{ opacity: 0, y: 12 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ type: "spring", stiffness: 250, damping: 26 }}
+                          style={{
+                            flex: 1, display: "flex", alignItems: "center", gap: 8,
+                            padding: "6px 10px 6px 6px",
+                            background: stage.gold ? "rgba(20,13,4,0.90)" : "rgba(12,8,34,0.82)",
+                            border: `1.5px solid ${stage.gold ? "rgba(255,175,0,0.62)" : "rgba(70,50,150,0.60)"}`,
+                            borderRadius: 16,
                             boxShadow: stage.gold
-                              ? "0 0 14px rgba(255,180,0,0.55)"
-                              : "0 3px 10px rgba(0,0,0,0.5)",
-                          }} />
-                          <span style={{ fontSize: 11, marginTop: 3, lineHeight: 1 }}>🐾</span>
-                        </div>
-
-                        {/* Info: day badge + description */}
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          {/* Day pill badge */}
-                          <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 5 }}>
+                              ? "0 0 20px rgba(255,155,0,0.30), 0 4px 12px rgba(0,0,0,0.45)"
+                              : "0 4px 12px rgba(0,0,0,0.38)",
+                            overflow: "visible",
+                          }}
+                        >
+                          {/* Cat + oval platform */}
+                          <div style={{
+                            width: 68, flexShrink: 0, alignSelf: "stretch",
+                            display: "flex", flexDirection: "column",
+                            alignItems: "center", justifyContent: "flex-end",
+                            pointerEvents: "none",
+                          }}>
+                            <Bobo
+                              mood={stage.gold ? "excited" : "happy"}
+                              tint={tint}
+                              size={stage.size}
+                              animate={stage.gold}
+                              tailWag={stage.gold}
+                            />
                             <div style={{
+                              width: stage.size * 1.3, height: 9, borderRadius: "50%",
                               background: stage.gold
-                                ? "linear-gradient(90deg, #FF8C00, #FFD700)"
-                                : "#5B21B6",
-                              borderRadius: 20, padding: "3px 11px",
-                              display: "inline-flex",
-                            }}>
-                              <span style={{ fontFamily: F, fontSize: 11.5, fontWeight: 900, color: "#fff" }}>
-                                DAY {stage.num}
-                              </span>
-                            </div>
-                            <span style={{ color: "#FFD700", fontSize: 11 }}>✦</span>
+                                ? "radial-gradient(ellipse, rgba(255,210,60,0.95) 0%, rgba(180,100,0,0.75) 100%)"
+                                : "radial-gradient(ellipse, rgba(120,75,215,0.95) 0%, rgba(60,30,140,0.75) 100%)",
+                              marginTop: -3,
+                              boxShadow: stage.gold
+                                ? "0 0 12px rgba(255,180,0,0.55)"
+                                : "0 2px 8px rgba(0,0,0,0.5)",
+                            }} />
                           </div>
-                          {/* Description */}
-                          {stage.gold ? (
-                            <div>
-                              <p style={{ fontFamily: F, fontSize: 16, fontWeight: 900, color: "#FFD700", margin: "0 0 2px", lineHeight: 1.2 }}>
-                                FULLY GROWN!
-                              </p>
-                              <p style={{ fontFamily: F, fontSize: 13.5, fontWeight: 700, color: "#fff", margin: 0, lineHeight: 1.4 }}>
-                                Confident. Calm.<br />Ready for anything!
-                              </p>
+
+                          {/* Info */}
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 4 }}>
+                              <span style={{ fontSize: 10 }}>🐾</span>
+                              <div style={{
+                                background: stage.gold ? "linear-gradient(90deg, #FF8C00, #FFD700)" : "#5B21B6",
+                                borderRadius: 20, padding: "2px 9px", display: "inline-flex",
+                              }}>
+                                <span style={{ fontFamily: F, fontSize: 11, fontWeight: 900, color: "#fff" }}>
+                                  DAY {stage.num}
+                                </span>
+                              </div>
+                              <span style={{ color: "#FFD700", fontSize: 10 }}>✦</span>
                             </div>
-                          ) : (
-                            <p style={{ fontFamily: F, fontSize: 13.5, fontWeight: 700, color: "#fff", margin: 0, lineHeight: 1.4 }}>
-                              <StageDesc text={stage.text} hl={stage.hl} hlColor={stage.hlColor} />
-                            </p>
-                          )}
-                        </div>
+                            {stage.gold ? (
+                              <div>
+                                <p style={{ fontFamily: F, fontSize: 14, fontWeight: 900, color: "#FFD700", margin: "0 0 1px", lineHeight: 1.2 }}>
+                                  FULLY GROWN!
+                                </p>
+                                <p style={{ fontFamily: F, fontSize: 12, fontWeight: 700, color: "#fff", margin: 0, lineHeight: 1.3 }}>
+                                  Confident. Calm. Ready for anything!
+                                </p>
+                              </div>
+                            ) : (
+                              <p style={{ fontFamily: F, fontSize: 12, fontWeight: 700, color: "#fff", margin: 0, lineHeight: 1.35 }}>
+                                <StageDesc text={stage.text} hl={stage.hl} hlColor={stage.hlColor} />
+                              </p>
+                            )}
+                          </div>
 
-                        {/* Right icon */}
-                        <div style={{ fontSize: 26, flexShrink: 0, width: 34, textAlign: "center" }}>
-                          {stage.icon}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                          {/* Right icon */}
+                          <div style={{ fontSize: 24, flexShrink: 0, width: 30, textAlign: "center" }}>
+                            {stage.icon}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
 
-                  {/* Orange arrow between stages */}
-                  {i < STAGES.length - 1 && (
+                const arrow = i < STAGES.length - 1 ? (
+                  <div key={`arr-${i}`} style={{ height: 13, flexShrink: 0, display: "flex", justifyContent: "center", alignItems: "center" }}>
                     <AnimatePresence>
                       {stageCount > i + 1 && (
                         <motion.div
-                          initial={{ opacity: 0, scaleY: 0 }}
-                          animate={{ opacity: 1, scaleY: 1 }}
-                          transition={{ duration: 0.25, ease: "easeOut" }}
-                          style={{ display: "flex", justifyContent: "center", padding: "3px 0" }}
+                          key="a"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ duration: 0.2 }}
                         >
                           <div style={{
                             width: 0, height: 0,
-                            borderLeft: "9px solid transparent",
-                            borderRight: "9px solid transparent",
-                            borderTop: "15px solid #FF9800",
-                            filter: "drop-shadow(0 2px 4px rgba(255,120,0,0.55))",
+                            borderLeft: "8px solid transparent",
+                            borderRight: "8px solid transparent",
+                            borderTop: "13px solid #FF9800",
+                            filter: "drop-shadow(0 1px 3px rgba(255,120,0,0.5))",
                           }} />
                         </motion.div>
                       )}
                     </AnimatePresence>
-                  )}
-                </div>
-              ))}
+                  </div>
+                ) : null;
+
+                return arrow ? [row, arrow] : [row];
+              })}
             </div>
 
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── Continue button with flower decorations ── */}
-      <AnimatePresence>
-        {showButton && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-            style={{ position: "absolute", bottom: 32, left: 16, right: 16, zIndex: 20 }}
-          >
-            {/* Flower decorations */}
-            <span style={{ position: "absolute", left: -2, bottom: 2, fontSize: 28, pointerEvents: "none", zIndex: 21 }}>🌸</span>
-            <span style={{ position: "absolute", right: 0, bottom: 4, fontSize: 26, pointerEvents: "none", zIndex: 21 }}>🌿</span>
-            <motion.button
-              onClick={(e) => { e.stopPropagation(); onNext(); }}
-              style={{
-                width: "100%", height: 64, borderRadius: 32,
-                background: "linear-gradient(180deg, #9D6FE8 0%, #7C3AED 100%)",
-                border: "none", cursor: "pointer",
-                fontFamily: F, fontSize: 20, fontWeight: 900, color: "#fff",
-                boxShadow: "0 6px 0 #5B21B6, 0 10px 28px rgba(109,40,217,0.50)",
-                touchAction: "manipulation",
-                display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-              }}
-            >
-              <span style={{ color: "#FFD700", fontSize: 18 }}>✦</span>
-              Continue
-              <motion.span
-                animate={{ x: [0, 5, 0] }}
-                transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut" }}
-                style={{ display: "inline-block" }}
-              >→</motion.span>
-            </motion.button>
+            {/* Continue button — pinned at bottom */}
+            <div style={{ flexShrink: 0, padding: "4px 14px 26px" }}>
+              <AnimatePresence>
+                {showButton && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                    style={{ position: "relative" }}
+                  >
+                    <span style={{ position: "absolute", left: -4, bottom: 0, fontSize: 26, pointerEvents: "none", zIndex: 1 }}>🌸</span>
+                    <span style={{ position: "absolute", right: -2, bottom: 2, fontSize: 24, pointerEvents: "none", zIndex: 1 }}>🌿</span>
+                    <motion.button
+                      onClick={(e) => { e.stopPropagation(); onNext(); }}
+                      style={{
+                        width: "100%", height: 60, borderRadius: 30,
+                        background: "linear-gradient(180deg, #9D6FE8 0%, #7C3AED 100%)",
+                        border: "none", cursor: "pointer",
+                        fontFamily: F, fontSize: 19, fontWeight: 900, color: "#fff",
+                        boxShadow: "0 6px 0 #5B21B6, 0 10px 28px rgba(109,40,217,0.50)",
+                        touchAction: "manipulation",
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                      }}
+                    >
+                      <span style={{ color: "#FFD700", fontSize: 17 }}>✦</span>
+                      Continue
+                      <motion.span
+                        animate={{ x: [0, 5, 0] }}
+                        transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut" }}
+                        style={{ display: "inline-block" }}
+                      >→</motion.span>
+                    </motion.button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
