@@ -35,7 +35,6 @@ import { LoginScreen } from "./components/onboarding/LoginScreen";
 import { WhoAreYou } from "./components/onboarding/WhoAreYou";
 import { ParentIntro } from "./components/onboarding/ParentIntro";
 import { ParentJourney } from "./components/onboarding/ParentJourney";
-import { ParentUnderstand } from "./components/onboarding/ParentUnderstand";
 import { ParentBenefits } from "./components/onboarding/ParentBenefits";
 import { TellMeAboutChild } from "./components/onboarding/TellMeAboutChild";
 import { QuestionnaireScreen } from "./components/onboarding/QuestionnaireScreen";
@@ -557,23 +556,13 @@ export default function Home() {
           );
         case 2:
           return (
-            <ParentUnderstand
-              tint={TINT}
-              childName={childName}
-              parentName={parentName}
-              onNext={advanceParent}
-              onBack={back}
-            />
-          );
-        case 3:
-          return (
             <ParentBenefits
               tint={TINT}
               onNext={advanceParent}
               onBack={back}
             />
           );
-        case 4:
+        case 3:
           return (
             <TellMeAboutChild
               tint={TINT}
@@ -585,7 +574,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 5:
+        case 4:
           return (
             <QuestionnaireScreen
               childName={childName}
@@ -593,7 +582,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 6:
+        case 5:
           return (
             <AssessmentCompleteScreen
               childName={childName}
