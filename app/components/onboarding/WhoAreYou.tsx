@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import type { UserType, Relationship } from "../../lib/data";
 import { Bobo } from "../Mascot";
-import type { UserType } from "../../lib/data";
 
 // First real moment with Bugsy. The box opens, he rises out and
 // stretches awake, types out a greeting, and only then do the CTAs
@@ -16,20 +17,11 @@ import type { UserType } from "../../lib/data";
 // stretch:  stretches awake, happy
 // greeting: types the hello line
 // ready:    CTAs appear
-type Phase = "closed" | "sleeping" | "waking" | "stretch" | "greeting" | "ready";
-const RANK: Record<Phase, number> = {
-  closed: 0,
-  sleeping: 1,
-  waking: 2,
-  stretch: 3,
-  greeting: 4,
-  ready: 5,
-};
 
 
 
 // ── Magical nighttime children's room backdrop ───────────────────
-export function NightRoomBackdrop({ minimal = false, hideRug = false }: { minimal?: boolean; hideRug?: boolean } = {}) {
+export function NightRoomBackdrop({ minimal = false, hideRug = false, hideFloor = false }: { minimal?: boolean; hideRug?: boolean; hideFloor?: boolean } = {}) {
   const star5 = (cx: number, cy: number, r: number, fill: string, op: number, key: string) => {
     const ri = r * 0.42;
     let pts = "";
@@ -106,14 +98,15 @@ export function NightRoomBackdrop({ minimal = false, hideRug = false }: { minima
 
         {/* ── Background + floor ── */}
         <rect x="0" y="0" width="400" height="800" fill="url(#nr-bg)" />
+        {!hideFloor && (<>
         <rect x="0" y="658" width="400" height="142" fill="url(#nr-floor)" />
         <line x1="0" y1="658" x2="400" y2="658" stroke="#5a3090" strokeWidth="1" opacity="0.18" />
-        {/* Floor wood planks */}
         <line x1="0" y1="674" x2="400" y2="674" stroke="#1A0A04" strokeWidth="1.2" opacity="0.55" />
         <line x1="0" y1="692" x2="400" y2="692" stroke="#1A0A04" strokeWidth="1.2" opacity="0.55" />
         <line x1="0" y1="712" x2="400" y2="712" stroke="#1A0A04" strokeWidth="1.2" opacity="0.55" />
         <line x1="130" y1="658" x2="110" y2="800" stroke="#1A0A04" strokeWidth="0.8" opacity="0.28" />
         <line x1="270" y1="658" x2="290" y2="800" stroke="#1A0A04" strokeWidth="0.8" opacity="0.28" />
+        </>)}
         {/* Ambient light */}
         {minimal ? (
           <ellipse cx="200" cy="140" rx="240" ry="320"
@@ -369,432 +362,319 @@ export function NightRoomBackdrop({ minimal = false, hideRug = false }: { minima
 }
 
 
+// ── Speech bubble lines ──────────────────────────────────────────
+const F = "var(--font-nunito), system-ui, sans-serif";
+const LINE1 = "WELCOME PARENT!";
+const LINE2 = "Let's get to know each other";
+const LINE3 = "";
+
+const RELATIONS: { key: string; label: string; emoji: string; value: Relationship }[] = [
+  { key: "mom",       label: "Mom",       emoji: "👩",    value: "mom"      },
+  { key: "dad",       label: "Dad",       emoji: "👨",    value: "dad"      },
+  { key: "caregiver", label: "Caregiver", emoji: "🧑‍⚕️",  value: "guardian" },
+  { key: "guardian",  label: "Guardian",  emoji: "👪",    value: "guardian" },
+];
+
 export function WhoAreYou({
   tint,
   onPick,
 }: {
   tint: number;
-  onPick: (t: UserType) => void;
+  onPick: (t: UserType, name: string, relationship: Relationship) => void;
 }) {
-  const [phase, setPhase] = useState<Phase>("closed");
-  const [wiggleKey, setWiggleKey] = useState(0);
-  const [showLine2, setShowLine2] = useState(false);
-  const audioRef = useRef<AudioContext | null>(null);
-  const padRef = useRef<{ stop: () => void } | null>(null);
+  const [catVisible,       setCatVisible]       = useState(false);
+  const [typedLine1,       setTypedLine1]       = useState("");
+  const [typedLine2,       setTypedLine2]       = useState("");
+  const [typedLine3,       setTypedLine3]       = useState("");
+  const [showForm,         setShowForm]         = useState(false);
+  const [name,             setName]             = useState("");
+  const [showRelationship, setShowRelationship] = useState(false);
+  const [selectedKey,      setSelectedKey]      = useState<string | null>(null);
 
-  // Staggered reveal: header(0.1s) → bugsy(1.4s) → bubble line1(2.4s) → line2(3.1s) → CTA(4.4s)
+  const relRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    const t1  = window.setTimeout(() => setPhase("greeting"), 2400);
-    const t1b = window.setTimeout(() => setShowLine2(true),   3100);
-    const t2  = window.setTimeout(() => setPhase("ready"),    4400);
-    return () => { clearTimeout(t1); clearTimeout(t1b); clearTimeout(t2); };
+    const ts: ReturnType<typeof setTimeout>[] = [];
+    ts.push(setTimeout(() => setCatVisible(true), 200));
+
+    const l1S = 800;
+    LINE1.split("").forEach((_, i) =>
+      ts.push(setTimeout(() => setTypedLine1(LINE1.slice(0, i + 1)), l1S + i * 28))
+    );
+    const l2S = l1S + LINE1.length * 28 + 300;
+    LINE2.split("").forEach((_, i) =>
+      ts.push(setTimeout(() => setTypedLine2(LINE2.slice(0, i + 1)), l2S + i * 28))
+    );
+    const l3S = l2S + LINE2.length * 28 + 260;
+    LINE3.split("").forEach((_, i) =>
+      ts.push(setTimeout(() => setTypedLine3(LINE3.slice(0, i + 1)), l3S + i * 28))
+    );
+    ts.push(setTimeout(() => setShowForm(true), l3S + LINE3.length * 28 + 380));
+
+    return () => ts.forEach(clearTimeout);
   }, []);
 
-  // Auto-bounce Bugsy when he starts speaking
   useEffect(() => {
-    if (phase === "greeting") setWiggleKey((k) => k + 1);
-  }, [phase]);
-
-  const rank = RANK[phase];
-  const showText = rank >= RANK.greeting;
-  const showCTA = phase === "ready";
-
-  // ── Audio ────────────────────────────────────────────────
-  const ensureAudio = useCallback(() => {
-    if (audioRef.current) return audioRef.current;
-    try {
-      const AC =
-        window.AudioContext ||
-        (window as unknown as { webkitAudioContext: typeof AudioContext })
-          .webkitAudioContext;
-      audioRef.current = new AC();
-    } catch {
-      // audio optional
+    if (showRelationship) {
+      setTimeout(() => relRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 160);
     }
-    return audioRef.current;
-  }, []);
+  }, [showRelationship]);
 
-  const playPurr = useCallback(() => {
-    const ctx = ensureAudio();
-    if (!ctx) return;
-    const now = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    osc.type = "sawtooth";
-    osc.frequency.value = 58;
-    const filter = ctx.createBiquadFilter();
-    filter.type = "lowpass";
-    filter.frequency.value = 220;
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.07, now + 0.15);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.1);
-    const lfo = ctx.createOscillator();
-    lfo.frequency.value = 22;
-    const lfoGain = ctx.createGain();
-    lfoGain.gain.value = 0.04;
-    lfo.connect(lfoGain).connect(gain.gain);
-    osc.connect(filter).connect(gain).connect(ctx.destination);
-    osc.start(now);
-    lfo.start(now);
-    osc.stop(now + 1.15);
-    lfo.stop(now + 1.15);
-  }, [ensureAudio]);
-
-  const startPad = useCallback(() => {
-    const ctx = ensureAudio();
-    if (!ctx || padRef.current) return;
-    const now = ctx.currentTime;
-    const master = ctx.createGain();
-    master.gain.setValueAtTime(0.0001, now);
-    master.gain.exponentialRampToValueAtTime(0.045, now + 2.5);
-    master.connect(ctx.destination);
-    const oscs = [220, 277.2, 329.6].map((f) => {
-      const o = ctx.createOscillator();
-      o.type = "sine";
-      o.frequency.value = f;
-      const g = ctx.createGain();
-      g.gain.value = 0.33;
-      o.connect(g).connect(master);
-      o.start(now);
-      return o;
-    });
-    padRef.current = {
-      stop: () => {
-        const t = ctx.currentTime;
-        master.gain.exponentialRampToValueAtTime(0.0001, t + 1);
-        oscs.forEach((o) => o.stop(t + 1.1));
-      },
-    };
-  }, [ensureAudio]);
-
-  useEffect(() => {
-    return () => {
-      padRef.current?.stop();
-      const ctx = audioRef.current;
-      if (ctx && ctx.state !== "closed") {
-        window.setTimeout(() => ctx.close().catch(() => {}), 1300);
-      }
-    };
-  }, []);
-
-  const onPet = useCallback(() => {
-    // Tapping early skips Bugsy straight to greeting (text types,
-    // then CTAs). Always purr + wiggle + kick off the ambient pad.
-    setPhase((p) => (RANK[p] < RANK.greeting ? "greeting" : p));
-    ensureAudio();
-    startPad();
-    playPurr();
-    setWiggleKey((k) => k + 1);
-  }, [ensureAudio, startPad, playPurr]);
-
-  const pick = (t: UserType) => {
-    padRef.current?.stop();
-    onPick(t);
+  const handleBlur = () => {
+    if (name.trim().length > 0) setShowRelationship(true);
   };
 
-  const bugsyWiggleAnim = wiggleKey > 0
-    ? "bugsy-wiggle 0.6s ease-in-out"
-    : "bobo-enter 1.0s cubic-bezier(0.22, 1, 0.36, 1) 1.4s both";
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && name.trim().length > 0) {
+      (e.target as HTMLInputElement).blur();
+    }
+  };
+
+  const selectedRel = RELATIONS.find(r => r.key === selectedKey) ?? null;
 
   return (
-    <div
-      style={{
-        position: "absolute",
-        inset: 0,
-        overflow: "hidden",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        boxSizing: "border-box",
-        color: "#fff",
-      }}
-    >
-      <NightRoomBackdrop minimal hideRug />
+    <div style={{
+      position: "absolute", inset: 0, overflow: "hidden",
+      display: "flex", flexDirection: "column",
+    }}>
+      <NightRoomBackdrop minimal hideRug hideFloor />
 
+      {/* ── Cat + bubble zone ── */}
+      <div style={{ height: "44vh", position: "relative", flexShrink: 0, zIndex: 2 }}>
 
-      {/* ── HEADER ─────────────────────────────────────────────── */}
-      <div
-        style={{
-          position: "relative",
-          zIndex: 1,
-          textAlign: "center",
-          padding: "110px 24px 0",
-          width: "100%",
-          animation: "fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both",
-        }}
-      >
-        {/* Stars flanking "Yay!" */}
-        <div style={{ position: "relative", display: "inline-block" }}>
-          <span aria-hidden style={{
-            position: "absolute",
-            left: -36,
-            top: "10%",
-            fontSize: 26,
-            animation: "float-gentle 2.8s ease-in-out infinite",
-            filter: "drop-shadow(0 0 6px rgba(255,210,50,0.9))",
-          }}>⭐</span>
-          <h1
-            style={{
-              fontFamily: "var(--font-nunito), system-ui",
-              fontSize: 56,
-              fontWeight: 900,
-              color: "#FFD234",
-              margin: "0 0 8px",
-              letterSpacing: "0.02em",
-              textShadow:
-                "0 0 8px rgba(255,200,30,1), 0 0 22px rgba(255,180,0,0.90), 0 0 48px rgba(255,160,0,0.60), 0 4px 0 rgba(160,80,0,0.35)",
-              animation: "yay-glow-pulse 2.4s ease-in-out infinite",
-              lineHeight: 1,
-            }}
-          >
-            Yay!
-          </h1>
-          <span aria-hidden style={{
-            position: "absolute",
-            right: -32,
-            top: "10%",
-            fontSize: 22,
-            animation: "float-gentle 3.2s ease-in-out 0.5s infinite",
-            filter: "drop-shadow(0 0 6px rgba(255,210,50,0.9))",
-          }}>⭐</span>
-        </div>
-        <p
-          style={{
-            fontFamily: "var(--font-nunito), system-ui",
-            fontSize: 20,
-            fontWeight: 700,
-            color: "#ffffff",
-            margin: 0,
-            lineHeight: 1.35,
-            textShadow: "0 1px 12px rgba(180,160,255,0.45)",
-          }}
-        >
-          Bugsy is so happy<br />you said hello!
-        </p>
-      </div>
+        {/* Speech bubble — anchored above cat (cat = 165px, gap = 16px) */}
+        <div style={{
+          position: "absolute", bottom: 181, left: 0, right: 0,
+          display: "flex", justifyContent: "center", zIndex: 8,
+        }}>
+          <AnimatePresence>
+            {typedLine1.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.74 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: "spring", stiffness: 300, damping: 26 }}
+                style={{
+                  background: "#fff8f0",
+                  borderRadius: 20,
+                  padding: "14px 20px 18px",
+                  boxShadow: "0 6px 28px rgba(0,0,0,0.22)",
+                  maxWidth: "calc(100vw - 48px)",
+                  position: "relative",
+                  textAlign: "center",
+                }}
+              >
+                {/* Line 1 — small subtitle */}
+                <p style={{
+                  fontFamily: F, fontSize: 14, fontWeight: 500,
+                  color: "rgba(26,15,64,0.72)", margin: 0,
+                  whiteSpace: "nowrap", lineHeight: 1.4,
+                }}>
+                  {typedLine1}
+                </p>
 
-      {/* ── MIDDLE SCENE ────────────────────────────────────────── */}
-      <div
-        style={{
-          position: "relative",
-          zIndex: 1,
-          flex: 1,
-          width: "100%",
-          minHeight: 0,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        {/* Floating hearts — positions matching reference */}
-        <span aria-hidden style={{ position: "absolute", top: "12%", right: "10%", fontSize: 32, animation: "float-gentle 2.6s ease-in-out infinite",         zIndex: 3, pointerEvents: "none" }}>🩷</span>
-        <span aria-hidden style={{ position: "absolute", top: "36%", right: "6%",  fontSize: 20, animation: "float-gentle 3.1s ease-in-out 0.6s infinite",   zIndex: 3, pointerEvents: "none" }}>💗</span>
-        <span aria-hidden style={{ position: "absolute", top: "58%", right: "14%", fontSize: 14, animation: "float-gentle 2.8s ease-in-out 1.1s infinite",   zIndex: 3, pointerEvents: "none" }}>🩷</span>
-        <span aria-hidden style={{ position: "absolute", top: "50%", left:  "7%",  fontSize: 14, animation: "float-gentle 3.3s ease-in-out 0.3s infinite",   zIndex: 3, pointerEvents: "none" }}>💗</span>
-        <span aria-hidden style={{ position: "absolute", top: "68%", left:  "12%", fontSize: 11, animation: "float-gentle 2.9s ease-in-out 1.5s infinite",   zIndex: 3, pointerEvents: "none" }}>🩷</span>
-
-        {/* Circular glow mat under Bugsy */}
-        <div aria-hidden style={{
-          position: "absolute",
-          bottom: "8%",
-          left: "50%",
-          transform: "translateX(-10%)",
-          width: 220,
-          height: 72,
-          borderRadius: "50%",
-          background: "radial-gradient(ellipse, rgba(210,30,55,0.82) 0%, rgba(170,15,38,0.58) 42%, rgba(130,0,25,0.18) 72%, transparent 100%)",
-          zIndex: 0,
-          pointerEvents: "none",
-          filter: "blur(2px)",
-        }} />
-
-
-        {/* Speech bubble + Bugsy in a centered flex row */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0, zIndex: 2, position: "relative" }}>
-
-          {/* Speech bubble on the left */}
-          {showText && (
-            <div
-              style={{
-                flexShrink: 0,
-                maxWidth: 148,
-                padding: "14px 18px 12px",
-                borderRadius: 22,
-                background: "#fff8f0",
-                boxShadow: "0 8px 28px rgba(0,0,0,0.32), 0 2px 8px rgba(0,0,0,0.14)",
-                animation: "bubble-pop 0.4s cubic-bezier(0.22, 1.5, 0.36, 1)",
-                position: "relative",
-                marginRight: 8,
-              }}
-            >
-              <p style={{ fontFamily: "var(--font-nunito), system-ui", fontSize: 19, fontWeight: 800, color: "#7C3AED", margin: "0 0 2px", lineHeight: 1.3 }}>Yay! 💜</p>
-              <p style={{ fontFamily: "var(--font-nunito), system-ui", fontSize: 19, fontWeight: 800, color: "#1e1430", margin: "0 0 6px", lineHeight: 1.3 }}>
-                {["Let's", "play", "together!"].map((word, i) => (
-                  <span
-                    key={i}
+                {/* Line 2 */}
+                {typedLine2.length > 0 && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.2 }}
                     style={{
-                      display: "inline-block",
-                      marginRight: i < 2 ? "0.28em" : 0,
-                      opacity: 0,
-                      animation: showLine2
-                        ? `word-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) ${i * 220}ms forwards`
-                        : "none",
+                      fontFamily: F, fontSize: 19, fontWeight: 800,
+                      color: "#7C3AED", margin: "6px 0 0", lineHeight: 1.3,
+                      whiteSpace: "nowrap",
                     }}
                   >
-                    {word}
-                  </span>
-                ))}
-              </p>
-              <p style={{ textAlign: "center", margin: 0, fontSize: 22, lineHeight: 1, opacity: 0, animation: showLine2 ? `word-pop 0.4s ease ${3 * 220}ms forwards` : "none" }}>💜</p>
-              {/* Triangle tail pointing right toward Bugsy */}
-              <div style={{
-                position: "absolute",
-                right: -13,
-                top: "50%",
-                transform: "translateY(-50%)",
-                width: 0,
-                height: 0,
-                borderTop: "11px solid transparent",
-                borderBottom: "11px solid transparent",
-                borderLeft: "14px solid #fff8f0",
-              }} />
-            </div>
-          )}
+                    {typedLine2}
+                  </motion.p>
+                )}
 
-          {/* Bugsy */}
-          <div
-            onPointerDown={onPet}
-            role="button"
-            aria-label="Pet Bugsy"
-            style={{ flexShrink: 0, cursor: "pointer", touchAction: "manipulation" }}
-          >
-            <div
-              key={`bugsy-${wiggleKey}`}
-              style={{ animation: bugsyWiggleAnim, transformOrigin: "bottom center" }}
+                {/* Line 3 */}
+                {typedLine3.length > 0 && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.2 }}
+                    style={{
+                      fontFamily: F, fontSize: 14, fontWeight: 500,
+                      color: "rgba(26,15,64,0.72)", margin: "4px 0 0", lineHeight: 1.4,
+                    }}
+                  >
+                    {typedLine3}
+                  </motion.p>
+                )}
+
+                {/* Bubble tail */}
+                <div style={{
+                  position: "absolute", bottom: -12, left: "50%", marginLeft: -12,
+                  width: 0, height: 0,
+                  borderLeft: "12px solid transparent",
+                  borderRight: "12px solid transparent",
+                  borderTop: "12px solid #fff8f0",
+                }} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Cat — waving, springs in at bottom of zone */}
+        <div style={{
+          position: "absolute", bottom: 0, left: 0, right: 0,
+          display: "flex", justifyContent: "center", zIndex: 5,
+        }}>
+          <AnimatePresence>
+            {catVisible && (
+              <motion.div
+                initial={{ y: 50, opacity: 0, scale: 0.65 }}
+                animate={{ y: 0,  opacity: 1, scale: 1    }}
+                transition={{ type: "spring", stiffness: 200, damping: 18 }}
+              >
+                <motion.div
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut", delay: 1.0 }}
+                >
+                  <Bobo mood="waving" tint={tint} size={165} animate />
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* ── Form zone — scrollable ── */}
+      <div style={{ flex: 1, overflowY: "auto", padding: "4px 20px 0", zIndex: 2 }}>
+        <AnimatePresence>
+          {showForm && (
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
             >
-              <Bobo mood="excited" tint={tint} size={200} tailWag />
-            </div>
-          </div>
-        </div>
+              {/* Name label */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <p style={{ fontFamily: F, fontSize: 15, fontWeight: 700, color: "#fff", margin: 0 }}>
+                  🐾 What should I call you?
+                </p>
+                <span style={{ color: "#A78BFA", fontSize: 17 }}>✦</span>
+              </div>
+
+              {/* Name input */}
+              <div style={{
+                display: "flex", alignItems: "center",
+                background: "rgba(30,16,80,0.65)",
+                border: "1.5px solid rgba(120,86,255,0.35)",
+                borderRadius: 16, padding: "0 16px", height: 56,
+                boxShadow: "inset 0 1px 4px rgba(0,0,0,0.30)",
+                marginBottom: 20,
+              }}>
+                <span style={{ fontSize: 22, marginRight: 10 }}>😊</span>
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  onBlur={handleBlur}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Enter your name"
+                  style={{
+                    flex: 1, background: "none", border: "none", outline: "none",
+                    fontFamily: F, fontSize: 16, fontWeight: 500,
+                    color: "#fff", caretColor: "#A78BFA",
+                  }}
+                />
+              </div>
+
+              {/* Relationship section — slides in after name is entered */}
+              <AnimatePresence>
+                {showRelationship && (
+                  <motion.div
+                    ref={relRef}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                      <p style={{ fontFamily: F, fontSize: 15, fontWeight: 700, color: "#fff", margin: 0 }}>
+                        🐾 How are you related?
+                      </p>
+                      <span style={{ color: "#A78BFA", fontSize: 17 }}>✦</span>
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                      {RELATIONS.map((r) => {
+                        const selected = selectedKey === r.key;
+                        return (
+                          <button
+                            key={r.key}
+                            onClick={() => setSelectedKey(r.key)}
+                            style={{
+                              background: selected ? "rgba(109,40,217,0.30)" : "rgba(20,10,58,0.78)",
+                              border: `1.5px solid ${selected ? "#7C3AED" : "rgba(120,86,255,0.22)"}`,
+                              borderRadius: 18, padding: "14px 8px 12px",
+                              cursor: "pointer",
+                              display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
+                              boxShadow: selected ? "0 0 18px rgba(124,58,237,0.35)" : "none",
+                              transition: "all 0.18s ease",
+                              touchAction: "manipulation",
+                            }}
+                          >
+                            <div style={{
+                              width: 52, height: 52, borderRadius: "50%",
+                              background: "rgba(255,255,255,0.94)",
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                              fontSize: 28,
+                            }}>
+                              {r.emoji}
+                            </div>
+                            <span style={{ fontFamily: F, fontSize: 13, fontWeight: 700, color: "#fff", lineHeight: 1.2 }}>
+                              {r.label}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div style={{ height: 16 }} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* ── BOTTOM CARD ─────────────────────────────────────────── */}
-      <div
-        style={{
-          position: "relative",
-          zIndex: 1,
-          width: "100%",
-          background: "#f2ede4",
-          borderRadius: "26px 26px 0 0",
-          padding: "16px 12px 20px",
-          boxSizing: "border-box",
-          opacity: showCTA ? 1 : 0,
-          transform: showCTA ? "translateY(0)" : "translateY(28px)",
-          transition: "opacity 0.5s ease, transform 0.5s ease",
-          pointerEvents: showCTA ? "auto" : "none",
-        }}
-      >
-        <p
-          style={{
-            fontFamily: "var(--font-nunito), system-ui",
-            fontSize: 17,
-            fontWeight: 800,
-            color: "#1e1430",
-            textAlign: "center",
-            margin: "0 0 12px",
-          }}
-        >
-          Who&apos;s joining me today? 💜
-        </p>
-
-        <div style={{ display: "flex", gap: 10 }}>
-
-          {/* ── It's Me (child) ── */}
-          <button
-            onClick={() => pick("child")}
-            style={{
-              flex: 1,
-              borderRadius: 18,
-              background: "linear-gradient(168deg, #7C52D9 0%, #5A24C0 100%)",
-              border: "none",
-              cursor: "pointer",
-              padding: "12px 8px 10px",
-              minHeight: 188,
-              position: "relative",
-              overflow: "hidden",
-              boxShadow: "0 6px 22px rgba(90,36,192,0.50)",
-              touchAction: "manipulation",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
+      {/* ── Continue button — appears once relationship is picked ── */}
+      <AnimatePresence>
+        {selectedRel && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{
+              opacity: 1, y: 0,
+              boxShadow: [
+                "0 6px 0 #5B21B6, 0 10px 28px rgba(109,40,217,0.50)",
+                "0 6px 0 #5B21B6, 0 10px 44px rgba(157,111,232,0.85), 0 0 52px rgba(157,111,232,0.55)",
+                "0 6px 0 #5B21B6, 0 10px 28px rgba(109,40,217,0.50)",
+              ],
             }}
-          >
-            <span aria-hidden style={{ position: "absolute", top: 10, left: 14, fontSize: 14, opacity: 0.90 }}>⭐</span>
-            <span aria-hidden style={{ position: "absolute", top: 28, right: 12, fontSize: 10, opacity: 0.82 }}>⭐</span>
-            <span aria-hidden style={{ position: "absolute", top: 12, right: 30, fontSize: 11, opacity: 0.76 }}>⭐</span>
-            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <div style={{
-                width: 68, height: 68, borderRadius: "50%",
-                background: "#F5EFE6",
-                boxShadow: "0 4px 14px rgba(0,0,0,0.18)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 42, lineHeight: 1,
-              }}>👧</div>
-            </div>
-            <div style={{ width: "100%", background: "#4A18A8", borderRadius: 13, padding: "10px 8px", marginTop: 2 }}>
-              <span style={{ fontFamily: "var(--font-nunito), system-ui", fontSize: 17, fontWeight: 900, color: "white" }}>It&apos;s Me</span>
-            </div>
-          </button>
-
-          {/* ── A Grown-up Is Helping (parent) ── */}
-          <button
-            onClick={() => pick("parent")}
-            style={{
-              flex: 1,
-              borderRadius: 18,
-              background: "linear-gradient(168deg, #F5BA20 0%, #D99000 100%)",
-              border: "none",
-              cursor: "pointer",
-              padding: "12px 6px 10px",
-              minHeight: 188,
-              position: "relative",
-              overflow: "hidden",
-              boxShadow: "0 6px 22px rgba(217,144,0,0.50)",
-              touchAction: "manipulation",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
+            transition={{
+              opacity:   { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
+              y:         { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
+              boxShadow: { duration: 2.2,  repeat: Infinity, ease: "easeInOut", delay: 0.55 },
             }}
+            style={{ padding: "6px 20px 38px", flexShrink: 0, zIndex: 2, borderRadius: 31 }}
           >
-            <span aria-hidden style={{ position: "absolute", top: 10, left: 14, fontSize: 14, opacity: 0.90 }}>⭐</span>
-            <span aria-hidden style={{ position: "absolute", top: 26, right: 12, fontSize: 10, opacity: 0.82 }}>⭐</span>
-            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
-              <div style={{
-                width: 68, height: 68, borderRadius: "50%",
-                background: "#F5EFE6",
-                boxShadow: "0 4px 14px rgba(0,0,0,0.18)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 42, lineHeight: 1,
-              }}>👩</div>
-              <div style={{ fontSize: 18, opacity: 0.85 }}>💛</div>
-              <div style={{
-                width: 68, height: 68, borderRadius: "50%",
-                background: "#F5EFE6",
-                boxShadow: "0 4px 14px rgba(0,0,0,0.18)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 42, lineHeight: 1,
-              }}>👨</div>
-            </div>
-            <div style={{ width: "100%", background: "#C07800", borderRadius: 13, padding: "8px 6px", marginTop: 2 }}>
-              <span style={{ fontFamily: "var(--font-nunito), system-ui", fontSize: 14, fontWeight: 900, color: "white", lineHeight: 1.35, display: "block" }}>
-                A Grown-up<br />Is Helping
-              </span>
-            </div>
-          </button>
-        </div>
-
-        {/* Pagination dots */}
-      </div>
+            <button
+              onClick={() => onPick("parent", name.trim(), selectedRel.value)}
+              style={{
+                width: "100%", height: 62, borderRadius: 31,
+                background: "linear-gradient(180deg, #9D6FE8 0%, #7C3AED 100%)",
+                border: "none", cursor: "pointer",
+                fontFamily: F, fontSize: 20, fontWeight: 900, color: "#fff",
+                boxShadow: "0 6px 0 #5B21B6, 0 10px 28px rgba(109,40,217,0.50)",
+                touchAction: "manipulation",
+              }}
+            >
+              Continue →
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

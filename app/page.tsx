@@ -24,7 +24,6 @@ import {
   ParentLogin,
   ParentName,
   ParentNoticing,
-  ParentWelcome,
   WhoIsBugsy,
 } from "./components/onboarding/ParentFlow";
 import {
@@ -37,11 +36,14 @@ import { WhoAreYou } from "./components/onboarding/WhoAreYou";
 import { ParentIntro } from "./components/onboarding/ParentIntro";
 import { ParentJourney } from "./components/onboarding/ParentJourney";
 import { ParentUnderstand } from "./components/onboarding/ParentUnderstand";
+import { ParentBenefits } from "./components/onboarding/ParentBenefits";
 import { TellMeAboutChild } from "./components/onboarding/TellMeAboutChild";
 import { QuestionnaireScreen } from "./components/onboarding/QuestionnaireScreen";
 import { AssessmentCompleteScreen } from "./components/onboarding/AssessmentCompleteScreen";
 import { JourneyCreatedScreen } from "./components/onboarding/JourneyCreatedScreen";
 import { BondWithBugsy } from "./components/onboarding/BondWithBugsy";
+import { BugsyIntro } from "./components/onboarding/BugsyIntro";
+import { WhoJoining } from "./components/onboarding/WhoJoining";
 import { Splash, Welcome } from "./components/onboarding/Welcome";
 import {
   ChildAlmostDone,
@@ -72,7 +74,9 @@ import { ScreenHomeCare, ScreenCatometer } from "./components/CareScreens";
 type Stage =
   | { kind: "splash" }
   | { kind: "welcome" }
+  | { kind: "who-joining" }
   | { kind: "who" }
+  | { kind: "bugsy-intro" }
   | { kind: "login" } // "I already have an account" path from welcome
   | { kind: "parent"; step: number }
   | { kind: "child"; step: number }
@@ -395,7 +399,7 @@ export default function Home() {
     if (stage.kind !== "parent") return;
     setPrevStep(stage.step);
     const prev = stage.step - 1;
-    if (prev < 0) setStage({ kind: "who" });
+    if (prev <= 0) setStage({ kind: "who" });
     else setStage({ kind: "parent", step: prev });
   };
 
@@ -415,7 +419,7 @@ export default function Home() {
     if (stage.kind !== "child") return;
     setPrevStep(stage.step);
     const prev = stage.step - 1;
-    if (prev < 0) setStage({ kind: "who" });
+    if (prev < 0) setStage({ kind: "who-joining" });
     else setStage({ kind: "child", step: prev });
   };
 
@@ -461,15 +465,43 @@ export default function Home() {
 
   const renderStage = () => {
     if (stage.kind === "splash") {
-      return <Splash onEnter={() => setStage({ kind: "welcome" })} />;
+      return <Splash onEnter={() => setStage({ kind: "who-joining" })} />;
+    }
+
+    if (stage.kind === "who-joining") {
+      return (
+        <WhoJoining
+          onChild={() => {
+            setUserType("child");
+            setPrevStep(0);
+            setStage({ kind: "child", step: 0 });
+          }}
+          onParent={() => setStage({ kind: "bugsy-intro" })}
+        />
+      );
     }
 
     if (stage.kind === "welcome") {
       return (
         <Welcome
           tint={TINT}
-          onGetStarted={() => setStage({ kind: "who" })}
+          onGetStarted={() => setStage({ kind: "bugsy-intro" })}
           onHaveAccount={() => setStage({ kind: "login" })}
+        />
+      );
+    }
+
+    if (stage.kind === "who") {
+      return (
+        <WhoAreYou
+          tint={TINT}
+          onPick={(t, name, rel) => {
+            setUserType(t);
+            setParentName(name);
+            setRelationship(rel);
+            setPrevStep(0);
+            setStage(t === "parent" ? { kind: "parent", step: 1 } : { kind: "child", step: 0 });
+          }}
         />
       );
     }
@@ -482,26 +514,24 @@ export default function Home() {
           bubbleText="Welcome back! Let's get you signed in."
           ctaLabel="Pick how to sign in"
           onContinue={() => setStage({ kind: "app", tab: "home" })}
-          onBack={() => setStage({ kind: "welcome" })}
+          onBack={() => setStage({ kind: "bugsy-intro" })}
         />
       );
     }
 
-    if (stage.kind === "who") {
+
+    if (stage.kind === "bugsy-intro") {
       return (
-        <WhoAreYou
+        <BugsyIntro
           tint={TINT}
-          onPick={(t) => {
-            setUserType(t);
-            setPrevStep(0);
-            setStage(t === "parent" ? { kind: "parent", step: 0 } : { kind: "child", step: 0 });
-          }}
+          onNext={() => setStage({ kind: "who" })}
+          onBack={() => setStage({ kind: "who-joining" })}
         />
       );
     }
 
     if (stage.kind === "parent") {
-      const back = stage.step === 0 ? () => setStage({ kind: "who" }) : backParent;
+      const back = stage.step <= 1 ? () => setStage({ kind: "who" }) : backParent;
       switch (stage.step) {
         // ── Meet Bugsy: greeting + pet, then who he is ──
         case 0:
@@ -537,6 +567,14 @@ export default function Home() {
           );
         case 3:
           return (
+            <ParentBenefits
+              tint={TINT}
+              onNext={advanceParent}
+              onBack={back}
+            />
+          );
+        case 4:
+          return (
             <TellMeAboutChild
               tint={TINT}
               childName={childName}
@@ -547,7 +585,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 4:
+        case 5:
           return (
             <QuestionnaireScreen
               childName={childName}
@@ -555,7 +593,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 5:
+        case 6:
           return (
             <AssessmentCompleteScreen
               childName={childName}
@@ -563,7 +601,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 6:
+        case 7:
           return (
             <JourneyCreatedScreen
               childName={childName}
@@ -571,10 +609,10 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 7:
+        case 8:
           return <WhoIsBugsy tint={TINT} onNext={advanceParent} onBack={back} />;
         // ── Collect: parent identity, child, concerns, goals ──
-        case 8:
+        case 9:
           return (
             <ParentName
               tint={TINT}
@@ -586,7 +624,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 9:
+        case 10:
           return (
             <ParentChildSetup
               tint={TINT}
@@ -599,7 +637,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 10:
+        case 11:
           return (
             <ParentNoticing
               tint={TINT}
@@ -610,7 +648,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 11:
+        case 12:
           return (
             <ParentGoals
               tint={TINT}
@@ -622,7 +660,7 @@ export default function Home() {
             />
           );
         // ── Sign in, then hand over to the child ──
-        case 12:
+        case 13:
           return (
             <ParentLogin
               tint={TINT}
@@ -631,7 +669,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 13:
+        case 14:
           return (
             <ParentDone
               tint={TINT}
@@ -1007,6 +1045,8 @@ export default function Home() {
       ? "splash"
       : stage.kind === "welcome"
       ? "welcome"
+      : stage.kind === "who-joining"
+      ? "who-joining"
       : stage.kind === "who"
       ? "who"
       : stage.kind === "login"
@@ -1023,7 +1063,9 @@ export default function Home() {
       ? "catometer"
       : stage.kind === "project"
       ? `project-${stage.projectId}`
-      : `reward-${stage.projectId}`;
+      : stage.kind === "bugsy-intro"
+      ? "bugsy-intro"
+      : `reward-${(stage as { kind: "reward"; projectId: string }).projectId}`;
 
   // suppress unused-var warning
   void userType;
