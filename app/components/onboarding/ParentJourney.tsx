@@ -319,49 +319,6 @@ export function ParentJourney({
               ))}
             </div>
 
-            {/* Paw progress meter */}
-            <div style={{
-              display: "flex", alignItems: "center",
-              padding: "12px 16px 0",
-              flexShrink: 0,
-            }}>
-              {STAGES.map((stage, i) => {
-                const active = stageCount > i;
-                return (
-                  <div key={i} style={{ display: "flex", alignItems: "center", flex: i < STAGES.length - 1 ? 1 : 0 }}>
-                    <motion.div
-                      animate={{
-                        scale: active ? 1 : 0.85,
-                        opacity: active ? 1 : 0.38,
-                        boxShadow: active && stage.gold
-                          ? "0 0 16px rgba(255,200,0,0.75), 0 2px 8px rgba(0,0,0,0.30)"
-                          : "0 2px 6px rgba(0,0,0,0.20)",
-                      }}
-                      transition={{ type: "spring", stiffness: 290, damping: 20 }}
-                      style={{
-                        width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
-                        background: active
-                          ? (stage.gold ? "linear-gradient(135deg, #FFE040, #FF9800)" : "rgba(88,55,168,0.88)")
-                          : "rgba(50,35,100,0.55)",
-                        border: `2px solid ${active ? (stage.gold ? "#FFD700" : "rgba(148,118,218,0.62)") : "rgba(100,80,160,0.35)"}`,
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: 15,
-                      }}
-                    >🐾</motion.div>
-                    {i < STAGES.length - 1 && (
-                      <div style={{
-                        flex: 1, height: 2.5,
-                        background: stageCount > i + 1
-                          ? "rgba(148,118,218,0.65)"
-                          : "rgba(80,60,140,0.35)",
-                        borderRadius: 2,
-                        transition: "background 0.4s ease",
-                      }} />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
           </motion.div>
         )}
       </AnimatePresence>
