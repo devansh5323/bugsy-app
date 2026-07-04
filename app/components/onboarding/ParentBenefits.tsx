@@ -182,7 +182,7 @@ export function ParentBenefits({
       <div style={{
         position: "relative", zIndex: 5, flexShrink: 0,
         display: "flex", alignItems: "flex-start",
-        padding: "62px 14px 0 0",
+        padding: "106px 14px 0 0",
         minHeight: 160,
       }}>
         <AnimatePresence>
