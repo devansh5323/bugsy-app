@@ -103,6 +103,7 @@ export function ParentBenefits({
   const [holding,       setHolding]       = useState(false);
   const [holdProgress,  setHoldProgress]  = useState(0);
   const [promised,      setPromised]      = useState(false);
+  const [glowing,       setGlowing]       = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -134,6 +135,8 @@ export function ParentBenefits({
         intervalRef.current = null;
         setPromised(true);
         setHolding(false);
+        setTimeout(() => setGlowing(true), 120);
+        setTimeout(() => onNext(), 950);
       }
     }, 30);
   };
@@ -179,7 +182,7 @@ export function ParentBenefits({
       <div style={{
         position: "relative", zIndex: 5, flexShrink: 0,
         display: "flex", alignItems: "flex-end",
-        padding: "48px 14px 0 0",
+        padding: "82px 14px 0 0",
       }}>
         <AnimatePresence>
           {catVisible && (
@@ -234,7 +237,7 @@ export function ParentBenefits({
         position: "relative", zIndex: 5,
         flex: 1, minHeight: 0,
         overflowY: "auto",
-        padding: "0 14px 110px",
+        padding: "0 14px 28px",
       }}>
         <AnimatePresence>
           {showContent && (
@@ -403,50 +406,22 @@ export function ParentBenefits({
         </AnimatePresence>
       </div>
 
-      {/* Bottom CTA — disabled until promise made */}
-      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 10, padding: "8px 16px 36px" }}>
-        <motion.button
-          onClick={promised ? onNext : undefined}
-          animate={promised ? { scale: [1, 1.03, 1] } : {}}
-          transition={{ duration: 0.4 }}
-          style={{
-            width: "100%", height: 56, borderRadius: 28,
-            background: promised
-              ? "linear-gradient(180deg, #9D6FE8 0%, #7C3AED 100%)"
-              : "rgba(28,18,68,0.90)",
-            border: promised ? "none" : "1.5px solid rgba(100,78,180,0.38)",
-            cursor: promised ? "pointer" : "default",
-            fontFamily: F, fontSize: 18, fontWeight: 900,
-            color: promised ? "#fff" : "rgba(175,155,235,0.55)",
-            boxShadow: promised ? "0 6px 0 #5B21B6, 0 10px 28px rgba(109,40,217,0.50)" : "none",
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-            touchAction: "manipulation",
-            transition: "background 0.35s ease, color 0.35s ease, box-shadow 0.35s ease",
-          }}
-        >
-          <span style={{ fontSize: 22, opacity: promised ? 1 : 0.4 }}>🐾</span>
-          High five to continue
-          {promised && (
-            <motion.span
-              animate={{ x: [0, 5, 0] }}
-              transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut" }}
-              style={{ display: "inline-block" }}
-            >→</motion.span>
-          )}
-        </motion.button>
-        <AnimatePresence>
-          {!promised && (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              style={{ fontFamily: F, fontSize: 12, color: "rgba(175,155,235,0.52)", textAlign: "center", margin: "6px 0 0", fontWeight: 600 }}
-            >
-              The button will activate after our promise
-            </motion.p>
-          )}
-        </AnimatePresence>
-      </div>
+      {/* Full-screen glow flash on promise completion */}
+      <AnimatePresence>
+        {glowing && (
+          <motion.div
+            key="glow"
+            initial={{ opacity: 0, scale: 0.6 }}
+            animate={{ opacity: [0, 1, 0.85, 0], scale: [0.6, 1.1, 1.3, 1.6] }}
+            transition={{ duration: 0.82, ease: "easeOut" }}
+            style={{
+              position: "absolute", inset: 0, zIndex: 50,
+              background: "radial-gradient(circle at 50% 55%, rgba(255,220,80,0.98) 0%, rgba(200,100,255,0.85) 35%, rgba(90,30,200,0.7) 65%, transparent 100%)",
+              pointerEvents: "none",
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
