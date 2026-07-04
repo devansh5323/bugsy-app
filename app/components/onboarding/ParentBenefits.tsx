@@ -15,14 +15,14 @@ function PawPrint({ size, glow, holding }: { size: number; glow?: boolean; holdi
   const body  = "linear-gradient(145deg, #B06AEE 0%, #7B2FBE 100%)";
   const pad   = "rgba(230,185,255,0.72)";
   const palmGlow = glow
-    ? "0 0 36px rgba(255,165,0,1), 0 0 70px rgba(255,130,0,0.6), 0 0 14px rgba(255,220,100,1)"
+    ? "0 0 40px rgba(255,165,0,1), 0 0 80px rgba(255,130,0,0.65), 0 0 16px rgba(255,220,100,1)"
     : holding
-    ? "0 0 22px rgba(255,165,0,0.65), 0 0 45px rgba(255,130,0,0.35)"
-    : "0 0 16px rgba(110,45,210,0.55)";
+    ? "0 0 24px rgba(255,165,0,0.70), 0 0 50px rgba(255,130,0,0.38)"
+    : "0 0 18px rgba(110,45,210,0.60)";
   const toeGlow = glow
-    ? "0 0 10px rgba(255,165,0,0.85)"
+    ? "0 0 12px rgba(255,165,0,0.90)"
     : holding
-    ? "0 0 6px rgba(255,165,0,0.5)"
+    ? "0 0 7px rgba(255,165,0,0.55)"
     : "none";
 
   const toes = [
@@ -80,30 +80,30 @@ export function ParentBenefits({
     [childName]
   );
 
-  const BENEFITS = useMemo(() => [
+  const BENEFITS = [
     {
       emoji: "🩷",
-      title: `I'll help ${childName}`,
-      highlight: "believe in herself.",
+      title: "I'll help",
+      highlight: "believe in themselves.",
       color: "#FF6BAD",
-      desc: "Building confidence for real life.",
+      desc: "Building confidence\nfor real life.",
     },
     {
       emoji: "🎯",
-      title: `I'll help ${childName}`,
-      highlight: "stay focused",
+      title: "I'll help",
+      highlight: "stay focused.",
       color: "#A78BFA",
-      desc: "One adventure at a time.",
+      desc: "One adventure\nat a time.",
     },
-  ], [childName]);
+  ];
 
-  const [catVisible,    setCatVisible]    = useState(false);
-  const [typedText,     setTypedText]     = useState("");
-  const [showContent,   setShowContent]   = useState(false);
-  const [holding,       setHolding]       = useState(false);
-  const [holdProgress,  setHoldProgress]  = useState(0);
-  const [promised,      setPromised]      = useState(false);
-  const [glowing,       setGlowing]       = useState(false);
+  const [catVisible,   setCatVisible]   = useState(false);
+  const [typedText,    setTypedText]    = useState("");
+  const [showContent,  setShowContent]  = useState(false);
+  const [holding,      setHolding]      = useState(false);
+  const [holdProgress, setHoldProgress] = useState(0);
+  const [promised,     setPromised]     = useState(false);
+  const [glowing,      setGlowing]      = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -136,7 +136,7 @@ export function ParentBenefits({
         setPromised(true);
         setHolding(false);
         setTimeout(() => setGlowing(true), 120);
-        setTimeout(() => onNext(), 950);
+        setTimeout(() => onNext(), 1100);
       }
     }, 30);
   };
@@ -146,7 +146,6 @@ export function ParentBenefits({
     if (!promised) { setHolding(false); setHoldProgress(0); }
   };
 
-  // Highlight "10 minutes" in purple inside the typed text
   const renderBubble = () => {
     const marker = "10 minutes";
     const idx = typedText.indexOf(marker);
@@ -160,8 +159,9 @@ export function ParentBenefits({
     );
   };
 
-  const R = 72;
-  const C = 2 * Math.PI * R;
+  const R  = 80;
+  const C  = 2 * Math.PI * R;
+  const SZ = (R + 12) * 2; // SVG size = 184
 
   return (
     <div style={{ position: "absolute", inset: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
@@ -178,25 +178,26 @@ export function ParentBenefits({
         }}>‹</button>
       )}
 
-      {/* Cat + speech bubble */}
+      {/* ── Large cat + speech bubble ── */}
       <div style={{
         position: "relative", zIndex: 5, flexShrink: 0,
-        display: "flex", alignItems: "flex-end",
-        padding: "82px 14px 0 0",
+        display: "flex", alignItems: "flex-start",
+        padding: "62px 14px 0 0",
+        minHeight: 210,
       }}>
         <AnimatePresence>
           {catVisible && (
             <motion.div
-              initial={{ x: -80, opacity: 0 }}
+              initial={{ x: -100, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              transition={{ type: "spring", stiffness: 180, damping: 22 }}
-              style={{ flexShrink: 0, zIndex: 2 }}
+              transition={{ type: "spring", stiffness: 160, damping: 20 }}
+              style={{ flexShrink: 0, zIndex: 2, marginBottom: -20 }}
             >
               <motion.div
-                animate={{ y: [0, -7, 0] }}
-                transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                animate={{ y: [0, -8, 0] }}
+                transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
               >
-                <Bobo mood="excited" tint={tint} size={150} animate />
+                <Bobo mood="excited" tint={tint} size={200} animate tailWag />
               </motion.div>
             </motion.div>
           )}
@@ -213,7 +214,7 @@ export function ParentBenefits({
                 padding: "16px 42px 16px 18px",
                 boxShadow: "0 6px 30px rgba(0,0,0,0.25)",
                 position: "relative",
-                marginBottom: 16, marginRight: 12,
+                marginTop: 36, marginRight: 12,
               }}
             >
               <div style={{
@@ -223,7 +224,7 @@ export function ParentBenefits({
                 borderBottom: "10px solid transparent",
                 borderRight: "12px solid #fff",
               }} />
-              <p style={{ fontFamily: F, fontSize: 17, fontWeight: 800, color: "#1a0f40", margin: 0, lineHeight: 1.38 }}>
+              <p style={{ fontFamily: F, fontSize: 17, fontWeight: 800, color: "#1a0f40", margin: 0, lineHeight: 1.4 }}>
                 {renderBubble()}
               </p>
               <span style={{ position: "absolute", top: 12, right: 14, color: "#C4B5FD", fontSize: 19 }}>✦</span>
@@ -232,7 +233,7 @@ export function ParentBenefits({
         </AnimatePresence>
       </div>
 
-      {/* Scrollable body */}
+      {/* ── Scrollable content ── */}
       <div style={{
         position: "relative", zIndex: 5,
         flex: 1, minHeight: 0,
@@ -242,95 +243,98 @@ export function ParentBenefits({
         <AnimatePresence>
           {showContent && (
             <motion.div
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
             >
-              {/* ── Here's my promise to [name] ── */}
+              {/* ✦ Here's my promise to [name] ✦ */}
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
                 <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.20)" }} />
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <span style={{ color: "#FFD700", fontSize: 13 }}>✦</span>
-                  <span style={{ fontFamily: F, fontSize: 15, fontWeight: 900, color: "#fff" }}>
+                  <span style={{ color: "#FFD700", fontSize: 14 }}>✦</span>
+                  <span style={{ fontFamily: F, fontSize: 15.5, fontWeight: 900, color: "#fff" }}>
                     Here's my promise to {childName}
                   </span>
-                  <span style={{ color: "#FFD700", fontSize: 13 }}>✦</span>
+                  <span style={{ color: "#FFD700", fontSize: 14 }}>✦</span>
                 </div>
                 <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.20)" }} />
               </div>
 
-              {/* 2 benefit cards */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
+              {/* 2-column benefit cards */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
                 {BENEFITS.map((b, i) => (
                   <div key={i} style={{
-                    background: "rgba(22,14,58,0.92)",
+                    background: "rgba(22,14,60,0.94)",
                     borderRadius: 18,
-                    padding: "18px 10px 16px",
+                    padding: "16px 10px 14px",
                     display: "flex", flexDirection: "column",
                     alignItems: "center", gap: 8,
-                    boxShadow: "0 4px 20px rgba(0,0,0,0.42)",
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.45)",
                     position: "relative",
                   }}>
-                    <span style={{ position: "absolute", top: 8, left: 9,  color: "#FFD700", fontSize: 11 }}>✦</span>
-                    <span style={{ position: "absolute", top: 8, right: 9, color: "#FFD700", fontSize: 11 }}>✦</span>
-                    <span style={{ fontSize: 48 }}>{b.emoji}</span>
+                    <span style={{ position: "absolute", top: 8, left: 9,  color: "#FFD700", fontSize: 12 }}>✦</span>
+                    <span style={{ position: "absolute", top: 8, right: 9, color: "#FFD700", fontSize: 12 }}>✦</span>
+                    <span style={{ fontSize: 50 }}>{b.emoji}</span>
                     <div style={{ textAlign: "center" }}>
-                      <p style={{ fontFamily: F, fontSize: 14, fontWeight: 800, color: "#fff", margin: "0 0 2px", lineHeight: 1.25 }}>
+                      <p style={{ fontFamily: F, fontSize: 15, fontWeight: 800, color: "#fff", margin: "0 0 2px", lineHeight: 1.2 }}>
                         {b.title}
                       </p>
-                      <p style={{ fontFamily: F, fontSize: 14, fontWeight: 900, color: b.color, margin: "0 0 6px", lineHeight: 1.25, fontStyle: "italic" }}>
+                      <p style={{ fontFamily: F, fontSize: 14, fontWeight: 900, color: b.color, margin: "0 0 5px", lineHeight: 1.2, fontStyle: "italic" }}>
                         {b.highlight}
                       </p>
-                      <p style={{ fontFamily: F, fontSize: 12, fontWeight: 500, color: "rgba(255,255,255,0.58)", margin: 0, lineHeight: 1.38 }}>
-                        {b.desc}
+                      <p style={{ fontFamily: F, fontSize: 12, fontWeight: 500, color: "rgba(255,255,255,0.56)", margin: 0, lineHeight: 1.4 }}>
+                        {b.desc.split("\n").map((l, j) => <span key={j} style={{ display: "block" }}>{l}</span>)}
                       </p>
                     </div>
                   </div>
                 ))}
               </div>
 
-              {/* Promise box */}
+              {/* ── Promise box ── */}
               <div style={{
                 background: "rgba(13,8,42,0.96)",
-                border: "2px dashed rgba(110,72,200,0.62)",
+                border: "2px dashed rgba(110,72,200,0.60)",
                 borderRadius: 22,
-                padding: "18px 14px 18px",
+                padding: "18px 14px 20px",
                 marginBottom: 12,
               }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, marginBottom: 5 }}>
-                  <span style={{ color: "#FFD700", fontSize: 14 }}>✦</span>
-                  <span style={{ fontFamily: F, fontSize: 15, fontWeight: 900, color: "#fff" }}>
+                {/* Title */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, marginBottom: 4 }}>
+                  <span style={{ color: "#FFD700", fontSize: 15 }}>✦</span>
+                  <span style={{ fontFamily: F, fontSize: 15.5, fontWeight: 900, color: "#fff" }}>
                     Let's make our first promise together!
                   </span>
-                  <span style={{ color: "#FFD700", fontSize: 14 }}>✦</span>
+                  <span style={{ color: "#FFD700", fontSize: 15 }}>✦</span>
                 </div>
-                <p style={{ fontFamily: F, fontSize: 13, fontWeight: 700, color: "#8B5CF6", textAlign: "center", margin: "0 0 16px" }}>
+                <p style={{ fontFamily: F, fontSize: 14, fontWeight: 700, color: "#8B5CF6", textAlign: "center", margin: "0 0 14px", fontStyle: "italic" }}>
                   Tap and hold to high five
                 </p>
 
-                {/* Paw + ring + "Hold for 2s" label */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
-                  {/* Left instruction label */}
+                {/* Paw row: instruction label left + ring+paw center */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", position: "relative", minHeight: SZ }}>
+
+                  {/* "Hold for 2 seconds" — left */}
                   <div style={{
-                    position: "absolute", left: 8, top: "50%",
-                    transform: "translateY(-60%)",
+                    position: "absolute", left: 10, top: "50%",
+                    transform: "translateY(-55%)",
                     display: "flex", flexDirection: "column", alignItems: "center",
-                    gap: 2, pointerEvents: "none",
+                    gap: 4, pointerEvents: "none",
                   }}>
-                    <svg width="46" height="48" viewBox="0 0 46 48" fill="none">
-                      <path d="M 36,6 C 40,20 28,32 14,42" stroke="#FFD700" strokeWidth="2.5" strokeLinecap="round" />
-                      <polygon points="9,39 16,47 18,37" fill="#FFD700" />
+                    {/* Curved purple arrow pointing right toward paw */}
+                    <svg width="52" height="54" viewBox="0 0 52 54" fill="none">
+                      <path d="M 10,8 C 8,24 26,38 42,44" stroke="#8B5CF6" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+                      <polygon points="40,50 48,42 38,40" fill="#8B5CF6" />
                     </svg>
-                    <p style={{ fontFamily: F, fontSize: 12.5, fontWeight: 800, color: "#FFD700", margin: 0, lineHeight: 1.28, textAlign: "center" }}>
+                    <p style={{ fontFamily: F, fontSize: 13, fontWeight: 800, color: "#8B5CF6", margin: 0, lineHeight: 1.28, textAlign: "center" }}>
                       Hold for<br />2 seconds
                     </p>
                   </div>
 
-                  {/* Ring + paw container */}
+                  {/* Always-visible gold circle + SVG progress ring + paw */}
                   <div
                     style={{
                       position: "relative",
-                      width: 164, height: 164,
+                      width: SZ, height: SZ,
                       display: "flex", alignItems: "center", justifyContent: "center",
                       cursor: "pointer", userSelect: "none", touchAction: "none",
                     }}
@@ -338,47 +342,68 @@ export function ParentBenefits({
                     onPointerUp={cancelHold}
                     onPointerLeave={cancelHold}
                   >
-                    {/* SVG progress ring */}
-                    <svg width={164} height={164} style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
-                      <circle cx={82} cy={82} r={R} fill="none" stroke="rgba(255,200,0,0.14)" strokeWidth={5} />
+                    {/* Static dark circle background */}
+                    <div style={{
+                      position: "absolute",
+                      width: R * 2 + 4, height: R * 2 + 4,
+                      borderRadius: "50%",
+                      background: "radial-gradient(circle, rgba(50,20,110,0.85) 0%, rgba(20,8,55,0.95) 100%)",
+                      border: `3px solid ${holding || promised ? "rgba(255,175,0,0.90)" : "rgba(255,165,0,0.75)"}`,
+                      boxShadow: holding || promised
+                        ? "0 0 36px rgba(255,160,0,0.80), 0 0 70px rgba(255,130,0,0.45)"
+                        : "0 0 22px rgba(255,160,0,0.55), 0 0 50px rgba(255,120,0,0.25)",
+                      transition: "box-shadow 0.2s ease, border-color 0.2s ease",
+                    }} />
+
+                    {/* SVG progress ring — fills on hold */}
+                    <svg width={SZ} height={SZ} style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
                       {(holding || promised) && (
                         <circle
-                          cx={82} cy={82} r={R}
+                          cx={SZ / 2} cy={SZ / 2} r={R}
                           fill="none" stroke="#FFD700" strokeWidth={5}
                           strokeLinecap="round"
                           strokeDasharray={C}
                           strokeDashoffset={C * (1 - holdProgress / 100)}
-                          transform="rotate(-90 82 82)"
+                          transform={`rotate(-90 ${SZ / 2} ${SZ / 2})`}
                           style={{ transition: "stroke-dashoffset 0.03s linear" }}
                         />
                       )}
                     </svg>
 
-                    {/* Paw */}
+                    {/* Paw print */}
                     <motion.div
                       animate={
                         promised
-                          ? { scale: [1, 1.22, 1], rotate: [0, -7, 7, 0] }
+                          ? { scale: [1, 1.25, 1], rotate: [0, -8, 8, 0] }
                           : holding
                           ? { scale: 1.1 }
                           : { scale: 1 }
                       }
-                      transition={promised ? { duration: 0.5 } : { duration: 0.18 }}
+                      transition={promised ? { duration: 0.55 } : { duration: 0.18 }}
+                      style={{ position: "relative", zIndex: 1 }}
                     >
-                      <PawPrint size={120} glow={promised} holding={holding} />
+                      <PawPrint size={130} glow={promised} holding={holding} />
                     </motion.div>
 
                     {/* Floating sparkles */}
                     {[
-                      { style: { top: 2,  right: 16, fontSize: 15 } },
-                      { style: { top: 14, left:  2,  fontSize: 10 } },
-                      { style: { bottom: 6, right: 2, fontSize: 12 } },
+                      { top: 4,  right: 16, size: 15 },
+                      { top: 18, left:  2,  size: 10 },
+                      { bottom: 8, right: 4, size: 12 },
+                      { bottom: 18, left: 16, size: 9 },
                     ].map((sp, i) => (
                       <motion.span
                         key={i}
-                        animate={{ opacity: [0.5, 1, 0.5], scale: [0.85, 1.1, 0.85] }}
-                        transition={{ duration: 1.8 + i * 0.5, repeat: Infinity, ease: "easeInOut", delay: i * 0.6 }}
-                        style={{ position: "absolute", color: "#FFD700", pointerEvents: "none", ...sp.style }}
+                        animate={{ opacity: [0.45, 1, 0.45], scale: [0.8, 1.15, 0.8] }}
+                        transition={{ duration: 1.9 + i * 0.45, repeat: Infinity, ease: "easeInOut", delay: i * 0.55 }}
+                        style={{
+                          position: "absolute", color: "#FFD700",
+                          fontSize: sp.size, pointerEvents: "none",
+                          top: "top" in sp ? sp.top : undefined,
+                          bottom: "bottom" in sp ? sp.bottom : undefined,
+                          left: "left" in sp ? sp.left : undefined,
+                          right: "right" in sp ? sp.right : undefined,
+                        }}
                       >✦</motion.span>
                     ))}
                   </div>
@@ -393,12 +418,12 @@ export function ParentBenefits({
                 display: "flex", alignItems: "center", gap: 12,
                 boxShadow: "0 4px 16px rgba(0,0,0,0.35)",
               }}>
-                <span style={{ fontSize: 40, flexShrink: 0 }}>🛡️</span>
-                <p style={{ fontFamily: F, fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.80)", margin: 0, lineHeight: 1.4, flex: 1 }}>
+                <span style={{ fontSize: 42, flexShrink: 0 }}>🛡️</span>
+                <p style={{ fontFamily: F, fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.82)", margin: 0, lineHeight: 1.4, flex: 1 }}>
                   I'll always keep your family's information safe, private, and treat your child with care.
                 </p>
                 <div style={{ flexShrink: 0 }}>
-                  <Bobo mood="happy" tint={tint} size={46} />
+                  <Bobo mood="happy" tint={tint} size={50} />
                 </div>
               </div>
             </motion.div>
@@ -406,20 +431,53 @@ export function ParentBenefits({
         </AnimatePresence>
       </div>
 
-      {/* Full-screen glow flash on promise completion */}
+      {/* ── Promise made: full-screen bloom flash ── */}
       <AnimatePresence>
         {glowing && (
           <motion.div
-            key="glow"
-            initial={{ opacity: 0, scale: 0.6 }}
-            animate={{ opacity: [0, 1, 0.85, 0], scale: [0.6, 1.1, 1.3, 1.6] }}
-            transition={{ duration: 0.82, ease: "easeOut" }}
+            key="bloom"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 1, 1, 0] }}
+            transition={{ duration: 0.95, times: [0, 0.25, 0.60, 1], ease: "easeOut" }}
             style={{
-              position: "absolute", inset: 0, zIndex: 50,
-              background: "radial-gradient(circle at 50% 55%, rgba(255,220,80,0.98) 0%, rgba(200,100,255,0.85) 35%, rgba(90,30,200,0.7) 65%, transparent 100%)",
+              position: "absolute", inset: 0, zIndex: 60,
               pointerEvents: "none",
+              background: "radial-gradient(circle at 50% 58%, rgba(255,230,80,1) 0%, rgba(210,100,255,0.92) 30%, rgba(90,25,200,0.80) 60%, rgba(20,8,60,0.70) 100%)",
             }}
           />
+        )}
+      </AnimatePresence>
+
+      {/* Burst sparkles on promise */}
+      <AnimatePresence>
+        {promised && (
+          <>
+            {[...Array(8)].map((_, i) => {
+              const angle = (i / 8) * 360;
+              const rad = (angle * Math.PI) / 180;
+              const dist = 120;
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 1, x: 0, y: 0, scale: 0 }}
+                  animate={{
+                    opacity: [1, 1, 0],
+                    x: Math.cos(rad) * dist,
+                    y: Math.sin(rad) * dist,
+                    scale: [0, 1.4, 0],
+                  }}
+                  transition={{ duration: 0.75, ease: "easeOut", delay: i * 0.04 }}
+                  style={{
+                    position: "absolute",
+                    top: "55%", left: "50%",
+                    zIndex: 55, pointerEvents: "none",
+                    fontSize: 18 + (i % 3) * 4,
+                    color: i % 2 === 0 ? "#FFD700" : "#fff",
+                  }}
+                >✦</motion.div>
+              );
+            })}
+          </>
         )}
       </AnimatePresence>
     </div>
