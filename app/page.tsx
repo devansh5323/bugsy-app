@@ -558,6 +558,7 @@ export default function Home() {
           return (
             <ParentBenefits
               tint={TINT}
+              childName={childName}
               onNext={advanceParent}
               onBack={back}
             />
