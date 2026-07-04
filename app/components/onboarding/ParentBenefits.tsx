@@ -7,7 +7,6 @@ import { NightRoomBackdrop } from "./WhoAreYou";
 
 const F = "var(--font-nunito), system-ui, sans-serif";
 
-// CSS-drawn paw print — 4 toes + palm with inner pads
 function PawPrint({ size, glow, holding }: { size: number; glow?: boolean; holding?: boolean }) {
   const toe   = size * 0.265;
   const palmW = size * 0.63;
@@ -19,11 +18,7 @@ function PawPrint({ size, glow, holding }: { size: number; glow?: boolean; holdi
     : holding
     ? "0 0 24px rgba(255,165,0,0.70), 0 0 50px rgba(255,130,0,0.38)"
     : "0 0 18px rgba(110,45,210,0.60)";
-  const toeGlow = glow
-    ? "0 0 12px rgba(255,165,0,0.90)"
-    : holding
-    ? "0 0 7px rgba(255,165,0,0.55)"
-    : "none";
+  const toeGlow = glow ? "0 0 12px rgba(255,165,0,0.90)" : holding ? "0 0 7px rgba(255,165,0,0.55)" : "none";
 
   const toes = [
     { x: size * 0.03, y: size * 0.04 },
@@ -36,24 +31,17 @@ function PawPrint({ size, glow, holding }: { size: number; glow?: boolean; holdi
     <div style={{ position: "relative", width: size, height: size * 1.08, flexShrink: 0 }}>
       {toes.map((t, i) => (
         <div key={i} style={{
-          position: "absolute",
-          width: toe, height: toe * 1.15,
-          borderRadius: "50%",
-          background: body,
-          left: t.x, top: t.y,
-          boxShadow: toeGlow,
+          position: "absolute", width: toe, height: toe * 1.15,
+          borderRadius: "50%", background: body,
+          left: t.x, top: t.y, boxShadow: toeGlow,
         }}>
           <div style={{ position: "absolute", width: "45%", height: "40%", borderRadius: "50%", background: pad, top: "22%", left: "28%" }} />
         </div>
       ))}
       <div style={{
-        position: "absolute",
-        width: palmW, height: palmH,
-        borderRadius: "48% 48% 42% 42%",
-        background: body,
-        bottom: 0,
-        left: (size - palmW) / 2,
-        boxShadow: palmGlow,
+        position: "absolute", width: palmW, height: palmH,
+        borderRadius: "48% 48% 42% 42%", background: body,
+        bottom: 0, left: (size - palmW) / 2, boxShadow: palmGlow,
       }}>
         {[{ x: "8%", y: "15%" }, { x: "36%", y: "11%" }, { x: "62%", y: "15%" }].map((p, i) => (
           <div key={i} style={{ position: "absolute", width: "28%", height: "26%", borderRadius: "50%", background: pad, left: p.x, top: p.y }} />
@@ -64,16 +52,12 @@ function PawPrint({ size, glow, holding }: { size: number; glow?: boolean; holdi
   );
 }
 
+const REVEAL_DELAYS = [0, 480, 960, 1440, 1920]; // ms after content starts: header, card1, card2, paw, safety
+
 export function ParentBenefits({
-  tint,
-  childName = "your child",
-  onNext,
-  onBack,
+  tint, childName = "your child", onNext, onBack,
 }: {
-  tint: number;
-  childName?: string;
-  onNext: () => void;
-  onBack?: () => void;
+  tint: number; childName?: string; onNext: () => void; onBack?: () => void;
 }) {
   const BUBBLE_TEXT = useMemo(
     () => `Will you let me become ${childName}'s little adventure buddy for just 10 minutes each day?`,
@@ -81,29 +65,18 @@ export function ParentBenefits({
   );
 
   const BENEFITS = [
-    {
-      emoji: "🩷",
-      title: "I'll help",
-      highlight: "believe in themselves.",
-      color: "#FF6BAD",
-      desc: "Building confidence\nfor real life.",
-    },
-    {
-      emoji: "🎯",
-      title: "I'll help",
-      highlight: "stay focused.",
-      color: "#A78BFA",
-      desc: "One adventure\nat a time.",
-    },
+    { emoji: "🩷", title: "I'll help", highlight: "believe in themselves.", color: "#FF6BAD", desc: "Building confidence\nfor real life." },
+    { emoji: "🎯", title: "I'll help", highlight: "stay focused.",           color: "#A78BFA", desc: "One adventure\nat a time." },
   ];
 
-  const [catVisible,   setCatVisible]   = useState(false);
-  const [typedText,    setTypedText]    = useState("");
-  const [showContent,  setShowContent]  = useState(false);
-  const [holding,      setHolding]      = useState(false);
-  const [holdProgress, setHoldProgress] = useState(0);
-  const [promised,     setPromised]     = useState(false);
-  const [glowing,      setGlowing]      = useState(false);
+  const [catVisible,    setCatVisible]    = useState(false);
+  const [typedText,     setTypedText]     = useState("");
+  const [revealStep,    setRevealStep]    = useState(0); // 0=none,1=header,2=card1,3=card2,4=paw,5=safety
+  const [showPawHint,   setShowPawHint]   = useState(false);
+  const [holding,       setHolding]       = useState(false);
+  const [holdProgress,  setHoldProgress]  = useState(0);
+  const [promised,      setPromised]      = useState(false);
+  const [glowing,       setGlowing]       = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -114,7 +87,11 @@ export function ParentBenefits({
       ts.push(setTimeout(() => setTypedText(BUBBLE_TEXT.slice(0, i + 1)), tS + i * 34))
     );
     const after = tS + BUBBLE_TEXT.length * 34 + 400;
-    ts.push(setTimeout(() => setShowContent(true), after));
+    REVEAL_DELAYS.forEach((d, i) =>
+      ts.push(setTimeout(() => setRevealStep(i + 1), after + d))
+    );
+    // Paw attention glow starts 700ms after last element appears
+    ts.push(setTimeout(() => setShowPawHint(true), after + REVEAL_DELAYS[4] + 700));
     return () => ts.forEach(clearTimeout);
   }, [BUBBLE_TEXT]);
 
@@ -161,7 +138,14 @@ export function ParentBenefits({
 
   const R  = 80;
   const C  = 2 * Math.PI * R;
-  const SZ = (R + 12) * 2; // SVG size = 184
+  const SZ = (R + 12) * 2;
+
+  // Slide-up spring used for each reveal element
+  const slideUp = {
+    initial:    { opacity: 0, y: 22 },
+    animate:    { opacity: 1, y: 0 },
+    transition: { type: "spring" as const, stiffness: 230, damping: 26 },
+  };
 
   return (
     <div style={{ position: "absolute", inset: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
@@ -178,12 +162,11 @@ export function ParentBenefits({
         }}>‹</button>
       )}
 
-      {/* ── Large cat + speech bubble ── */}
+      {/* Cat + bubble */}
       <div style={{
         position: "relative", zIndex: 5, flexShrink: 0,
         display: "flex", alignItems: "flex-start",
-        padding: "106px 14px 0 0",
-        minHeight: 160,
+        padding: "106px 14px 0 0", minHeight: 160,
       }}>
         <AnimatePresence>
           {catVisible && (
@@ -213,17 +196,10 @@ export function ParentBenefits({
                 flex: 1, background: "#fff", borderRadius: 20,
                 padding: "12px 36px 12px 14px",
                 boxShadow: "0 6px 30px rgba(0,0,0,0.25)",
-                position: "relative",
-                marginTop: 36, marginRight: 12,
+                position: "relative", marginTop: 36, marginRight: 12,
               }}
             >
-              <div style={{
-                position: "absolute", left: -12, top: 22,
-                width: 0, height: 0,
-                borderTop: "10px solid transparent",
-                borderBottom: "10px solid transparent",
-                borderRight: "12px solid #fff",
-              }} />
+              <div style={{ position: "absolute", left: -12, top: 22, width: 0, height: 0, borderTop: "10px solid transparent", borderBottom: "10px solid transparent", borderRight: "12px solid #fff" }} />
               <p style={{ fontFamily: F, fontSize: 14.5, fontWeight: 800, color: "#1a0f40", margin: 0, lineHeight: 1.38 }}>
                 {renderBubble()}
               </p>
@@ -233,205 +209,201 @@ export function ParentBenefits({
         </AnimatePresence>
       </div>
 
-      {/* ── Scrollable content ── */}
-      <div style={{
-        position: "relative", zIndex: 5,
-        flex: 1, minHeight: 0,
-        overflowY: "auto",
-        padding: "0 14px 28px",
-      }}>
+      {/* Sequential scrollable content */}
+      <div style={{ position: "relative", zIndex: 5, flex: 1, minHeight: 0, overflowY: "auto", padding: "0 14px 28px" }}>
+
+        {/* 1 — Divider heading */}
         <AnimatePresence>
-          {showContent && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
-            >
-              {/* ✦ Here's my promise to [name] ✦ */}
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.20)" }} />
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <span style={{ color: "#FFD700", fontSize: 14 }}>✦</span>
-                  <span style={{ fontFamily: F, fontSize: 15.5, fontWeight: 900, color: "#fff" }}>
-                    Here's my promise to {childName}
-                  </span>
-                  <span style={{ color: "#FFD700", fontSize: 14 }}>✦</span>
-                </div>
-                <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.20)" }} />
+          {revealStep >= 1 && (
+            <motion.div key="hdr" {...slideUp} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+              <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.20)" }} />
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ color: "#FFD700", fontSize: 14 }}>✦</span>
+                <span style={{ fontFamily: F, fontSize: 15.5, fontWeight: 900, color: "#fff" }}>Here's my promise to {childName}</span>
+                <span style={{ color: "#FFD700", fontSize: 14 }}>✦</span>
               </div>
+              <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.20)" }} />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-              {/* 2-column benefit cards */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
-                {BENEFITS.map((b, i) => (
-                  <div key={i} style={{
-                    background: "rgba(22,14,60,0.94)",
-                    borderRadius: 18,
-                    padding: "16px 10px 14px",
-                    display: "flex", flexDirection: "column",
-                    alignItems: "center", gap: 8,
-                    boxShadow: "0 4px 20px rgba(0,0,0,0.45)",
-                    position: "relative",
-                  }}>
-                    <span style={{ position: "absolute", top: 8, left: 9,  color: "#FFD700", fontSize: 12 }}>✦</span>
-                    <span style={{ position: "absolute", top: 8, right: 9, color: "#FFD700", fontSize: 12 }}>✦</span>
-                    <span style={{ fontSize: 50 }}>{b.emoji}</span>
-                    <div style={{ textAlign: "center" }}>
-                      <p style={{ fontFamily: F, fontSize: 15, fontWeight: 800, color: "#fff", margin: "0 0 2px", lineHeight: 1.2 }}>
-                        {b.title}
-                      </p>
-                      <p style={{ fontFamily: F, fontSize: 14, fontWeight: 900, color: b.color, margin: "0 0 5px", lineHeight: 1.2, fontStyle: "italic" }}>
-                        {b.highlight}
-                      </p>
-                      <p style={{ fontFamily: F, fontSize: 12, fontWeight: 500, color: "rgba(255,255,255,0.56)", margin: 0, lineHeight: 1.4 }}>
-                        {b.desc.split("\n").map((l, j) => <span key={j} style={{ display: "block" }}>{l}</span>)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* ── Promise box ── */}
-              <div style={{
-                background: "rgba(13,8,42,0.96)",
-                border: "2px dashed rgba(110,72,200,0.60)",
-                borderRadius: 22,
-                padding: "18px 14px 20px",
-                marginBottom: 12,
-              }}>
-                {/* Title */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, marginBottom: 4 }}>
-                  <span style={{ color: "#FFD700", fontSize: 15 }}>✦</span>
-                  <span style={{ fontFamily: F, fontSize: 15.5, fontWeight: 900, color: "#fff" }}>
-                    Let's make our first promise together!
-                  </span>
-                  <span style={{ color: "#FFD700", fontSize: 15 }}>✦</span>
-                </div>
-                <p style={{ fontFamily: F, fontSize: 14, fontWeight: 700, color: "#8B5CF6", textAlign: "center", margin: "0 0 14px", fontStyle: "italic" }}>
-                  Tap and hold to high five
-                </p>
-
-                {/* Paw row: instruction label left + ring+paw center */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", position: "relative", minHeight: SZ }}>
-
-                  {/* "Hold for 2 seconds" — left */}
-                  <div style={{
-                    position: "absolute", left: 10, top: "50%",
-                    transform: "translateY(-55%)",
-                    display: "flex", flexDirection: "column", alignItems: "center",
-                    gap: 4, pointerEvents: "none",
-                  }}>
-                    {/* Curved purple arrow pointing right toward paw */}
-                    <svg width="52" height="54" viewBox="0 0 52 54" fill="none">
-                      <path d="M 10,8 C 8,24 26,38 42,44" stroke="#8B5CF6" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-                      <polygon points="40,50 48,42 38,40" fill="#8B5CF6" />
-                    </svg>
-                    <p style={{ fontFamily: F, fontSize: 13, fontWeight: 800, color: "#8B5CF6", margin: 0, lineHeight: 1.28, textAlign: "center" }}>
-                      Hold for<br />2 seconds
+        {/* 2 & 3 — Benefit cards */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
+          {BENEFITS.map((b, i) => (
+            <AnimatePresence key={i}>
+              {revealStep >= i + 2 && (
+                <motion.div key={`card-${i}`} {...slideUp} style={{
+                  background: "rgba(22,14,60,0.94)", borderRadius: 18,
+                  padding: "16px 10px 14px",
+                  display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.45)", position: "relative",
+                }}>
+                  <span style={{ position: "absolute", top: 8, left: 9,  color: "#FFD700", fontSize: 12 }}>✦</span>
+                  <span style={{ position: "absolute", top: 8, right: 9, color: "#FFD700", fontSize: 12 }}>✦</span>
+                  <span style={{ fontSize: 50 }}>{b.emoji}</span>
+                  <div style={{ textAlign: "center" }}>
+                    <p style={{ fontFamily: F, fontSize: 15, fontWeight: 800, color: "#fff", margin: "0 0 2px", lineHeight: 1.2 }}>{b.title}</p>
+                    <p style={{ fontFamily: F, fontSize: 14, fontWeight: 900, color: b.color, margin: "0 0 5px", lineHeight: 1.2, fontStyle: "italic" }}>{b.highlight}</p>
+                    <p style={{ fontFamily: F, fontSize: 12, fontWeight: 500, color: "rgba(255,255,255,0.56)", margin: 0, lineHeight: 1.4 }}>
+                      {b.desc.split("\n").map((l, j) => <span key={j} style={{ display: "block" }}>{l}</span>)}
                     </p>
                   </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          ))}
+        </div>
 
-                  {/* Always-visible gold circle + SVG progress ring + paw */}
-                  <div
-                    style={{
-                      position: "relative",
-                      width: SZ, height: SZ,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      cursor: "pointer", userSelect: "none", touchAction: "none",
-                    }}
-                    onPointerDown={startHold}
-                    onPointerUp={cancelHold}
-                    onPointerLeave={cancelHold}
-                  >
-                    {/* Static dark circle background */}
-                    <div style={{
-                      position: "absolute",
-                      width: R * 2 + 4, height: R * 2 + 4,
-                      borderRadius: "50%",
-                      background: "radial-gradient(circle, rgba(50,20,110,0.85) 0%, rgba(20,8,55,0.95) 100%)",
-                      border: `3px solid ${holding || promised ? "rgba(255,175,0,0.90)" : "rgba(255,165,0,0.75)"}`,
-                      boxShadow: holding || promised
-                        ? "0 0 36px rgba(255,160,0,0.80), 0 0 70px rgba(255,130,0,0.45)"
-                        : "0 0 22px rgba(255,160,0,0.55), 0 0 50px rgba(255,120,0,0.25)",
-                      transition: "box-shadow 0.2s ease, border-color 0.2s ease",
-                    }} />
-
-                    {/* SVG progress ring — fills on hold */}
-                    <svg width={SZ} height={SZ} style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
-                      {(holding || promised) && (
-                        <circle
-                          cx={SZ / 2} cy={SZ / 2} r={R}
-                          fill="none" stroke="#FFD700" strokeWidth={5}
-                          strokeLinecap="round"
-                          strokeDasharray={C}
-                          strokeDashoffset={C * (1 - holdProgress / 100)}
-                          transform={`rotate(-90 ${SZ / 2} ${SZ / 2})`}
-                          style={{ transition: "stroke-dashoffset 0.03s linear" }}
-                        />
-                      )}
-                    </svg>
-
-                    {/* Paw print */}
-                    <motion.div
-                      animate={
-                        promised
-                          ? { scale: [1, 1.25, 1], rotate: [0, -8, 8, 0] }
-                          : holding
-                          ? { scale: 1.1 }
-                          : { scale: 1 }
-                      }
-                      transition={promised ? { duration: 0.55 } : { duration: 0.18 }}
-                      style={{ position: "relative", zIndex: 1 }}
-                    >
-                      <PawPrint size={130} glow={promised} holding={holding} />
-                    </motion.div>
-
-                    {/* Floating sparkles */}
-                    {[
-                      { top: 4,  right: 16, size: 15 },
-                      { top: 18, left:  2,  size: 10 },
-                      { bottom: 8, right: 4, size: 12 },
-                      { bottom: 18, left: 16, size: 9 },
-                    ].map((sp, i) => (
-                      <motion.span
-                        key={i}
-                        animate={{ opacity: [0.45, 1, 0.45], scale: [0.8, 1.15, 0.8] }}
-                        transition={{ duration: 1.9 + i * 0.45, repeat: Infinity, ease: "easeInOut", delay: i * 0.55 }}
-                        style={{
-                          position: "absolute", color: "#FFD700",
-                          fontSize: sp.size, pointerEvents: "none",
-                          top: "top" in sp ? sp.top : undefined,
-                          bottom: "bottom" in sp ? sp.bottom : undefined,
-                          left: "left" in sp ? sp.left : undefined,
-                          right: "right" in sp ? sp.right : undefined,
-                        }}
-                      >✦</motion.span>
-                    ))}
-                  </div>
-                </div>
+        {/* 4 — Promise / paw box */}
+        <AnimatePresence>
+          {revealStep >= 4 && (
+            <motion.div key="paw" {...slideUp} style={{
+              background: "rgba(13,8,42,0.96)",
+              border: "2px dashed rgba(110,72,200,0.60)",
+              borderRadius: 22, padding: "18px 14px 20px", marginBottom: 12,
+            }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, marginBottom: 4 }}>
+                <span style={{ color: "#FFD700", fontSize: 15 }}>✦</span>
+                <span style={{ fontFamily: F, fontSize: 15.5, fontWeight: 900, color: "#fff" }}>Let's make our first promise together!</span>
+                <span style={{ color: "#FFD700", fontSize: 15 }}>✦</span>
               </div>
+              <p style={{ fontFamily: F, fontSize: 14, fontWeight: 700, color: "#8B5CF6", textAlign: "center", margin: "0 0 14px", fontStyle: "italic" }}>
+                Tap and hold to high five
+              </p>
 
-              {/* Privacy card */}
-              <div style={{
-                background: "rgba(18,12,50,0.90)",
-                borderRadius: 18,
-                padding: "13px 14px",
-                display: "flex", alignItems: "center", gap: 12,
-                boxShadow: "0 4px 16px rgba(0,0,0,0.35)",
-              }}>
-                <span style={{ fontSize: 42, flexShrink: 0 }}>🛡️</span>
-                <p style={{ fontFamily: F, fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.82)", margin: 0, lineHeight: 1.4, flex: 1 }}>
-                  I'll always keep your family's information safe, private, and treat your child with care.
-                </p>
-                <div style={{ flexShrink: 0 }}>
-                  <Bobo mood="happy" tint={tint} size={50} />
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", position: "relative", minHeight: SZ }}>
+                {/* "Hold for 2 seconds" label */}
+                <div style={{
+                  position: "absolute", left: 10, top: "50%", transform: "translateY(-55%)",
+                  display: "flex", flexDirection: "column", alignItems: "center",
+                  gap: 4, pointerEvents: "none",
+                }}>
+                  <svg width="52" height="54" viewBox="0 0 52 54" fill="none">
+                    <path d="M 10,8 C 8,24 26,38 42,44" stroke="#8B5CF6" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+                    <polygon points="40,50 48,42 38,40" fill="#8B5CF6" />
+                  </svg>
+                  <p style={{ fontFamily: F, fontSize: 13, fontWeight: 800, color: "#8B5CF6", margin: 0, lineHeight: 1.28, textAlign: "center" }}>
+                    Hold for<br />2 seconds
+                  </p>
+                </div>
+
+                {/* Ring + paw container */}
+                <div
+                  style={{
+                    position: "relative", width: SZ, height: SZ,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    cursor: "pointer", userSelect: "none", touchAction: "none",
+                  }}
+                  onPointerDown={startHold}
+                  onPointerUp={cancelHold}
+                  onPointerLeave={cancelHold}
+                >
+                  {/* Attention ping ripples — shown after all elements revealed, hide once holding */}
+                  {showPawHint && !holding && !promised && [0, 0.65].map((delay, i) => (
+                    <motion.div
+                      key={`ping-${i}`}
+                      animate={{ scale: [1, 2.0], opacity: [0.75, 0] }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: "easeOut", delay }}
+                      style={{
+                        position: "absolute",
+                        width: R * 2, height: R * 2,
+                        borderRadius: "50%",
+                        border: "2.5px solid rgba(255,165,0,0.80)",
+                        pointerEvents: "none",
+                      }}
+                    />
+                  ))}
+
+                  {/* Static gold circle bg */}
+                  <div style={{
+                    position: "absolute",
+                    width: R * 2 + 4, height: R * 2 + 4, borderRadius: "50%",
+                    background: "radial-gradient(circle, rgba(50,20,110,0.85) 0%, rgba(20,8,55,0.95) 100%)",
+                    border: `3px solid ${holding || promised ? "rgba(255,175,0,0.95)" : "rgba(255,165,0,0.78)"}`,
+                    boxShadow: holding || promised
+                      ? "0 0 36px rgba(255,160,0,0.85), 0 0 70px rgba(255,130,0,0.50)"
+                      : "0 0 22px rgba(255,160,0,0.55), 0 0 50px rgba(255,120,0,0.25)",
+                    transition: "box-shadow 0.2s ease, border-color 0.2s ease",
+                  }} />
+
+                  {/* SVG progress arc */}
+                  <svg width={SZ} height={SZ} style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+                    {(holding || promised) && (
+                      <circle
+                        cx={SZ / 2} cy={SZ / 2} r={R}
+                        fill="none" stroke="#FFD700" strokeWidth={5}
+                        strokeLinecap="round"
+                        strokeDasharray={C}
+                        strokeDashoffset={C * (1 - holdProgress / 100)}
+                        transform={`rotate(-90 ${SZ / 2} ${SZ / 2})`}
+                        style={{ transition: "stroke-dashoffset 0.03s linear" }}
+                      />
+                    )}
+                  </svg>
+
+                  {/* Paw */}
+                  <motion.div
+                    animate={promised ? { scale: [1, 1.25, 1], rotate: [0, -8, 8, 0] } : holding ? { scale: 1.1 } : { scale: 1 }}
+                    transition={promised ? { duration: 0.55 } : { duration: 0.18 }}
+                    style={{ position: "relative", zIndex: 1 }}
+                  >
+                    <PawPrint size={130} glow={promised} holding={holding} />
+                  </motion.div>
+
+                  {/* Floating sparkles */}
+                  {[
+                    { top: 4,  right: 16, size: 15 },
+                    { top: 18, left:  2,  size: 10 },
+                    { bottom: 8,  right: 4,  size: 12 },
+                    { bottom: 18, left: 16,  size: 9  },
+                  ].map((sp, i) => (
+                    <motion.span
+                      key={i}
+                      animate={{ opacity: [0.45, 1, 0.45], scale: [0.8, 1.15, 0.8] }}
+                      transition={{ duration: 1.9 + i * 0.45, repeat: Infinity, ease: "easeInOut", delay: i * 0.55 }}
+                      style={{
+                        position: "absolute", color: "#FFD700",
+                        fontSize: sp.size, pointerEvents: "none",
+                        top: "top" in sp ? (sp as { top: number }).top : undefined,
+                        bottom: "bottom" in sp ? (sp as { bottom: number }).bottom : undefined,
+                        left: "left" in sp ? (sp as { left: number }).left : undefined,
+                        right: "right" in sp ? (sp as { right: number }).right : undefined,
+                      }}
+                    >✦</motion.span>
+                  ))}
                 </div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* 5 — Privacy/safety card */}
+        <AnimatePresence>
+          {revealStep >= 5 && (
+            <motion.div key="safety" {...slideUp} style={{
+              background: "rgba(18,12,50,0.90)", borderRadius: 18,
+              padding: "13px 14px",
+              display: "flex", alignItems: "center", gap: 12,
+              boxShadow: "0 4px 16px rgba(0,0,0,0.35)",
+            }}>
+              <span style={{ fontSize: 42, flexShrink: 0 }}>🛡️</span>
+              <p style={{ fontFamily: F, fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.82)", margin: 0, lineHeight: 1.4, flex: 1 }}>
+                I'll always keep your family's information safe, private, and treat your child with care.
+              </p>
+              {/* Happy mascot, hands down */}
+              <motion.div
+                animate={{ y: [0, -4, 0] }}
+                transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
+                style={{ flexShrink: 0 }}
+              >
+                <Bobo mood="happy" tint={tint} size={52} />
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* ── Promise made: full-screen bloom flash ── */}
+      {/* Full-screen bloom flash */}
       <AnimatePresence>
         {glowing && (
           <motion.div
@@ -440,15 +412,14 @@ export function ParentBenefits({
             animate={{ opacity: [0, 1, 1, 0] }}
             transition={{ duration: 0.95, times: [0, 0.25, 0.60, 1], ease: "easeOut" }}
             style={{
-              position: "absolute", inset: 0, zIndex: 60,
-              pointerEvents: "none",
+              position: "absolute", inset: 0, zIndex: 60, pointerEvents: "none",
               background: "radial-gradient(circle at 50% 58%, rgba(255,230,80,1) 0%, rgba(210,100,255,0.92) 30%, rgba(90,25,200,0.80) 60%, rgba(20,8,60,0.70) 100%)",
             }}
           />
         )}
       </AnimatePresence>
 
-      {/* Burst sparkles on promise */}
+      {/* Sparkle burst on promise */}
       <AnimatePresence>
         {promised && (
           <>
@@ -460,20 +431,9 @@ export function ParentBenefits({
                 <motion.div
                   key={i}
                   initial={{ opacity: 1, x: 0, y: 0, scale: 0 }}
-                  animate={{
-                    opacity: [1, 1, 0],
-                    x: Math.cos(rad) * dist,
-                    y: Math.sin(rad) * dist,
-                    scale: [0, 1.4, 0],
-                  }}
+                  animate={{ opacity: [1, 1, 0], x: Math.cos(rad) * dist, y: Math.sin(rad) * dist, scale: [0, 1.4, 0] }}
                   transition={{ duration: 0.75, ease: "easeOut", delay: i * 0.04 }}
-                  style={{
-                    position: "absolute",
-                    top: "55%", left: "50%",
-                    zIndex: 55, pointerEvents: "none",
-                    fontSize: 18 + (i % 3) * 4,
-                    color: i % 2 === 0 ? "#FFD700" : "#fff",
-                  }}
+                  style={{ position: "absolute", top: "55%", left: "50%", zIndex: 55, pointerEvents: "none", fontSize: 18 + (i % 3) * 4, color: i % 2 === 0 ? "#FFD700" : "#fff" }}
                 >✦</motion.div>
               );
             })}
