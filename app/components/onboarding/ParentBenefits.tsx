@@ -299,20 +299,20 @@ export function ParentBenefits({
                   onPointerLeave={cancelHold}
                 >
                   {/* Attention ping ripples — shown after all elements revealed, hide once holding */}
-                  {showPawHint && !holding && !promised && [0, 0.65].map((delay, i) => (
+                  {showPawHint && !holding && !promised && (
                     <motion.div
-                      key={`ping-${i}`}
                       animate={{ scale: [1, 2.0], opacity: [0.75, 0] }}
-                      transition={{ duration: 1.5, repeat: Infinity, ease: "easeOut", delay }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: "easeOut" }}
                       style={{
                         position: "absolute",
                         width: R * 2, height: R * 2,
                         borderRadius: "50%",
                         border: "2.5px solid rgba(255,165,0,0.80)",
                         pointerEvents: "none",
+                        zIndex: 0,
                       }}
                     />
-                  ))}
+                  )}
 
                   {/* Static gold circle bg */}
                   <div style={{
