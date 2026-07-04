@@ -390,14 +390,9 @@ export function ParentBenefits({
               <p style={{ fontFamily: F, fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.82)", margin: 0, lineHeight: 1.4, flex: 1 }}>
                 I'll always keep your family's information safe, private, and treat your child with care.
               </p>
-              {/* Happy mascot, hands down */}
-              <motion.div
-                animate={{ y: [0, -4, 0] }}
-                transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
-                style={{ flexShrink: 0 }}
-              >
+              <div style={{ flexShrink: 0 }}>
                 <Bobo mood="happy" tint={tint} size={52} armsDown />
-              </motion.div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
