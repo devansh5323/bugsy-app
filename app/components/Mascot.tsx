@@ -45,6 +45,9 @@ type BoboProps = {
   // When true, suppresses the sparkle stars rendered around the face
   // in excited mood.
   noSparkles?: boolean;
+  // When true, both arms hang at resting position (overrides the default
+  // raised-left-arm greeting pose). Use for calm / happy-sitting moments.
+  armsDown?: boolean;
 };
 
 // Hats sit above the ears — y centred around -120
@@ -114,7 +117,7 @@ function Hat({ kind }: { kind: string }) {
   }
 }
 
-export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, hat, angerLevel, eyeOpen, tailWag, walking, mouthOpen, frazzled, glowRightPaw, noSparkles }: BoboProps) {
+export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, hat, angerLevel, eyeOpen, tailWag, walking, mouthOpen, frazzled, glowRightPaw, noSparkles, armsDown }: BoboProps) {
   const lidControlled = eyeOpen !== undefined;
   const eyeOpenClamped = Math.max(0, Math.min(1, eyeOpen ?? 1));
   // Continuous anger 0..1. mood="angry" implies 1 when angerLevel
@@ -457,8 +460,8 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
               suppressed during `waving` mood since the wave
               animation already draws a raised right arm. */}
           {mood !== "shy" && (
-            mood === "waving" ? (
-              // Waving: left arm hangs normally so right arm can wave solo
+            mood === "waving" || armsDown ? (
+              // Waving / armsDown: left arm hangs at resting position
               <g transform="rotate(-14 -82 48)">
                 <ellipse cx="-82" cy="48" rx="15" ry="22" fill={bodyMid}/>
                 <ellipse cx="-82" cy="64" rx="7" ry="4.5" fill={bodyBottom} opacity="0.45"/>

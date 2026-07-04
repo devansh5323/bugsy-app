@@ -396,7 +396,7 @@ export function ParentBenefits({
                 transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
                 style={{ flexShrink: 0 }}
               >
-                <Bobo mood="happy" tint={tint} size={52} />
+                <Bobo mood="happy" tint={tint} size={52} armsDown />
               </motion.div>
             </motion.div>
           )}
