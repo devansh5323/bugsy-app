@@ -183,7 +183,7 @@ export function ParentBenefits({
         position: "relative", zIndex: 5, flexShrink: 0,
         display: "flex", alignItems: "flex-start",
         padding: "62px 14px 0 0",
-        minHeight: 210,
+        minHeight: 160,
       }}>
         <AnimatePresence>
           {catVisible && (
@@ -197,7 +197,7 @@ export function ParentBenefits({
                 animate={{ y: [0, -8, 0] }}
                 transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
               >
-                <Bobo mood="excited" tint={tint} size={200} animate tailWag />
+                <Bobo mood="excited" tint={tint} size={145} animate tailWag />
               </motion.div>
             </motion.div>
           )}
@@ -211,7 +211,7 @@ export function ParentBenefits({
               transition={{ type: "spring", stiffness: 260, damping: 24 }}
               style={{
                 flex: 1, background: "#fff", borderRadius: 20,
-                padding: "16px 42px 16px 18px",
+                padding: "12px 36px 12px 14px",
                 boxShadow: "0 6px 30px rgba(0,0,0,0.25)",
                 position: "relative",
                 marginTop: 36, marginRight: 12,
@@ -224,7 +224,7 @@ export function ParentBenefits({
                 borderBottom: "10px solid transparent",
                 borderRight: "12px solid #fff",
               }} />
-              <p style={{ fontFamily: F, fontSize: 17, fontWeight: 800, color: "#1a0f40", margin: 0, lineHeight: 1.4 }}>
+              <p style={{ fontFamily: F, fontSize: 14.5, fontWeight: 800, color: "#1a0f40", margin: 0, lineHeight: 1.38 }}>
                 {renderBubble()}
               </p>
               <span style={{ position: "absolute", top: 12, right: 14, color: "#C4B5FD", fontSize: 19 }}>✦</span>
