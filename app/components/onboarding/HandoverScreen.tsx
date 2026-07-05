@@ -84,7 +84,7 @@ export function HandoverScreen({
             maxWidth: 310, textAlign: "center",
           }}>
             <p style={{
-              fontFamily: F, fontSize: 22, fontWeight: 800,
+              fontFamily: F, fontSize: 19, fontWeight: 600,
               color: "#1a0f40", margin: 0, lineHeight: 1.3,
               minHeight: "2.6em",
             }}>
@@ -113,7 +113,7 @@ export function HandoverScreen({
             animate={{ y: [0, -12, 0] }}
             transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut", delay: 1.0 }}
           >
-            <Bobo mood="excited" tint={tint} size={220} animate tailWag />
+            <Bobo mood="excited" tint={tint} size={220} animate tailWag armsDown />
           </motion.div>
         </div>
 

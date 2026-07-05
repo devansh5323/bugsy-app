@@ -526,7 +526,7 @@ export function ChildDoorway({ tint, onNext, onBack }: Common) {
               boxShadow: "0 8px 32px rgba(0,0,0,0.24)",
               maxWidth: 310, textAlign: "center",
             }}>
-              <p style={{ fontFamily: F, fontSize: 22, fontWeight: 800, color: "#1a0f40", margin: 0, lineHeight: 1.3 }}>
+              <p style={{ fontFamily: F, fontSize: 19, fontWeight: 600, color: "#1a0f40", margin: 0, lineHeight: 1.3 }}>
                 I'm so excited to meet you! 💜
               </p>
             </div>
@@ -543,7 +543,7 @@ export function ChildDoorway({ tint, onNext, onBack }: Common) {
         {showCat && (
           <div style={{ animation: "cm-rise 0.55s cubic-bezier(0.34,1.56,0.64,1) both" }}>
             <div style={{ animation: "cm-float 2.8s ease-in-out infinite" }}>
-              <Bobo mood="excited" tint={tint} size={220} animate tailWag />
+              <Bobo mood="excited" tint={tint} size={220} animate tailWag armsDown />
             </div>
           </div>
         )}
