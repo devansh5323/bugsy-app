@@ -64,9 +64,9 @@ export function ParentJourney({
       setTimeout(() => setPhase(3), doneAt);
       setTimeout(() => setShowTimeline(true), doneAt + 400);
       STAGES.forEach((_, i) =>
-        setTimeout(() => setStageCount(i + 1), doneAt + 800 + i * 460)
+        setTimeout(() => setStageCount(i + 1), doneAt + 800 + i * 700)
       );
-      const afterAll = doneAt + 800 + STAGES.length * 460;
+      const afterAll = doneAt + 800 + STAGES.length * 700;
       setTimeout(() => setShowButton(true), afterAll + 200);
     }
   }, [phase]);
@@ -194,8 +194,29 @@ export function ParentJourney({
 
               {/* ── Stage cards ── */}
               <div style={{ padding: "0 10px 0 10px", position: "relative" }}>
-                {/* Continuous left dashed line */}
-                <div style={{ position: "absolute", left: 21, top: 0, bottom: 0, width: 2, background: DASHED, zIndex: 0 }} />
+                {/* Static track line (faint) */}
+                <div style={{ position: "absolute", left: 21, top: 0, bottom: 0, width: 2, background: DASHED, zIndex: 0, opacity: 0.35 }} />
+                {/* Growing glow line */}
+                <motion.div
+                  style={{
+                    position: "absolute", left: 20, top: 0, bottom: 0, width: 3,
+                    borderRadius: 2, transformOrigin: "top center", zIndex: 0,
+                  }}
+                  animate={{
+                    scaleY: stageCount / STAGES.length,
+                    background: stageCount >= STAGES.length
+                      ? "linear-gradient(to bottom, #FFD700, #FF9900, #FFD700)"
+                      : "linear-gradient(to bottom, #C084FC, #7C3AED, #4C1D95)",
+                    boxShadow: stageCount >= STAGES.length
+                      ? "0 0 14px 3px rgba(255,200,0,0.85)"
+                      : "0 0 8px 1px rgba(167,139,250,0.75)",
+                  }}
+                  transition={{
+                    scaleY: { duration: 0.55, ease: "easeOut" },
+                    background: { duration: 0.9 },
+                    boxShadow: { duration: 0.9 },
+                  }}
+                />
 
                 {STAGES.map((stage, i) => (
                   <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: i < STAGES.length - 1 ? 8 : 0, position: "relative", zIndex: 1 }}>
@@ -234,9 +255,9 @@ export function ParentJourney({
                         {stageCount > i && (
                           <motion.div
                             key={`card-${i}`}
-                            initial={{ opacity: 0, x: 14 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ type: "spring", stiffness: 250, damping: 26 }}
+                            initial={{ opacity: 0, x: 16, y: 8 }}
+                            animate={{ opacity: 1, x: 0, y: 0 }}
+                            transition={{ type: "spring", stiffness: 220, damping: 28 }}
                             style={{
                               height: stage.gold ? 108 : 94,
                               background: stage.gold ? "rgba(20,13,4,0.96)" : "rgba(13,9,36,0.92)",
