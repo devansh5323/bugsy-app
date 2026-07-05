@@ -80,60 +80,41 @@ export function ParentDashboard({
         position: "relative", zIndex: 1,
       }}>
 
-        {/* ── Header ── */}
-        <div style={{ position: "relative", marginBottom: 14 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-
-            {/* Bobo with sparkles */}
-            <div style={{ flexShrink: 0, position: "relative", marginBottom: -8 }}>
-              <span style={{ position: "absolute", top: 6, right: -4, fontSize: 18, color: "#FFD700", filter: "drop-shadow(0 0 4px rgba(255,215,0,0.8))", animation: "pd-float 2.4s ease-in-out infinite" }}>✦</span>
-              <span style={{ position: "absolute", top: -6, left: 14, fontSize: 14, color: "#FFD700", filter: "drop-shadow(0 0 4px rgba(255,215,0,0.7))", animation: "pd-float 2s ease-in-out 0.5s infinite" }}>✦</span>
-              <span style={{ position: "absolute", bottom: 22, left: -6, fontSize: 12, color: "#FFD700", filter: "drop-shadow(0 0 4px rgba(255,215,0,0.6))", animation: "pd-float 2.6s ease-in-out 0.9s infinite" }}>✦</span>
-              <Bobo mood="happy" tint={tint} size={130} animate tailWag armsDown />
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0 }}>
+            <div style={{ flexShrink: 0 }}>
+              <Bobo mood="happy" tint={tint} size={70} animate={false} armsDown />
             </div>
-
-            {/* Greeting */}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ margin: 0, color: "#fff", fontSize: 20, fontWeight: 900, lineHeight: 1.15 }}>
-                Hi, {Name}&apos;s
+            <div>
+              <p style={{ margin: 0, color: "#fff", fontSize: 19, fontWeight: 900, lineHeight: 1.1 }}>
+                Hi, {Name}&apos;s Parent! 🤚
               </p>
-              <p style={{ margin: "0 0 7px", lineHeight: 1.15 }}>
-                <span style={{ color: "#A78BFA", fontSize: 22, fontWeight: 900 }}>Parent!</span>
-                <span style={{ fontSize: 20 }}> 🤚</span>
-              </p>
-              <p style={{ margin: 0, color: "rgba(255,255,255,0.52)", fontSize: 12, lineHeight: 1.5 }}>
-                Great to see you here.<br />Let&apos;s help your child grow together! 💜
+              <p style={{ margin: "4px 0 0", color: "rgba(255,255,255,0.55)", fontSize: 12, lineHeight: 1.4 }}>
+                Great to see you here.<br />Let&apos;s help {Name} grow together! 💜
               </p>
             </div>
-
-            {/* Switch button */}
-            <button onClick={onNext} style={{
-              flexShrink: 0, cursor: "pointer",
-              background: "rgba(18,10,50,0.85)",
-              border: "1.5px solid rgba(110,70,210,0.5)",
-              borderRadius: 18, padding: "12px 13px",
-              display: "flex", alignItems: "center", gap: 10,
-            }}>
-              <div style={{
-                width: 44, height: 44, borderRadius: "50%",
-                background: "linear-gradient(135deg, #6D28D9, #4C1D95)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 24, flexShrink: 0,
-              }}>👦</div>
-              <div style={{ textAlign: "left" }}>
-                <p style={{ margin: 0, color: "rgba(255,255,255,0.7)", fontSize: 12, fontWeight: 600, lineHeight: 1.35 }}>Switch to</p>
-                <p style={{ margin: 0, color: "#A78BFA", fontSize: 13, fontWeight: 800, lineHeight: 1.35 }}>Child Dashboard</p>
-              </div>
-              <span style={{ color: "rgba(255,255,255,0.45)", fontSize: 18 }}>›</span>
-            </button>
           </div>
-
-          {/* Wave divider */}
-          <svg viewBox="0 0 360 36" preserveAspectRatio="none"
-            style={{ display: "block", width: "calc(100% + 28px)", marginLeft: -14, marginTop: 4, height: 36 }}>
-            <path d="M0,18 Q45,0 90,14 Q135,28 180,10 Q225,0 270,16 Q315,30 360,12 L360,36 L0,36 Z"
-              fill="rgba(22,12,55,0.75)" />
-          </svg>
+          {/* Switch to child */}
+          <button onClick={onNext} style={{
+            flexShrink: 0, cursor: "pointer",
+            background: "rgba(70,40,140,0.5)",
+            border: "1px solid rgba(120,80,220,0.35)",
+            borderRadius: 16, padding: "10px 11px",
+            display: "flex", alignItems: "center", gap: 8,
+          }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: "50%",
+              background: "linear-gradient(135deg, #5B32B8, #3D1E8A)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 19,
+            }}>👧</div>
+            <div>
+              <p style={{ margin: 0, color: "rgba(255,255,255,0.8)", fontSize: 11.5, fontWeight: 700, lineHeight: 1.25 }}>Switch to</p>
+              <p style={{ margin: 0, color: "rgba(255,255,255,0.8)", fontSize: 11.5, fontWeight: 700, lineHeight: 1.25 }}>Child Dashboard</p>
+            </div>
+            <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 18 }}>›</span>
+          </button>
         </div>
 
         {/* ── Daily summary bar ── */}
