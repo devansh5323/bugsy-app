@@ -167,7 +167,7 @@ export function ParentJourney({
             style={{ position: "absolute", inset: 0, zIndex: 8, display: "flex", flexDirection: "column", overflow: "hidden" }}
           >
             {/* Scrollable area */}
-            <div className="pj-scroll" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", paddingTop: 60 }}>
+            <div className="pj-scroll" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", paddingTop: 100 }}>
 
               {/* Cat + speech bubble */}
               <div style={{ display: "flex", alignItems: "flex-start", padding: "0 12px 0 10px", gap: 8, marginBottom: 6 }}>
