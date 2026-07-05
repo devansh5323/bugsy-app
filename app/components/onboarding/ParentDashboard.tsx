@@ -260,29 +260,6 @@ export function ParentDashboard({
             </div>
           </div>
 
-          {/* Hand device button */}
-          <button onClick={onNext} style={{
-            width: "100%", height: 58, borderRadius: 16,
-            background: "linear-gradient(135deg, #7B35E8 0%, #5B20C0 100%)",
-            border: "none", cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            padding: "0 16px 0 14px",
-            touchAction: "manipulation",
-            boxShadow: "0 4px 16px rgba(100,40,220,0.35)",
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ fontSize: 20 }}>👤</span>
-              <div style={{ textAlign: "left" }}>
-                <p style={{ margin: 0, color: "#fff", fontSize: 14.5, fontWeight: 800, fontFamily: F }}>
-                  Hand device to {Name}
-                </p>
-                <p style={{ margin: 0, color: "rgba(255,255,255,0.6)", fontSize: 11, fontFamily: F }}>
-                  Let {Name} play and start the mission
-                </p>
-              </div>
-            </div>
-            <span style={{ color: "rgba(255,255,255,0.7)", fontSize: 20 }}>›</span>
-          </button>
         </div>
 
         {/* ── 3 Stat Cards ── */}
