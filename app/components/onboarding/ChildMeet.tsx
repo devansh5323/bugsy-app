@@ -471,221 +471,138 @@ function AdventureRoomBackdrop() {
 
 // ── SCREEN 1 — Doorway transition ─────────────────────────────
 export function ChildDoorway({ tint, onNext, onBack }: Common) {
-  const [ready, setReady] = useState(false);
-  const [opening, setOpening] = useState(false);
+  const [showCat,    setShowCat]    = useState(false);
+  const [showBubble, setShowBubble] = useState(false);
+  const [showText,   setShowText]   = useState(false);
+  const [showButton, setShowButton] = useState(false);
 
   useEffect(() => {
-    const t = window.setTimeout(() => setReady(true), 1600);
-    return () => clearTimeout(t);
+    const ts: number[] = [];
+    ts.push(window.setTimeout(() => setShowCat(true),    150));
+    ts.push(window.setTimeout(() => setShowBubble(true), 700));
+    ts.push(window.setTimeout(() => setShowText(true),   1300));
+    ts.push(window.setTimeout(() => setShowButton(true), 1900));
+    return () => ts.forEach(window.clearTimeout);
   }, []);
 
-  const handleDoorTap = () => {
-    if (!ready || opening) return;
-    setOpening(true);
-    window.setTimeout(onNext, 1700);
-  };
+  const F = "var(--font-nunito), system-ui, sans-serif";
 
   return (
-    <div style={{ position: "absolute", inset: 0, overflow: "hidden", color: "#fff" }}>
-      <NightRoomBackdrop />
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+      <NightRoomBackdrop minimal hideRug hideFloor />
 
-      {/* Warm-light flood — fades in after door swings open */}
-      {opening && (
-        <div aria-hidden style={{
-          position: "absolute", inset: 0, zIndex: 20, pointerEvents: "none",
-          background: "radial-gradient(ellipse at 50% 60%, #fff8e0 0%, #ffe8a0 55%, #ffcc44 100%)",
-          animation: "door-light-flood 1.7s ease forwards",
-        }} />
-      )}
-
-      {/* Back button — hidden once opening starts */}
-      {onBack && !opening && (
+      {onBack && (
         <button
           onClick={onBack}
-          aria-label="Back"
           style={{
-            position: "absolute", top: 14, left: 14,
-            width: 40, height: 40, borderRadius: 12, zIndex: 6,
-            border: "2px solid rgba(255,255,255,0.25)",
-            background: "rgba(255,255,255,0.12)",
+            position: "absolute", top: 52, left: 16, zIndex: 20,
+            width: 46, height: 46, borderRadius: 14,
+            background: "rgba(59,31,140,0.82)", border: "none", cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center",
-            cursor: "pointer", color: "#fff",
+            color: "#fff", fontSize: 22, fontWeight: 700,
+            boxShadow: "0 2px 10px rgba(0,0,0,0.28)",
           }}
-        >
-          <svg width="14" height="14" viewBox="0 0 14 14">
-            <path d="M9 1L3 7l6 6" stroke="currentColor" strokeWidth="2.5"
-              fill="none" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
+        >‹</button>
       )}
 
-      {/* Content column */}
+      {/* Upper section: bubble + cat + text */}
       <div style={{
-        position: "relative", zIndex: 1,
-        height: "100%", display: "flex", flexDirection: "column",
-        alignItems: "center", padding: "56px 22px 32px", boxSizing: "border-box",
+        flex: 1, display: "flex", flexDirection: "column",
+        alignItems: "center", justifyContent: "center",
+        padding: "0 28px", marginTop: -40,
       }}>
-        <div style={{ flex: 1 }} />
 
-        {/* ── Tappable door scene ── */}
-        <div
-          onClick={handleDoorTap}
-          role="button"
-          aria-label="Enter Bugsy's room"
-          aria-disabled={!ready}
-          style={{
-            position: "relative",
-            width: 340,
-            height: 480,
-            display: "flex",
-            alignItems: "flex-end",
-            justifyContent: "center",
-            cursor: ready && !opening ? "pointer" : "default",
-            touchAction: "manipulation",
-            transformOrigin: "50% 62%",
-            transform: opening ? "scale(3.0) translateY(-12px)" : "scale(1)",
-            transition: opening
-              ? "transform 1.6s cubic-bezier(0.16, 1, 0.3, 1)"
-              : "transform 0.14s ease",
-          }}
-        >
-          {/* Outer door frame */}
-          <div style={{
-            position: "absolute", bottom: 0,
-            left: "50%", transform: "translateX(-50%)",
-            width: 248, height: 376,
-            borderRadius: "22px 22px 0 0",
-            background: "linear-gradient(170deg,#8a7248 0%,#5c4228 60%,#3e2c18 100%)",
-            boxShadow: "0 0 0 12px #32240f, 0 0 60px 20px rgba(255,200,80,0.22), 0 16px 48px rgba(0,0,0,0.60)",
-          }} />
-
-          {/* Warm interior — brightens as door opens */}
-          <div aria-hidden style={{
-            position: "absolute", bottom: 8,
-            left: "50%", marginLeft: -108,
-            width: 216, height: 356,
-            borderRadius: "14px 14px 0 0",
-            background: opening
-              ? "linear-gradient(180deg,#ffffff 0%,#fff8e0 40%,#ffe090 100%)"
-              : "linear-gradient(180deg,#fffbf0 0%,#ffecb0 45%,#ffd878 100%)",
-            boxShadow: opening
-              ? "0 0 180px 110px rgba(255,240,100,0.95)"
-              : "0 0 80px 36px rgba(255,215,90,0.60)",
-            transition: "background 0.7s ease 0.25s, box-shadow 0.7s ease 0.25s",
-          }} />
-
-          {/* Door panel — wooden face that swings open (3-D hinge from left edge) */}
-          <div aria-hidden style={{
-            position: "absolute", bottom: 8,
-            left: "50%", marginLeft: -108,
-            width: 216, height: 356,
-            borderRadius: "14px 14px 0 0",
-            background: "linear-gradient(160deg,#7a6238 0%,#4e3418 55%,#3a2410 100%)",
-            zIndex: 2,
-            transformOrigin: "left center",
-            transform: opening
-              ? "perspective(560px) rotateY(-86deg)"
-              : "perspective(560px) rotateY(0deg)",
-            transition: opening
-              ? "transform 0.9s cubic-bezier(0.4, 0, 0.15, 1)"
-              : "none",
-          }} />
-
-          {/* Door panel detail lines */}
-          <div aria-hidden style={{
-            position: "absolute", bottom: 180,
-            left: "50%", marginLeft: -96,
-            width: 192, height: 148,
-            borderRadius: "10px 10px 6px 6px",
-            border: "3px solid rgba(255,255,255,0.12)",
-            pointerEvents: "none", zIndex: 3,
-          }} />
-          <div aria-hidden style={{
-            position: "absolute", bottom: 28,
-            left: "50%", marginLeft: -96,
-            width: 192, height: 140,
-            borderRadius: "6px",
-            border: "3px solid rgba(255,255,255,0.10)",
-            pointerEvents: "none", zIndex: 3,
-          }} />
-
-          {/* Gold door knob */}
-          <div aria-hidden style={{
-            position: "absolute", bottom: 168, left: "50%", marginLeft: 78,
-            width: 16, height: 16, borderRadius: "50%", zIndex: 4,
-            background: "radial-gradient(circle at 35% 35%, #FFE070, #9a7010)",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.50)",
-          }} />
-
-          {/* Hanging sign — two ropes + plaque */}
-          <div aria-hidden style={{
-            position: "absolute", bottom: 402,
-            left: "50%", marginLeft: -88, width: 3, height: 24,
-            background: "#7a5830", borderRadius: 2, zIndex: 4,
-          }} />
-          <div aria-hidden style={{
-            position: "absolute", bottom: 402,
-            left: "50%", marginLeft: 86, width: 3, height: 24,
-            background: "#7a5830", borderRadius: 2, zIndex: 4,
-          }} />
-          <div style={{
-            position: "absolute", bottom: 420,
-            left: "50%", marginLeft: -112,
-            width: 224, padding: "12px 18px",
-            background: "linear-gradient(170deg,#fff8e0,#fde8a0)",
-            border: "3px solid #7a5228",
-            borderRadius: 16,
-            color: "#3a2410",
-            fontFamily: "var(--font-nunito), system-ui",
-            fontWeight: 900, fontSize: 21, letterSpacing: 0.3,
-            textAlign: "center",
-            boxShadow: "0 5px 0 #5a3618, 0 10px 22px rgba(0,0,0,0.42)",
-            zIndex: 5,
-          }}>
-            Bugsy&apos;s room
-          </div>
-
-          {/* Bugsy — left side of the door, welcoming children inside */}
-          <div style={{
-            position: "absolute",
-            bottom: -20,
-            left: 2,
-            zIndex: 6,
-          }}>
+        {/* Speech bubble */}
+        {showBubble && (
+          <div
+            style={{
+              position: "relative", marginBottom: 14, zIndex: 2,
+              animation: "cm-pop 0.38s cubic-bezier(0.34,1.56,0.64,1) both",
+            }}
+          >
             <div style={{
-              transformBox: "fill-box",
-              transformOrigin: "center bottom",
-              animation: opening ? undefined : "mascot-beckon 2.8s ease-in-out infinite",
+              background: "#fff", borderRadius: 22,
+              padding: "16px 22px",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.24)",
+              maxWidth: 310, textAlign: "center",
             }}>
-              <Bobo mood="waving" tint={tint} size={210} />
+              <p style={{ fontFamily: F, fontSize: 22, fontWeight: 800, color: "#1a0f40", margin: 0, lineHeight: 1.3 }}>
+                I'm so excited to meet you! 💜
+              </p>
+            </div>
+            <div style={{
+              position: "absolute", bottom: -11, left: "50%", marginLeft: -11,
+              width: 0, height: 0,
+              borderLeft: "11px solid transparent", borderRight: "11px solid transparent",
+              borderTop: "11px solid #fff",
+            }} />
+          </div>
+        )}
+
+        {/* Excited cat */}
+        {showCat && (
+          <div style={{ animation: "cm-rise 0.55s cubic-bezier(0.34,1.56,0.64,1) both" }}>
+            <div style={{ animation: "cm-float 2.8s ease-in-out infinite" }}>
+              <Bobo mood="excited" tint={tint} size={220} animate tailWag />
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Instruction — fades out when opening */}
-        <p style={{
-          margin: "22px 0 0",
-          textAlign: "center",
-          fontFamily: "var(--font-nunito), system-ui",
-          fontSize: 18, fontWeight: 800,
-          color: "#fff",
-          lineHeight: 1.4,
-          textShadow: "0 2px 10px rgba(0,0,0,0.50)",
-          opacity: ready && !opening ? 1 : 0,
-          transform: ready && !opening ? "translateY(0)" : "translateY(8px)",
-          transition: "opacity 0.3s ease, transform 0.3s ease",
-        }}>
-          Follow the cat<br />
-          by <span style={{
-            color: "#FFD234",
-            fontWeight: 900,
-            display: "inline-block",
-            animation: "tap-hint 3.2s ease-in-out infinite",
-          }}>tapping on the door</span>
-        </p>
-
-        <div style={{ flex: 1 }} />
+        {/* Text */}
+        {showText && (
+          <div
+            style={{
+              textAlign: "center", marginTop: 20,
+              animation: "cm-fadein 0.5s ease both",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "center", gap: 10, marginBottom: 2 }}>
+              <span style={{ color: "#FFD700", fontSize: 20, marginTop: 4 }}>✦</span>
+              <p style={{ fontFamily: F, fontSize: 27, fontWeight: 900, color: "#fff", margin: 0, lineHeight: 1.25 }}>
+                Now it&apos;s time to{" "}
+                <span style={{ color: "#A78BFA" }}>hand over</span>
+                {" "}the device to{" "}
+                <span style={{ color: "#A78BFA" }}>your child.</span>
+              </p>
+              <span style={{ color: "#FFD700", fontSize: 20, marginTop: 4 }}>✦</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 12 }}>
+              <span style={{ color: "#FFD700", fontSize: 13 }}>✦</span>
+              <p style={{ fontFamily: F, fontSize: 15, fontWeight: 600, color: "rgba(255,255,255,0.48)", margin: 0 }}>
+                Here&apos;s what happens next
+              </p>
+              <span style={{ color: "#FFD700", fontSize: 13 }}>✦</span>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* CTA button */}
+      <div style={{ flexShrink: 0, padding: "0 24px 44px" }}>
+        {showButton && (
+          <button
+            onClick={onNext}
+            style={{
+              width: "100%", height: 66, borderRadius: 34,
+              background: "linear-gradient(180deg, #9D6FE8 0%, #7C3AED 100%)",
+              border: "none", cursor: "pointer",
+              fontFamily: F, fontSize: 22, fontWeight: 900, color: "#fff",
+              boxShadow: "0 6px 0 #5B21B6, 0 12px 32px rgba(109,40,217,0.50)",
+              touchAction: "manipulation",
+              animation: "cm-fadein 0.4s ease both",
+            }}
+          >
+            Let&apos;s start the journey
+          </button>
+        )}
+      </div>
+
+      <style>{`
+        @keyframes cm-pop  { from { opacity:0; transform:scale(0.82) } to { opacity:1; transform:scale(1) } }
+        @keyframes cm-rise { from { opacity:0; transform:translateY(60px) scale(0.7) } to { opacity:1; transform:translateY(0) scale(1) } }
+        @keyframes cm-float { 0%,100% { transform:translateY(0) } 50% { transform:translateY(-12px) } }
+        @keyframes cm-fadein { from { opacity:0; transform:translateY(14px) } to { opacity:1; transform:translateY(0) } }
+      `}</style>
     </div>
   );
 }
