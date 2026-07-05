@@ -81,62 +81,40 @@ export function ParentDashboard({
       }}>
 
         {/* Header */}
-        <div style={{
-          background: "linear-gradient(135deg, rgba(60,30,120,0.55) 0%, rgba(20,12,55,0.85) 100%)",
-          border: "1px solid rgba(140,90,255,0.28)",
-          borderRadius: 22,
-          padding: "14px 14px 14px 12px",
-          marginBottom: 14,
-          display: "flex", alignItems: "center", gap: 10,
-          position: "relative", overflow: "hidden",
-          boxShadow: "0 4px 24px rgba(80,30,200,0.18)",
-        }}>
-          {/* Background shimmer */}
-          <div style={{
-            position: "absolute", top: -40, left: -30, width: 140, height: 140,
-            borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(140,90,255,0.14) 0%, transparent 70%)",
-            pointerEvents: "none",
-          }} />
-
-          {/* Bobo with glow aura */}
-          <div style={{ flexShrink: 0, position: "relative" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0 }}>
+            <div style={{ flexShrink: 0 }}>
+              <Bobo mood="happy" tint={tint} size={70} animate={false} armsDown />
+            </div>
+            <div>
+              <p style={{ margin: 0, color: "#fff", fontSize: 19, fontWeight: 900, lineHeight: 1.1 }}>
+                Hi, {Name}&apos;s Parent! 🤚
+              </p>
+              <p style={{ margin: "4px 0 0", color: "rgba(255,255,255,0.55)", fontSize: 12, lineHeight: 1.4 }}>
+                Great to see you here.<br />Let&apos;s help {Name} grow together! 💜
+              </p>
+            </div>
+          </div>
+          {/* Switch to child */}
+          <button onClick={onNext} style={{
+            flexShrink: 0, cursor: "pointer",
+            background: "rgba(70,40,140,0.5)",
+            border: "1px solid rgba(120,80,220,0.35)",
+            borderRadius: 16, padding: "10px 11px",
+            display: "flex", alignItems: "center", gap: 8,
+          }}>
             <div style={{
-              position: "absolute", inset: -10, borderRadius: "50%",
-              background: "radial-gradient(circle, rgba(120,160,255,0.22) 0%, transparent 68%)",
-            }} />
-            <Bobo mood="happy" tint={tint} size={86} animate tailWag />
-          </div>
-
-          {/* Text + button */}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ margin: 0, color: "#fff", fontSize: 17.5, fontWeight: 900, lineHeight: 1.2 }}>
-              Hi, {Name}&apos;s Parent! 👋
-            </p>
-            <p style={{ margin: "3px 0 10px", color: "rgba(255,255,255,0.52)", fontSize: 11.5, lineHeight: 1.45 }}>
-              Great to see you here. Let&apos;s help {Name} grow together! 💜
-            </p>
-            {/* Switch button */}
-            <button onClick={onNext} style={{
-              cursor: "pointer",
-              background: "linear-gradient(135deg, #6D28D9, #7C3AED)",
-              border: "1px solid rgba(167,139,250,0.35)",
-              borderRadius: 22, padding: "7px 13px",
-              display: "flex", alignItems: "center", gap: 7,
-              boxShadow: "0 4px 14px rgba(109,40,217,0.38)",
-            }}>
-              <div style={{
-                width: 26, height: 26, borderRadius: "50%",
-                background: "rgba(255,255,255,0.15)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 15, flexShrink: 0,
-              }}>👧</div>
-              <span style={{ color: "#fff", fontSize: 11.5, fontWeight: 700, fontFamily: F, whiteSpace: "nowrap" }}>
-                Switch to Child Dashboard
-              </span>
-              <span style={{ color: "rgba(255,255,255,0.55)", fontSize: 16 }}>›</span>
-            </button>
-          </div>
+              width: 36, height: 36, borderRadius: "50%",
+              background: "linear-gradient(135deg, #5B32B8, #3D1E8A)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 19,
+            }}>👧</div>
+            <div>
+              <p style={{ margin: 0, color: "rgba(255,255,255,0.8)", fontSize: 11.5, fontWeight: 700, lineHeight: 1.25 }}>Switch to</p>
+              <p style={{ margin: 0, color: "rgba(255,255,255,0.8)", fontSize: 11.5, fontWeight: 700, lineHeight: 1.25 }}>Child Dashboard</p>
+            </div>
+            <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 18 }}>›</span>
+          </button>
         </div>
 
         {/* ── TODAY'S HIGHLIGHT ── */}
