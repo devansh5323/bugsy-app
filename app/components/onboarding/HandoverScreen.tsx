@@ -117,25 +117,55 @@ export function HandoverScreen({
           </motion.div>
         </div>
 
-        {/* "Now it's time…" */}
-        <div style={{
-          textAlign: "center", marginTop: 20,
-          opacity: showText ? 1 : 0,
-          transform: showText ? "translateY(0)" : "translateY(14px)",
-          transition: "opacity 0.5s ease, transform 0.5s ease",
-          pointerEvents: "none",
-        }}>
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "center", gap: 10, marginBottom: 2 }}>
-            <span style={{ color: "#FFD700", fontSize: 20, marginTop: 4 }}>✦</span>
-            <p style={{ fontFamily: F, fontSize: 27, fontWeight: 900, color: "#fff", margin: 0, lineHeight: 1.25 }}>
-              Now it&apos;s time to{" "}
-              <span style={{ color: "#A78BFA" }}>hand over</span>
-              {" "}the device to{" "}
-              <span style={{ color: "#A78BFA" }}>your child.</span>
-            </p>
-            <span style={{ color: "#FFD700", fontSize: 20, marginTop: 4 }}>✦</span>
-          </div>
-        </div>
+        {/* "Now it's time…" — word-by-word animation */}
+        {showText && (() => {
+          const words: { text: string; purple: boolean }[] = [
+            { text: "Now",    purple: false },
+            { text: "it's",   purple: false },
+            { text: "time",   purple: false },
+            { text: "to",     purple: false },
+            { text: "hand",   purple: true  },
+            { text: "over",   purple: true  },
+            { text: "the",    purple: false },
+            { text: "device", purple: false },
+            { text: "to",     purple: false },
+            { text: "your",   purple: true  },
+            { text: "child.", purple: true  },
+          ];
+          return (
+            <div style={{ textAlign: "center", marginTop: 20, pointerEvents: "none" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, flexWrap: "wrap" }}>
+                <span style={{
+                  color: "#FFD700", fontSize: 20, flexShrink: 0,
+                  animation: "hs-star-pulse 1.8s ease-in-out infinite",
+                }}>✦</span>
+
+                <p style={{ fontFamily: F, fontSize: 27, fontWeight: 900, margin: 0, lineHeight: 1.3, display: "flex", flexWrap: "wrap", gap: "0 7px", justifyContent: "center" }}>
+                  {words.map((w, i) => (
+                    <span
+                      key={i}
+                      style={{
+                        color: w.purple ? "#A78BFA" : "#fff",
+                        display: "inline-block",
+                        opacity: 0,
+                        animation: `hs-word-pop 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards`,
+                        animationDelay: `${i * 90}ms`,
+                        ...(w.purple ? { animation: `hs-word-pop 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards, hs-purple-glow 2.2s ease-in-out ${i * 90 + 500}ms infinite`, } : {}),
+                      }}
+                    >
+                      {w.text}
+                    </span>
+                  ))}
+                </p>
+
+                <span style={{
+                  color: "#FFD700", fontSize: 20, flexShrink: 0,
+                  animation: "hs-star-pulse 1.8s ease-in-out 0.3s infinite",
+                }}>✦</span>
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* CTA button — stays mounted, transitions in */}
@@ -163,7 +193,10 @@ export function HandoverScreen({
       </div>
 
       <style>{`
-        @keyframes hs-blink { 0%,100%{opacity:1} 50%{opacity:0} }
+        @keyframes hs-blink       { 0%,100%{opacity:1} 50%{opacity:0} }
+        @keyframes hs-word-pop    { from{opacity:0;transform:translateY(12px) scale(0.88)} to{opacity:1;transform:translateY(0) scale(1)} }
+        @keyframes hs-purple-glow { 0%,100%{text-shadow:0 0 0px transparent} 50%{text-shadow:0 0 14px rgba(167,139,250,0.9)} }
+        @keyframes hs-star-pulse  { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.35)} }
       `}</style>
     </div>
   );
