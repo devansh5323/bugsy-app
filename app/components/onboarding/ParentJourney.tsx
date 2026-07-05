@@ -203,7 +203,7 @@ export function ParentJourney({
               position: "absolute", inset: 0, zIndex: 8,
               display: "flex", flexDirection: "column",
               overflow: "hidden",
-              paddingTop: 72,
+              paddingTop: 104,
             }}
           >
             {/* ── Cat (left) + speech bubble (right) ── */}
@@ -226,7 +226,7 @@ export function ParentJourney({
                 position: "relative", marginTop: 4,
               }}>
                 <div style={{ position: "absolute", left: -10, top: 14, width: 0, height: 0, borderTop: "8px solid transparent", borderBottom: "8px solid transparent", borderRight: "10px solid #fff" }} />
-                <p style={{ fontFamily: F, fontSize: 13.5, fontWeight: 800, color: "#1a0f40", margin: 0, lineHeight: 1.4 }}>
+                <p style={{ fontFamily: F, fontSize: 13.5, fontWeight: 500, color: "#1a0f40", margin: 0, lineHeight: 1.4 }}>
                   {LINE2} 💜
                 </p>
               </div>
