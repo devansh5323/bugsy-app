@@ -41,7 +41,6 @@ export function ParentJourney({
   const [typedLine2,   setTypedLine2]   = useState("");
   const [showTimeline, setShowTimeline] = useState(false);
   const [stageCount,   setStageCount]   = useState(0);
-  const [showClosing,  setShowClosing]  = useState(false);
   const [showButton,   setShowButton]   = useState(false);
 
   useEffect(() => {
@@ -69,8 +68,7 @@ export function ParentJourney({
         setTimeout(() => setStageCount(i + 1), doneAt + 800 + i * 460)
       );
       const afterAll = doneAt + 800 + STAGES.length * 460;
-      setTimeout(() => setShowClosing(true), afterAll + 200);
-      setTimeout(() => setShowButton(true),  afterAll + 600);
+      setTimeout(() => setShowButton(true),  afterAll + 200);
     }
   }, [phase]);
 
@@ -427,47 +425,8 @@ export function ParentJourney({
               })}
             </div>
 
-            {/* ── Closing card ── */}
-            <AnimatePresence>
-              {showClosing && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ type: "spring", stiffness: 220, damping: 26 }}
-                  style={{
-                    flexShrink: 0,
-                    display: "flex", alignItems: "center", gap: 9,
-                    background: "rgba(12,8,34,0.90)",
-                    border: "1.5px solid rgba(90,55,180,0.50)",
-                    borderRadius: 14,
-                    padding: "9px 10px",
-                    margin: "2px 10px 0 6px",
-                    boxShadow: "0 3px 12px rgba(0,0,0,0.38)",
-                  }}
-                >
-                  <div style={{
-                    width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
-                    background: "linear-gradient(135deg, #9D4EDD, #6B2CC0)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 17, boxShadow: "0 0 12px rgba(157,78,221,0.50)",
-                  }}>💜</div>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontFamily: F, fontSize: 12, fontWeight: 700, color: "#fff", margin: "0 0 1px", lineHeight: 1.3 }}>
-                      When Bugsy grows,{" "}
-                      <span style={{ color: "#A78BFA", fontWeight: 900 }}>your child grows.</span>
-                    </p>
-                    <p style={{ fontFamily: F, fontSize: 10.5, fontWeight: 600, color: "rgba(255,255,255,0.62)", margin: 0 }}>
-                      Thank you for being part of this journey! 💜
-                    </p>
-                  </div>
-                  <div style={{ flexShrink: 0, pointerEvents: "none" }}>
-                    <Bobo mood="happy" tint={tint} size={40} armsDown />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
 
-            {/* ── Continue button — no flower emojis ── */}
+{/* ── Continue button — no flower emojis ── */}
             <div style={{ flexShrink: 0, padding: "4px 10px 22px 6px" }}>
               <AnimatePresence>
                 {showButton && (
