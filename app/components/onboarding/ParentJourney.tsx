@@ -185,11 +185,11 @@ export function ParentJourney({
               {/* Section heading */}
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "4px 0 8px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                  <span style={{ fontSize: 13 }}>✨</span>
-                  <span style={{ fontFamily: F, fontSize: 13.5, fontWeight: 400, color: "#fff" }}>Every visit helps Fumi grow</span>
-                  <span style={{ fontSize: 13 }}>✨</span>
+                  <span style={{ fontSize: 15 }}>✨</span>
+                  <span style={{ fontFamily: F, fontSize: 15.5, fontWeight: 400, color: "#fff" }}>Every visit helps Fumi grow</span>
+                  <span style={{ fontSize: 15 }}>✨</span>
                 </div>
-                <p style={{ fontFamily: F, fontSize: 11, fontWeight: 700, color: "#A78BFA", margin: 0, fontStyle: "italic" }}>Little by little, big changes!</p>
+                <p style={{ fontFamily: F, fontSize: 12.5, fontWeight: 700, color: "#A78BFA", margin: 0, fontStyle: "italic" }}>Little by little, big changes!</p>
               </div>
 
               {/* ── Stage cards ── */}
