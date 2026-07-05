@@ -170,7 +170,7 @@ export function ParentJourney({
             <div className="pj-scroll" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", paddingTop: 100 }}>
 
               {/* Cat + speech bubble */}
-              <div style={{ display: "flex", alignItems: "flex-start", padding: "0 12px 0 10px", gap: 8, marginBottom: 6 }}>
+              <div style={{ display: "flex", alignItems: "flex-start", padding: "0 12px 0 10px", gap: 8, marginBottom: 0 }}>
                 <div style={{ flexShrink: 0, pointerEvents: "none" }}>
                   <motion.div animate={{ y: [0, -5, 0] }} transition={{ duration: 3.0, repeat: Infinity, ease: "easeInOut" }}>
                     <Bobo mood="happy" tint={tint} size={90} animate armsDown />
@@ -183,7 +183,7 @@ export function ParentJourney({
               </div>
 
               {/* Section heading */}
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "4px 0 8px" }}>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "0px 0 6px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
                   <span style={{ fontSize: 15 }}>✨</span>
                   <span style={{ fontFamily: F, fontSize: 15.5, fontWeight: 400, color: "#fff" }}>Every visit helps Fumi grow</span>
