@@ -367,7 +367,7 @@ export function ParentJourney({
                               flexShrink: 0, width: 40,
                               display: "flex", flexDirection: "column",
                               alignItems: "center", gap: 2,
-                              marginRight: 6,
+                              marginRight: 22,
                             }}>
                               <span style={{ fontSize: 22 }}>{stage.icon}</span>
                               <span style={{
