@@ -122,66 +122,66 @@ export function ParentDashboard({
           ...CARD,
           border: "1.5px solid rgba(200,155,0,0.38)",
           boxShadow: "0 0 28px rgba(180,130,0,0.1)",
-          padding: "16px 14px",
+          padding: "12px 12px",
           overflow: "hidden", position: "relative",
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
-            <span style={{ fontSize: 15 }}>⭐</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 7 }}>
+            <span style={{ fontSize: 13 }}>⭐</span>
             <span style={{
-              color: "rgba(255,255,255,0.5)", fontSize: 10.5, fontWeight: 700,
+              color: "rgba(255,255,255,0.5)", fontSize: 9.5, fontWeight: 700,
               letterSpacing: "0.9px", textTransform: "uppercase",
             }}>TODAY&apos;S HIGHLIGHT.</span>
           </div>
 
           <div style={{ display: "flex", alignItems: "flex-end" }}>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ margin: "0 0 7px", color: "#FFD700", fontSize: 25, fontWeight: 900, lineHeight: 1.1 }}>
+              <p style={{ margin: "0 0 5px", color: "#FFD700", fontSize: 21, fontWeight: 900, lineHeight: 1.1 }}>
                 Consistency Hero!
               </p>
-              <p style={{ margin: "0 0 12px", color: "rgba(255,255,255,0.62)", fontSize: 12.5, lineHeight: 1.5 }}>
+              <p style={{ margin: "0 0 9px", color: "rgba(255,255,255,0.62)", fontSize: 11.5, lineHeight: 1.45 }}>
                 {Name} showed up every day this week. That&apos;s the magic! 💜
               </p>
               {/* Sub-card */}
               <div style={{
-                background: "rgba(160,30,70,0.2)", borderRadius: 12,
+                background: "rgba(160,30,70,0.2)", borderRadius: 10,
                 border: "1px solid rgba(220,60,100,0.25)",
-                padding: "8px 11px",
-                display: "flex", alignItems: "center", gap: 9,
+                padding: "6px 9px",
+                display: "flex", alignItems: "center", gap: 7,
               }}>
                 <div style={{
-                  width: 30, height: 30, borderRadius: 9, flexShrink: 0,
+                  width: 26, height: 26, borderRadius: 8, flexShrink: 0,
                   background: "linear-gradient(135deg, #D63068, #A0204A)",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 14,
+                  fontSize: 12,
                 }}>⭐</div>
                 <div>
-                  <p style={{ margin: 0, color: "#fff", fontSize: 12.5, fontWeight: 700 }}>
+                  <p style={{ margin: 0, color: "#fff", fontSize: 11.5, fontWeight: 700 }}>
                     Focus improved by <span style={{ color: "#FF7A35" }}>15%</span>
                   </p>
-                  <p style={{ margin: "2px 0 0", color: "rgba(255,255,255,0.48)", fontSize: 11 }}>Great progress!</p>
+                  <p style={{ margin: "1px 0 0", color: "rgba(255,255,255,0.48)", fontSize: 10 }}>Great progress!</p>
                 </div>
               </div>
             </div>
 
             {/* Bobo with stars */}
-            <div style={{ flexShrink: 0, position: "relative", marginBottom: -14, marginRight: -6, marginLeft: 6 }}>
+            <div style={{ flexShrink: 0, position: "relative", marginBottom: -10, marginRight: -4, marginLeft: 4 }}>
               <span style={{
-                position: "absolute", top: -8, left: "30%",
-                fontSize: 20, animation: "pd-float 2.3s ease-in-out infinite",
+                position: "absolute", top: -6, left: "30%",
+                fontSize: 16, animation: "pd-float 2.3s ease-in-out infinite",
               }}>⭐</span>
               <span style={{
-                position: "absolute", top: 14, right: -6,
-                fontSize: 15, animation: "pd-float 2.1s ease-in-out 0.6s infinite",
+                position: "absolute", top: 10, right: -4,
+                fontSize: 12, animation: "pd-float 2.1s ease-in-out 0.6s infinite",
               }}>✦</span>
               <span style={{
-                position: "absolute", bottom: 26, right: -2,
-                fontSize: 18, animation: "pd-float 2.5s ease-in-out 1s infinite",
+                position: "absolute", bottom: 20, right: 0,
+                fontSize: 15, animation: "pd-float 2.5s ease-in-out 1s infinite",
               }}>⭐</span>
               <span style={{
-                position: "absolute", bottom: 20, left: -10,
-                fontSize: 14, animation: "pd-float 2.0s ease-in-out 0.4s infinite",
+                position: "absolute", bottom: 16, left: -8,
+                fontSize: 11, animation: "pd-float 2.0s ease-in-out 0.4s infinite",
               }}>✦</span>
-              <Bobo mood="excited" tint={tint} size={130} animate tailWag armsDown />
+              <Bobo mood="excited" tint={tint} size={105} animate tailWag armsDown />
             </div>
           </div>
         </div>
