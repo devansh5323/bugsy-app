@@ -5,21 +5,22 @@ import { Bobo } from "../Mascot";
 const F = "var(--font-nunito), system-ui, sans-serif";
 
 function ArcGauge({ value, max }: { value: number; max: number }) {
-  const r = 42;
+  const r = 40;
   const arcLen = Math.PI * r;
   const filled = (value / max) * arcLen;
   return (
-    <svg width="100%" viewBox="0 0 100 56" style={{ display: "block" }}>
+    <svg width="100%" viewBox="0 0 100 54" style={{ display: "block" }}>
       <defs>
         <linearGradient id="pd-arc-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#8B5CF6" />
+          <stop offset="0%" stopColor="#7C3AED" />
+          <stop offset="55%" stopColor="#0EA5E9" />
           <stop offset="100%" stopColor="#06B6D4" />
         </linearGradient>
       </defs>
-      <path d="M 8,50 A 42,42 0 0 1 92,50" fill="none"
-        stroke="rgba(255,255,255,0.09)" strokeWidth="10" strokeLinecap="round" />
-      <path d="M 8,50 A 42,42 0 0 1 92,50" fill="none"
-        stroke="url(#pd-arc-grad)" strokeWidth="10" strokeLinecap="round"
+      <path d="M 10,50 A 40,40 0 0 1 90,50" fill="none"
+        stroke="rgba(255,255,255,0.08)" strokeWidth="13" strokeLinecap="round" />
+      <path d="M 10,50 A 40,40 0 0 1 90,50" fill="none"
+        stroke="url(#pd-arc-grad)" strokeWidth="13" strokeLinecap="round"
         strokeDasharray={`${filled.toFixed(1)} ${(arcLen + 20).toFixed(1)}`} />
     </svg>
   );
@@ -267,78 +268,76 @@ export function ParentDashboard({
 
           {/* Streak */}
           <div style={{
-            flex: 1, borderRadius: 16, padding: "13px 10px",
-            background: "linear-gradient(180deg, rgba(255,77,143,0.1) 0%, rgba(14,10,38,0.95) 45%)",
-            border: "1px solid rgba(255,77,143,0.28)",
-            overflow: "hidden", position: "relative",
+            flex: 1, borderRadius: 18, padding: "13px 10px",
+            background: "rgba(10,7,30,0.95)",
+            border: "1.5px solid rgba(80,50,160,0.35)",
           }}>
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg, #FF4D8F, #FF8C42)", borderRadius: "16px 16px 0 0" }} />
-            <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 9 }}>
-              <div style={{ width: 26, height: 26, borderRadius: 7, background: "rgba(255,77,143,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>🔥</div>
-              <span style={{ color: "rgba(255,255,255,0.55)", fontSize: 9.5, fontWeight: 700, lineHeight: 1.2 }}>Current<br/>Streak</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+              <span style={{ fontSize: 20 }}>🔥</span>
+              <span style={{ color: "#fff", fontSize: 9.5, fontWeight: 800, letterSpacing: "0.5px", textTransform: "uppercase" }}>Current Streak</span>
             </div>
-            <p style={{ margin: 0, color: "#FF4D8F", fontSize: 34, fontWeight: 900, lineHeight: 1 }}>7</p>
-            <p style={{ margin: "1px 0 7px", color: "#FF4D8F", fontSize: 12, fontWeight: 700 }}>days</p>
+            <p style={{ margin: 0, color: "#FF3D8B", fontSize: 38, fontWeight: 900, lineHeight: 1 }}>7</p>
+            <p style={{ margin: "2px 0 9px", color: "#FF3D8B", fontSize: 13, fontWeight: 700 }}>days</p>
             <div style={{ display: "flex", gap: 1, marginBottom: 3 }}>
               {Array.from({ length: 7 }).map((_, i) => (
-                <span key={i} style={{ flex: 1, textAlign: "center", color: "#FF4D8F", fontSize: 12 }}>★</span>
+                <span key={i} style={{
+                  flex: 1, textAlign: "center", color: "#FF3D8B", fontSize: 14,
+                  textShadow: "0 0 8px rgba(255,61,139,0.7)",
+                }}>★</span>
               ))}
             </div>
-            <div style={{ display: "flex", gap: 1, marginBottom: 7 }}>
+            <div style={{ display: "flex", gap: 1, marginBottom: 9 }}>
               {["M","T","W","T","F","S","S"].map((d, i) => (
-                <span key={i} style={{ flex: 1, textAlign: "center", color: "rgba(255,255,255,0.38)", fontSize: 7.5, fontWeight: 600 }}>{d}</span>
+                <span key={i} style={{ flex: 1, textAlign: "center", color: "rgba(255,255,255,0.4)", fontSize: 8, fontWeight: 600 }}>{d}</span>
               ))}
             </div>
-            <p style={{ margin: 0, color: "rgba(255,255,255,0.48)", fontSize: 9 }}>Amazing! Keep it up!</p>
+            <p style={{ margin: 0, color: "rgba(255,255,255,0.6)", fontSize: 10 }}>Amazing! Keep it up! 🔥</p>
           </div>
 
           {/* Focus Score */}
           <div style={{
-            flex: 1, borderRadius: 16, padding: "13px 10px",
-            background: "linear-gradient(180deg, rgba(6,182,212,0.1) 0%, rgba(14,10,38,0.95) 45%)",
-            border: "1px solid rgba(6,182,212,0.28)",
-            overflow: "hidden", position: "relative",
+            flex: 1, borderRadius: 18, padding: "13px 10px",
+            background: "rgba(10,7,30,0.95)",
+            border: "1.5px solid rgba(80,50,160,0.35)",
           }}>
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg, #8B5CF6, #06B6D4)", borderRadius: "16px 16px 0 0" }} />
-            <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 7 }}>
-              <div style={{ width: 26, height: 26, borderRadius: 7, background: "rgba(6,182,212,0.18)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>🎯</div>
-              <span style={{ color: "rgba(255,255,255,0.55)", fontSize: 9.5, fontWeight: 700, lineHeight: 1.2 }}>Current<br/>Focus Score</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+              <span style={{ fontSize: 20 }}>🎯</span>
+              <span style={{ color: "#fff", fontSize: 9.5, fontWeight: 800, letterSpacing: "0.5px", textTransform: "uppercase" }}>Current Focus Score</span>
             </div>
             <ArcGauge value={78} max={100} />
-            <div style={{ textAlign: "center", marginTop: -2 }}>
-              <span style={{ color: "#06B6D4", fontSize: 24, fontWeight: 900 }}>78</span>
-              <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}>/100</span>
+            <div style={{ textAlign: "center", marginTop: -6 }}>
+              <span style={{ color: "#06B6D4", fontSize: 28, fontWeight: 900 }}>78</span>
+              <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, fontWeight: 600 }}> /100</span>
             </div>
-            <p style={{ margin: "3px 0 2px", textAlign: "center", color: "rgba(255,255,255,0.55)", fontSize: 9.5, fontWeight: 600 }}>Above average! 🎉</p>
-            <p style={{ margin: 0, textAlign: "center", color: "#4ADE80", fontSize: 9.5, fontWeight: 700 }}>↑ 12 pts vs last week</p>
+            <p style={{ margin: "5px 0 7px", textAlign: "center", color: "#06B6D4", fontSize: 10.5, fontWeight: 600 }}>Above average! 🎉</p>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+              <div style={{
+                width: 17, height: 17, borderRadius: "50%",
+                background: "#22C55E",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0,
+              }}>
+                <span style={{ color: "#fff", fontSize: 9, fontWeight: 900, lineHeight: 1 }}>↑</span>
+              </div>
+              <span style={{ color: "#22C55E", fontSize: 10.5, fontWeight: 700 }}>12 pts</span>
+              <span style={{ color: "rgba(255,255,255,0.42)", fontSize: 10 }}>vs last week</span>
+            </div>
           </div>
 
           {/* Missions Completed */}
           <div style={{
-            flex: 1, borderRadius: 16, padding: "13px 10px",
-            background: "linear-gradient(180deg, rgba(155,89,232,0.12) 0%, rgba(14,10,38,0.95) 45%)",
-            border: "1px solid rgba(155,89,232,0.3)",
-            overflow: "hidden", position: "relative",
+            flex: 1, borderRadius: 18, padding: "13px 10px",
+            background: "rgba(10,7,30,0.95)",
+            border: "1.5px solid rgba(80,50,160,0.35)",
           }}>
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg, #9B59E8, #C084FC)", borderRadius: "16px 16px 0 0" }} />
-            <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 9 }}>
-              <div style={{ width: 26, height: 26, borderRadius: 7, background: "rgba(155,89,232,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>📋</div>
-              <span style={{ color: "rgba(255,255,255,0.55)", fontSize: 9.5, fontWeight: 700, lineHeight: 1.2 }}>Missions<br/>Completed</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+              <span style={{ fontSize: 20 }}>📋</span>
+              <span style={{ color: "#fff", fontSize: 9.5, fontWeight: 800, letterSpacing: "0.5px", textTransform: "uppercase" }}>Missions Completed</span>
             </div>
-            <p style={{ margin: 0, color: "#C084FC", fontSize: 34, fontWeight: 900, lineHeight: 1 }}>23</p>
-            <p style={{ margin: "1px 0 8px", color: "#C084FC", fontSize: 12, fontWeight: 700 }}>missions</p>
-            {/* Progress bar */}
-            <div style={{ marginBottom: 6 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 8 }}>This month</span>
-                <span style={{ color: "#C084FC", fontSize: 8, fontWeight: 700 }}>23/30</span>
-              </div>
-              <div style={{ height: 5, background: "rgba(255,255,255,0.08)", borderRadius: 3, overflow: "hidden" }}>
-                <div style={{ width: "77%", height: "100%", background: "linear-gradient(90deg, #9B59E8, #C084FC)", borderRadius: 3 }} />
-              </div>
-            </div>
-            <p style={{ margin: 0, color: "rgba(255,255,255,0.38)", fontSize: 9, lineHeight: 1.35 }}>
-              Total adventures completed
+            <p style={{ margin: 0, color: "#A855F7", fontSize: 38, fontWeight: 900, lineHeight: 1 }}>23</p>
+            <p style={{ margin: "2px 0 9px", color: "#A855F7", fontSize: 13, fontWeight: 700 }}>missions</p>
+            <p style={{ margin: 0, color: "rgba(255,255,255,0.5)", fontSize: 10.5, lineHeight: 1.5 }}>
+              Total adventures<br />you&apos;ve completed
             </p>
           </div>
         </div>
