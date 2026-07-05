@@ -142,7 +142,7 @@ export function ParentDashboard({
                 Consistency Hero!
               </p>
               <p style={{ margin: "0 0 9px", color: "rgba(255,255,255,0.62)", fontSize: 11.5, lineHeight: 1.45 }}>
-                {Name} showed up every day this week. That&apos;s the magic! 💜
+                {Name} showed up every day this week. That&apos;s the magic!
               </p>
               {/* Sub-card */}
               <div style={{
@@ -166,24 +166,8 @@ export function ParentDashboard({
               </div>
             </div>
 
-            {/* Bobo with stars */}
-            <div style={{ flexShrink: 0, position: "relative", marginBottom: -10, marginRight: -4, marginLeft: 4 }}>
-              <span style={{
-                position: "absolute", top: -6, left: "30%",
-                fontSize: 16, animation: "pd-float 2.3s ease-in-out infinite",
-              }}>⭐</span>
-              <span style={{
-                position: "absolute", top: 10, right: -4,
-                fontSize: 12, animation: "pd-float 2.1s ease-in-out 0.6s infinite",
-              }}>✦</span>
-              <span style={{
-                position: "absolute", bottom: 20, right: 0,
-                fontSize: 15, animation: "pd-float 2.5s ease-in-out 1s infinite",
-              }}>⭐</span>
-              <span style={{
-                position: "absolute", bottom: 16, left: -8,
-                fontSize: 11, animation: "pd-float 2.0s ease-in-out 0.4s infinite",
-              }}>✦</span>
+            {/* Bobo */}
+            <div style={{ flexShrink: 0, marginBottom: -10, marginRight: -4, marginLeft: 4 }}>
               <Bobo mood="excited" tint={tint} size={105} animate tailWag armsDown />
             </div>
           </div>
