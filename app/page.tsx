@@ -575,15 +575,6 @@ export default function Home() {
           );
         case 4:
           return (
-            <ParentDashboard
-              tint={TINT}
-              childName={childName}
-              parentName={parentName}
-              onNext={advanceParent}
-            />
-          );
-        case 5:
-          return (
             <TellMeAboutChild
               tint={TINT}
               childName={childName}
@@ -594,12 +585,20 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 6:
+        case 5:
           return (
             <QuestionnaireScreen
               childName={childName}
               onNext={advanceParent}
               onBack={back}
+            />
+          );
+        case 6:
+          return (
+            <ParentDashboard
+              tint={TINT}
+              parentName={parentName}
+              onNext={advanceParent}
             />
           );
         case 7:
