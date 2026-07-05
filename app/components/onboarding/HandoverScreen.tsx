@@ -150,7 +150,7 @@ export function HandoverScreen({
                         opacity: 0,
                         animation: `hs-word-pop 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards`,
                         animationDelay: `${i * 90}ms`,
-                        ...(w.purple ? { animation: `hs-word-pop 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards, hs-purple-glow 2.2s ease-in-out ${i * 90 + 500}ms infinite`, } : {}),
+                        ...(w.purple ? { animation: `hs-word-pop 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards` } : {}),
                       }}
                     >
                       {w.text}
