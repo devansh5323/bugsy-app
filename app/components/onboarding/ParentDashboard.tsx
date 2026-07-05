@@ -50,21 +50,7 @@ export function ParentDashboard({
         ))}
       </div>
 
-      {/* Crescent moon — top right decoration */}
-      <div style={{ position: "absolute", top: 38, right: 18, zIndex: 1, pointerEvents: "none" }}>
-        <svg width="52" height="52" viewBox="0 0 52 52">
-          <defs>
-            <radialGradient id="pd-moon" cx="40%" cy="35%" r="60%">
-              <stop offset="0%" stopColor="#FDE68A" />
-              <stop offset="100%" stopColor="#F59E0B" />
-            </radialGradient>
-          </defs>
-          <circle cx="30" cy="26" r="17" fill="url(#pd-moon)" />
-          <circle cx="21" cy="19" r="13" fill="#080620" />
-        </svg>
-      </div>
-
-      {/* ── Scrollable content ── */}
+{/* ── Scrollable content ── */}
       <div className="pd-scroll" style={{
         flex: 1, overflowY: "auto", overflowX: "hidden",
         padding: "52px 14px 0",
@@ -300,8 +286,8 @@ export function ParentDashboard({
 
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ margin: "0 0 2px", color: "#F59E0B", fontSize: 10, fontWeight: 800, letterSpacing: "1px", textTransform: "uppercase" }}>Coming Tomorrow</p>
-            <p style={{ margin: "0 0 3px", color: "rgba(255,255,255,0.85)", fontSize: 13, fontWeight: 500, lineHeight: 1.3 }}>New Adventure Unlocks</p>
-            <p style={{ margin: 0, color: "#F59E0B", fontSize: 14, fontWeight: 900 }}>Emotional Balance Builder</p>
+            <p style={{ margin: "0 0 3px", color: "rgba(255,255,255,0.85)", fontSize: 13, fontWeight: 400, lineHeight: 1.3 }}>New Adventure Unlocks</p>
+            <p style={{ margin: 0, color: "#F59E0B", fontSize: 14, fontWeight: 400 }}>Emotional Balance Builder</p>
           </div>
 
           {/* Moon + cloud illustration */}
