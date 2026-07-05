@@ -221,21 +221,13 @@ export function ParentJourney({
               </div>
               <div style={{
                 flex: 1, background: "#fff", borderRadius: 14,
-                padding: "9px 28px 9px 10px",
+                padding: "9px 12px",
                 boxShadow: "0 5px 22px rgba(0,0,0,0.22)",
                 position: "relative", marginTop: 4,
               }}>
                 <div style={{ position: "absolute", left: -10, top: 14, width: 0, height: 0, borderTop: "8px solid transparent", borderBottom: "8px solid transparent", borderRight: "10px solid #fff" }} />
-                <span style={{ position: "absolute", top: 7, right: 9, color: "#C4B5FD", fontSize: 13 }}>✦</span>
-                <p style={{ fontFamily: F, fontSize: 15, fontWeight: 900, color: "#7C3AED", margin: "0 0 2px", lineHeight: 1.2 }}>
-                  Hi! I'm Bugsy 💜
-                </p>
-                <p style={{ fontFamily: F, fontSize: 11, fontWeight: 700, color: "#1a0f40", margin: "0 0 1px", lineHeight: 1.35 }}>
-                  Every day your child helps me grow...
-                </p>
-                <p style={{ fontFamily: F, fontSize: 11, fontWeight: 700, color: "#1a0f40", margin: 0, lineHeight: 1.35 }}>
-                  And together, we'll grow their{" "}
-                  <span style={{ color: "#7C3AED", fontWeight: 900 }}>confidence</span> too! ✨
+                <p style={{ fontFamily: F, fontSize: 13.5, fontWeight: 800, color: "#1a0f40", margin: 0, lineHeight: 1.4 }}>
+                  {LINE2} 💜
                 </p>
               </div>
             </div>
