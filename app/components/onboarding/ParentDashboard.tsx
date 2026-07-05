@@ -357,41 +357,6 @@ export function ParentDashboard({
           </div>
         </div>
 
-        {/* ── Fumi says ── */}
-        <div style={{
-          ...CARD,
-          display: "flex", alignItems: "center", gap: 12,
-          padding: "12px 14px",
-        }}>
-          <div style={{ flexShrink: 0, position: "relative" }}>
-            <span style={{
-              position: "absolute", top: -8, right: -2, fontSize: 14,
-              animation: "pd-float 2.1s ease-in-out 0.3s infinite",
-            }}>✦</span>
-            <span style={{ position: "absolute", top: 8, left: -8, fontSize: 13 }}>💜</span>
-            <Bobo mood="happy" tint={tint} size={76} animate tailWag armsDown />
-          </div>
-          <div style={{ flex: 1, position: "relative" }}>
-            {/* Bubble tail */}
-            <div style={{
-              position: "absolute", left: -9, top: "50%", marginTop: -9,
-              width: 0, height: 0,
-              borderTop: "9px solid transparent",
-              borderBottom: "9px solid transparent",
-              borderRight: "9px solid #fff",
-            }} />
-            <div style={{
-              background: "#fff", borderRadius: 16, padding: "12px 14px",
-            }}>
-              <p style={{ margin: 0, color: "#1a0f40", fontSize: 13, fontWeight: 800, lineHeight: 1.55 }}>
-                Hi! I&apos;m so proud of {Name}.<br />
-                She&apos;s doing amazing!<br />
-                Let&apos;s keep growing together! 💜
-              </p>
-            </div>
-          </div>
-        </div>
-
         {/* ── Coming Tomorrow ── */}
         <div style={{
           ...CARD,
