@@ -578,6 +578,7 @@ export default function Home() {
             <ParentDashboard
               tint={TINT}
               childName={childName}
+              parentName={parentName}
               onNext={advanceParent}
             />
           );

@@ -29,14 +29,17 @@ function ArcGauge({ value, max }: { value: number; max: number }) {
 export function ParentDashboard({
   tint,
   childName,
+  parentName,
   onNext,
 }: {
   tint: number;
   childName?: string;
+  parentName?: string;
   onNext: () => void;
 }) {
   const name = (childName?.trim() || "your child");
   const Name = name.charAt(0).toUpperCase() + name.slice(1);
+  const PName = parentName?.trim() || "Parent";
 
   const CARD: React.CSSProperties = {
     background: "rgba(16,12,42,0.85)",
@@ -84,13 +87,13 @@ export function ParentDashboard({
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0 }}>
             <div style={{ flexShrink: 0 }}>
-              <Bobo mood="happy" tint={tint} size={70} animate={false} armsDown />
+              <Bobo mood="happy" tint={tint} size={88} animate={false} armsDown />
             </div>
             <div>
               <p style={{ margin: 0, color: "#fff", fontSize: 19, fontWeight: 900, lineHeight: 1.1 }}>
-                Hi, {Name}&apos;s Parent! 🤚
+                Hi, {PName}! 🤚
               </p>
-              <p style={{ margin: "4px 0 0", color: "rgba(255,255,255,0.55)", fontSize: 12, lineHeight: 1.4 }}>
+              <p style={{ margin: "4px 0 0", color: "rgba(255,255,255,0.78)", fontSize: 12, fontWeight: 400, lineHeight: 1.4 }}>
                 Great to see you here.<br />Let&apos;s help {Name} grow together! 💜
               </p>
             </div>
