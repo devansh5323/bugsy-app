@@ -6,16 +6,13 @@ const F = "var(--font-nunito), system-ui, sans-serif";
 
 export function ParentDashboard({
   tint,
-  childName,
   parentName,
   onNext,
 }: {
   tint: number;
-  childName?: string;
   parentName?: string;
   onNext: () => void;
 }) {
-  const name = (childName?.trim() || "your child");
   const PName = parentName?.trim() || "Parent";
 
   const CARD: React.CSSProperties = {
@@ -215,20 +212,6 @@ export function ParentDashboard({
             </div>
           </div>
 
-          {/* CTA Button */}
-          <button onClick={onNext} style={{
-            width: "100%", borderRadius: 16, padding: "14px 16px",
-            background: "linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)",
-            border: "none", cursor: "pointer",
-            display: "flex", alignItems: "center", gap: 12,
-          }}>
-            <span style={{ fontSize: 22 }}>👥</span>
-            <div style={{ flex: 1, textAlign: "left" }}>
-              <p style={{ margin: 0, color: "#fff", fontSize: 14.5, fontWeight: 900, lineHeight: 1.2 }}>Switch to Child Dashboard</p>
-              <p style={{ margin: 0, color: "rgba(255,255,255,0.65)", fontSize: 11.5, lineHeight: 1.3 }}>Let your child start today&apos;s journey</p>
-            </div>
-            <span style={{ color: "rgba(255,255,255,0.65)", fontSize: 20 }}>›</span>
-          </button>
         </div>
 
         {/* ── THIS WEEK'S HIGHLIGHT ── */}
