@@ -181,7 +181,7 @@ export function ParentJourney({
                       animate={{ y: [0, -10, 0] }}
                       transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut", delay: 1.0 }}
                     >
-                      <Bobo mood="happy" tint={tint} size={200} animate />
+                      <Bobo mood="happy" tint={tint} size={200} animate armsDown />
                     </motion.div>
                   </motion.div>
                 )}
@@ -216,7 +216,7 @@ export function ParentJourney({
                   animate={{ y: [0, -5, 0] }}
                   transition={{ duration: 3.0, repeat: Infinity, ease: "easeInOut" }}
                 >
-                  <Bobo mood="happy" tint={tint} size={90} animate />
+                  <Bobo mood="happy" tint={tint} size={90} animate armsDown />
                 </motion.div>
               </div>
               <div style={{
@@ -293,7 +293,7 @@ export function ParentJourney({
                             transition={{ type: "spring", stiffness: 250, damping: 26 }}
                             style={{
                               height: "100%", display: "flex", alignItems: "center", gap: 6,
-                              padding: "3.5px 7px 3.5px 5px",
+                              padding: "3.5px 3px 3.5px 5px",
                               background: stage.gold ? "rgba(20,13,4,0.94)" : "rgba(12,8,34,0.86)",
                               border: `1.5px solid ${stage.gold ? "rgba(255,175,0,0.65)" : "rgba(70,50,150,0.60)"}`,
                               borderRadius: 13,
@@ -315,6 +315,7 @@ export function ParentJourney({
                                 size={stage.size}
                                 animate={stage.gold}
                                 tailWag={stage.gold}
+                                armsDown
                               />
                               <div style={{
                                 width: stage.size * 1.3, height: 7, borderRadius: "50%",
@@ -366,6 +367,7 @@ export function ParentJourney({
                               flexShrink: 0, width: 40,
                               display: "flex", flexDirection: "column",
                               alignItems: "center", gap: 2,
+                              marginRight: 6,
                             }}>
                               <span style={{ fontSize: 22 }}>{stage.icon}</span>
                               <span style={{
@@ -384,29 +386,22 @@ export function ParentJourney({
 
                 const arrow = i < STAGES.length - 1 ? (
                   <div key={`arr-${i}`} style={{ height: 11, flexShrink: 0, display: "flex", alignItems: "stretch" }}>
-                    {/* Dashed line continuation in paw col */}
+                    {/* Dashed line in paw col */}
                     <div style={{ width: 30, flexShrink: 0, position: "relative" }}>
                       <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: 2, background: DASHED, transform: "translateX(-50%)" }} />
                     </div>
                     <div style={{ width: 6 }} />
-                    {/* Chevron */}
-                    <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
+                    {/* Dotted line in card col */}
+                    <div style={{ flex: 1, position: "relative" }}>
                       <AnimatePresence>
                         {stageCount > i + 1 && (
                           <motion.div
-                            key="chv"
+                            key={`dot-${i}`}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.2 }}
-                          >
-                            <div style={{
-                              width: 0, height: 0,
-                              borderLeft: "7px solid transparent",
-                              borderRight: "7px solid transparent",
-                              borderTop: "11px solid #FF9800",
-                              filter: "drop-shadow(0 1px 2px rgba(255,120,0,0.45))",
-                            }} />
-                          </motion.div>
+                            style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: 2, background: DASHED, transform: "translateX(-50%)" }}
+                          />
                         )}
                       </AnimatePresence>
                     </div>
