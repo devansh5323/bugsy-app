@@ -566,13 +566,6 @@ export function ChildDoorway({ tint, onNext, onBack }: Common) {
               </p>
               <span style={{ color: "#FFD700", fontSize: 20, marginTop: 4 }}>✦</span>
             </div>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 12 }}>
-              <span style={{ color: "#FFD700", fontSize: 13 }}>✦</span>
-              <p style={{ fontFamily: F, fontSize: 15, fontWeight: 600, color: "rgba(255,255,255,0.48)", margin: 0 }}>
-                Here&apos;s what happens next
-              </p>
-              <span style={{ color: "#FFD700", fontSize: 13 }}>✦</span>
-            </div>
           </div>
         )}
       </div>
