@@ -15,8 +15,8 @@ const STAGES = [
   { num: 3,  size: 75,  title: "Growing curious",  desc: "Your child's attention helps Fumi explore and learn.",                  icon: "🎯", label: "Focus",        labelColor: "#C084FC", gold: false },
   { num: 6,  size: 84,  title: "More confident",   desc: "Fumi feels braver as your child keeps showing up.",                     icon: "😊", label: "Confidence",   labelColor: "#FDE68A", gold: false },
   { num: 9,  size: 92,  title: "Growing stronger", desc: "Every mission makes Fumi stronger and smarter!",                        icon: "🧠", label: "Learning",     labelColor: "#C084FC", gold: false },
-  { num: 12, size: 100, title: "Almost there",     desc: "Fumi is becoming your child's best adventure buddy!",                   icon: "⭐", label: "Independence", labelColor: "#FDE68A", gold: false },
-  { num: 14, size: 112, title: "Fully grown! 🎉",  desc: "Together, you've helped Fumi grow into a confident, happy companion!", icon: "🏆", label: "Growth",       labelColor: "#FFD700", gold: true  },
+  { num: 12, size: 88,  title: "Almost there",     desc: "Fumi is becoming your child's best adventure buddy!",                   icon: "⭐", label: "Independence", labelColor: "#FDE68A", gold: false },
+  { num: 14, size: 100, title: "Fully grown! 🎉",  desc: "Together, you've helped Fumi grow into a confident, happy companion!", icon: "🏆", label: "Growth",       labelColor: "#FFD700", gold: true  },
 ];
 
 const DASHED = "repeating-linear-gradient(to bottom, rgba(130,80,220,0.55) 0px, rgba(130,80,220,0.55) 4px, transparent 4px, transparent 9px)";
@@ -253,24 +253,24 @@ export function ParentJourney({
                             <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "52%", padding: "10px 0 10px 12px", display: "flex", flexDirection: "column", justifyContent: "center", zIndex: 2 }}>
                               <div style={{ marginBottom: 5 }}>
                                 <div style={{
-                                  display: "inline-flex", alignItems: "center", gap: 3,
+                                  display: "inline-flex", alignItems: "center", gap: 2,
                                   background: stage.gold ? "linear-gradient(90deg, #FF8C00, #FFD700)" : "#5B21B6",
-                                  borderRadius: 20, padding: "2px 9px",
+                                  borderRadius: 20, padding: "1.5px 7px",
                                 }}>
-                                  {stage.gold && <span style={{ fontSize: 9 }}>⭐</span>}
-                                  <span style={{ fontFamily: F, fontSize: 10, fontWeight: 900, color: "#fff" }}>DAY {stage.num}</span>
+                                  {stage.gold && <span style={{ fontSize: 8 }}>⭐</span>}
+                                  <span style={{ fontFamily: F, fontSize: 8.5, fontWeight: 900, color: "#fff" }}>DAY {stage.num}</span>
                                 </div>
                               </div>
                               <p style={{ fontFamily: F, fontSize: 13.5, fontWeight: 900, color: stage.gold ? "#FFD700" : "#fff", margin: "0 0 4px", lineHeight: 1.2 }}>
                                 {stage.title}
                               </p>
-                              <p style={{ fontFamily: F, fontSize: 10, fontWeight: 500, color: "rgba(255,255,255,0.58)", margin: 0, lineHeight: 1.4 }}>
+                              <p style={{ fontFamily: F, fontSize: 10, fontWeight: 500, color: "rgba(255,255,255,0.58)", margin: 0, lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" } as React.CSSProperties}>
                                 {stage.desc}
                               </p>
                             </div>
 
-                            {/* Bobo — center-right, anchored to bottom */}
-                            <div style={{ position: "absolute", right: 44, bottom: 0, zIndex: 1, pointerEvents: "none" }}>
+                            {/* Bobo — center-right, vertically centered */}
+                            <div style={{ position: "absolute", right: 44, top: "50%", transform: "translateY(-50%)", zIndex: 1, pointerEvents: "none" }}>
                               <Bobo
                                 mood={stage.gold ? "excited" : "happy"}
                                 tint={tint}
