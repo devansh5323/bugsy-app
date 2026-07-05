@@ -167,8 +167,8 @@ export function ParentDashboard({
               <div style={{ position: "absolute", bottom: -6, left: -14, width: 64, height: 30, borderRadius: "50%", background: "rgba(80,40,180,0.55)" }} />
               <div style={{ position: "absolute", bottom: -6, right: -12, width: 54, height: 26, borderRadius: "50%", background: "rgba(80,40,180,0.45)" }} />
               <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: 46, height: 20, borderRadius: "50%", background: "rgba(100,50,200,0.65)" }} />
-              {/* Rocket */}
-              <span style={{ fontSize: 38, position: "relative", zIndex: 2, transform: "rotate(45deg)", display: "block" }}>🚀</span>
+              {/* Rocket flying upward */}
+              <span style={{ fontSize: 38, position: "relative", zIndex: 2, display: "block", animation: "pd-rocket 1.8s ease-in-out infinite" }}>🚀</span>
               {/* Tiny stars */}
               <span style={{ position: "absolute", top: 10, right: 14, color: "#FFD700", fontSize: 8, opacity: 0.85 }}>✦</span>
               <span style={{ position: "absolute", top: 22, left: 11, color: "#FFD700", fontSize: 6, opacity: 0.7 }}>✦</span>
@@ -367,6 +367,7 @@ export function ParentDashboard({
         .pd-scroll::-webkit-scrollbar { display: none; }
         .pd-scroll { -ms-overflow-style: none; scrollbar-width: none; }
         @keyframes pd-twinkle { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.2;transform:scale(0.5)} }
+        @keyframes pd-rocket  { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
       `}</style>
     </div>
   );
