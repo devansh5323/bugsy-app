@@ -117,66 +117,6 @@ export function ParentDashboard({
           </button>
         </div>
 
-        {/* ── Daily summary bar ── */}
-        <div style={{
-          background: "rgba(14,9,38,0.9)",
-          border: "1px solid rgba(80,50,150,0.3)",
-          borderRadius: 18, padding: "12px 14px",
-          display: "flex", alignItems: "center",
-          marginBottom: 12, gap: 0,
-        }}>
-          {/* Today */}
-          <div style={{ flex: 1.4, display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-            <div style={{
-              width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-              background: "linear-gradient(135deg, #7C3AED, #5B21B6)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 20,
-            }}>📅</div>
-            <div style={{ minWidth: 0 }}>
-              <p style={{ margin: 0, color: "#fff", fontSize: 11.5, fontWeight: 800, lineHeight: 1.25 }}>Today is a great day</p>
-              <p style={{ margin: 0, color: "rgba(255,255,255,0.45)", fontSize: 10.5, lineHeight: 1.3 }}>for learning and growing!</p>
-            </div>
-            <span style={{ fontSize: 16, flexShrink: 0, filter: "drop-shadow(0 0 4px rgba(255,215,0,0.7))" }}>⭐</span>
-          </div>
-
-          {/* Divider */}
-          <div style={{ width: 1, height: 34, background: "rgba(255,255,255,0.1)", marginInline: 10, flexShrink: 0 }} />
-
-          {/* 10 min */}
-          <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-            <div style={{
-              width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
-              background: "rgba(80,50,160,0.5)",
-              border: "1.5px solid rgba(120,80,200,0.5)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 17,
-            }}>🕐</div>
-            <div>
-              <p style={{ margin: 0, color: "#fff", fontSize: 13, fontWeight: 900, lineHeight: 1.2 }}>10 min</p>
-              <p style={{ margin: 0, color: "rgba(255,255,255,0.45)", fontSize: 10, lineHeight: 1.2 }}>Daily goal</p>
-            </div>
-          </div>
-
-          {/* Divider */}
-          <div style={{ width: 1, height: 34, background: "rgba(255,255,255,0.1)", marginInline: 10, flexShrink: 0 }} />
-
-          {/* Missions */}
-          <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-            <div style={{
-              width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
-              background: "rgba(22,101,52,0.6)",
-              border: "1.5px solid rgba(34,197,94,0.5)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 16,
-            }}>✅</div>
-            <div>
-              <p style={{ margin: 0, color: "#fff", fontSize: 13, fontWeight: 900, lineHeight: 1.2 }}>0</p>
-              <p style={{ margin: 0, color: "rgba(255,255,255,0.45)", fontSize: 10, lineHeight: 1.2 }}>Missions today</p>
-            </div>
-          </div>
-        </div>
-
         {/* ── TODAY'S HIGHLIGHT ── */}
         <div style={{
           ...CARD,
