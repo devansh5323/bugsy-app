@@ -331,35 +331,46 @@ export function ParentDashboard({
 
         {/* ── Coming Tomorrow ── */}
         <div style={{
-          ...CARD,
-          display: "flex", alignItems: "center", gap: 12,
-          padding: "13px 14px",
+          borderRadius: 18,
+          background: "linear-gradient(135deg, #1a1240 0%, #0f0b2e 100%)",
+          border: "1.5px solid rgba(80,50,160,0.35)",
+          display: "flex", alignItems: "center",
+          padding: "14px 14px",
+          overflow: "hidden", position: "relative",
         }}>
-          {/* Calendar icon with star badge */}
-          <div style={{ position: "relative", flexShrink: 0 }}>
+          {/* Left: icon + text */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 0 }}>
+            {/* Star icon tile */}
             <div style={{
-              width: 52, height: 52, borderRadius: 14,
-              background: "linear-gradient(135deg, #7C3AED, #5420B0)",
+              width: 48, height: 48, borderRadius: 14, flexShrink: 0,
+              background: "linear-gradient(145deg, #6B3FC8, #4A2899)",
+              border: "1.5px solid rgba(120,80,220,0.4)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 26,
-            }}>📅</div>
-            <div style={{
-              position: "absolute", top: -7, right: -7,
-              width: 22, height: 22, borderRadius: "50%",
-              background: "linear-gradient(135deg, #FFD700, #FF9900)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 11, boxShadow: "0 2px 6px rgba(0,0,0,0.35)",
+              fontSize: 24,
             }}>⭐</div>
+            <div style={{ minWidth: 0 }}>
+              <p style={{ margin: "0 0 2px", color: "#22D3EE", fontSize: 10, fontWeight: 800, letterSpacing: "1px", textTransform: "uppercase" }}>Coming Tomorrow</p>
+              <p style={{ margin: "0 0 3px", color: "rgba(255,255,255,0.85)", fontSize: 13, fontWeight: 500, lineHeight: 1.3 }}>Fumi unlocks a new skill:</p>
+              <p style={{ margin: 0, color: "#FFD700", fontSize: 14, fontWeight: 900 }}>Calm Breathing</p>
+            </div>
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ margin: "0 0 2px", color: "#A78BFA", fontSize: 13, fontWeight: 800 }}>Coming Tomorrow</p>
-            <p style={{ margin: "0 0 2px", color: "rgba(255,255,255,0.5)", fontSize: 11.5 }}>Fumi unlocks a new skill:</p>
-            <p style={{ margin: 0, color: "#FFD700", fontSize: 13, fontWeight: 800 }}>Calm Breathing</p>
+          {/* Right: moon + stars illustration */}
+          <div style={{ flexShrink: 0, position: "relative", width: 72, height: 52, marginLeft: 4 }}>
+            <span style={{ position: "absolute", top: 4, left: 6, color: "#FFD700", fontSize: 9, opacity: 0.9 }}>✦</span>
+            <span style={{ position: "absolute", top: 14, left: 22, color: "#FFD700", fontSize: 7, opacity: 0.7 }}>✦</span>
+            <span style={{ position: "absolute", bottom: 8, left: 12, color: "#FFD700", fontSize: 11, opacity: 0.85 }}>✦</span>
+            <svg width="52" height="52" viewBox="0 0 52 52" style={{ position: "absolute", right: 0, top: 0 }}>
+              <defs>
+                <radialGradient id="ct-moon-grad" cx="40%" cy="35%" r="60%">
+                  <stop offset="0%" stopColor="#FDE68A" />
+                  <stop offset="100%" stopColor="#F59E0B" />
+                </radialGradient>
+              </defs>
+              <circle cx="30" cy="26" r="18" fill="url(#ct-moon-grad)" />
+              <circle cx="22" cy="20" r="14" fill="#13103A" />
+            </svg>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-            <span style={{ fontSize: 18 }}>⭐</span>
-            <span style={{ color: "rgba(255,255,255,0.45)", fontSize: 20 }}>›</span>
-          </div>
+          <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 20, flexShrink: 0, marginLeft: 2 }}>›</span>
         </div>
 
         {/* Spacer */}
