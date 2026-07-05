@@ -12,12 +12,12 @@ const LINE1 = "Let me tell you about myself...";
 const LINE2 = "I'm your child's pet companion- Together we grow, mastering one skill at a time";
 
 const STAGES = [
-  { num: 1,  size: 22, title: "Tiny steps",       desc: "Bugsy takes his first steps with your child's help.",           icon: "❤️", label: "Trust",        labelColor: "#FF6BAD", gold: false },
-  { num: 3,  size: 26, title: "Growing curious",  desc: "Your child's attention helps Bugsy explore and learn.",         icon: "🎯", label: "Focus",        labelColor: "#C084FC", gold: false },
-  { num: 6,  size: 30, title: "More confident",   desc: "Bugsy feels braver as your child keeps showing up.",            icon: "😊", label: "Confidence",   labelColor: "#FDE68A", gold: false },
-  { num: 9,  size: 34, title: "Growing stronger", desc: "Every mission makes Bugsy stronger and smarter!",               icon: "🧠", label: "Learning",     labelColor: "#C084FC", gold: false },
-  { num: 12, size: 38, title: "Almost there",     desc: "Bugsy is becoming your child's best adventure buddy!",          icon: "⭐", label: "Independence", labelColor: "#FDE68A", gold: false },
-  { num: 14, size: 44, title: "FULLY GROWN! 🎉",  desc: "Together, you've helped Bugsy grow into a confident, happy companion!", icon: "🏆", label: "Growth", labelColor: "#FFD700", gold: true  },
+  { num: 1,  size: 22, title: "Tiny steps",       desc: "Fumi takes his first steps with your child's help.",           icon: "❤️", label: "Trust",        labelColor: "#FF6BAD", gold: false },
+  { num: 3,  size: 26, title: "Growing curious",  desc: "Your child's attention helps Fumi explore and learn.",         icon: "🎯", label: "Focus",        labelColor: "#C084FC", gold: false },
+  { num: 6,  size: 30, title: "More confident",   desc: "Fumi feels braver as your child keeps showing up.",            icon: "😊", label: "Confidence",   labelColor: "#FDE68A", gold: false },
+  { num: 9,  size: 34, title: "Growing stronger", desc: "Every mission makes Fumi stronger and smarter!",               icon: "🧠", label: "Learning",     labelColor: "#C084FC", gold: false },
+  { num: 12, size: 38, title: "Almost there",     desc: "Fumi is becoming your child's best adventure buddy!",          icon: "⭐", label: "Independence", labelColor: "#FDE68A", gold: false },
+  { num: 14, size: 44, title: "FULLY GROWN! 🎉",  desc: "Together, you've helped Fumi grow into a confident, happy companion!", icon: "🏆", label: "Growth", labelColor: "#FFD700", gold: true  },
 ];
 
 const DASHED = "repeating-linear-gradient(to bottom, rgba(130,80,220,0.55) 0px, rgba(130,80,220,0.55) 4px, transparent 4px, transparent 9px)";
@@ -203,7 +203,7 @@ export function ParentJourney({
               position: "absolute", inset: 0, zIndex: 8,
               display: "flex", flexDirection: "column",
               overflow: "hidden",
-              paddingTop: 108,
+              paddingTop: 72,
             }}
           >
             {/* ── Cat (left) + speech bubble (right) ── */}
@@ -236,7 +236,7 @@ export function ParentJourney({
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "5px 0 2px", flexShrink: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
                 <span style={{ fontSize: 13 }}>✨</span>
-                <span style={{ fontFamily: F, fontSize: 13.5, fontWeight: 900, color: "#fff" }}>Every visit helps Bugsy grow</span>
+                <span style={{ fontFamily: F, fontSize: 13.5, fontWeight: 400, color: "#fff" }}>Every visit helps Fumi grow</span>
                 <span style={{ fontSize: 13 }}>✨</span>
               </div>
               <p style={{ fontFamily: F, fontSize: 11, fontWeight: 700, color: "#A78BFA", margin: 0, fontStyle: "italic" }}>
