@@ -87,7 +87,7 @@ export function ParentDashboard({
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0 }}>
             <div style={{ flexShrink: 0 }}>
-              <Bobo mood="excited" tint={tint} size={88} animate tailWag />
+              <Bobo mood="excited" tint={tint} size={88} animate tailWag armsDown />
             </div>
             <div>
               <p style={{ margin: 0, color: "#fff", fontSize: 19, fontWeight: 900, lineHeight: 1.1 }}>
