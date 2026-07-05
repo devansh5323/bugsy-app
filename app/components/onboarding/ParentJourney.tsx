@@ -238,7 +238,6 @@ export function ParentJourney({
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ type: "spring", stiffness: 250, damping: 26 }}
                             style={{
-                              position: "relative",
                               height: stage.gold ? 108 : 94,
                               background: stage.gold ? "rgba(20,13,4,0.96)" : "rgba(13,9,36,0.92)",
                               border: `1.5px solid ${stage.gold ? "rgba(255,175,0,0.65)" : "rgba(75,55,155,0.55)"}`,
@@ -247,11 +246,15 @@ export function ParentJourney({
                               boxShadow: stage.gold
                                 ? "0 0 20px rgba(255,155,0,0.25), 0 4px 14px rgba(0,0,0,0.5)"
                                 : "0 4px 12px rgba(0,0,0,0.42)",
+                              display: "flex",
+                              alignItems: "center",
+                              padding: "8px 8px 8px 12px",
+                              gap: 0,
                             }}
                           >
-                            {/* Text — left portion */}
-                            <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "52%", padding: "10px 0 10px 12px", display: "flex", flexDirection: "column", justifyContent: "center", zIndex: 2 }}>
-                              <div style={{ marginBottom: 5 }}>
+                            {/* Text — left column */}
+                            <div style={{ flex: "0 0 46%", minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                              <div style={{ marginBottom: 4 }}>
                                 <div style={{
                                   display: "inline-flex", alignItems: "center", gap: 2,
                                   background: stage.gold ? "linear-gradient(90deg, #FF8C00, #FFD700)" : "#5B21B6",
@@ -261,16 +264,16 @@ export function ParentJourney({
                                   <span style={{ fontFamily: F, fontSize: 8.5, fontWeight: 900, color: "#fff" }}>DAY {stage.num}</span>
                                 </div>
                               </div>
-                              <p style={{ fontFamily: F, fontSize: 13.5, fontWeight: 900, color: stage.gold ? "#FFD700" : "#fff", margin: "0 0 4px", lineHeight: 1.2 }}>
+                              <p style={{ fontFamily: F, fontSize: 13, fontWeight: 900, color: stage.gold ? "#FFD700" : "#fff", margin: "0 0 3px", lineHeight: 1.2 }}>
                                 {stage.title}
                               </p>
-                              <p style={{ fontFamily: F, fontSize: 10, fontWeight: 500, color: "rgba(255,255,255,0.58)", margin: 0, lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" } as React.CSSProperties}>
+                              <p style={{ fontFamily: F, fontSize: 10, fontWeight: 500, color: "rgba(255,255,255,0.58)", margin: 0, lineHeight: 1.4, maxHeight: "2.8em", overflow: "hidden" }}>
                                 {stage.desc}
                               </p>
                             </div>
 
-                            {/* Bobo — center-right, vertically centered */}
-                            <div style={{ position: "absolute", right: 44, top: "50%", transform: "translateY(-50%)", zIndex: 1, pointerEvents: "none" }}>
+                            {/* Bobo — center column */}
+                            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none", alignSelf: "stretch" }}>
                               <Bobo
                                 mood={stage.gold ? "excited" : "happy"}
                                 tint={tint}
@@ -281,12 +284,8 @@ export function ParentJourney({
                               />
                             </div>
 
-                            {/* Right icon + label */}
-                            <div style={{
-                              position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
-                              width: 38, zIndex: 2,
-                              display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
-                            }}>
+                            {/* Icon + label — right column */}
+                            <div style={{ flex: "0 0 44px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3 }}>
                               <span style={{ fontSize: 24 }}>{stage.icon}</span>
                               <span style={{ fontFamily: F, fontSize: 9, fontWeight: 700, color: stage.labelColor, textAlign: "center", lineHeight: 1.1 }}>
                                 {stage.label}
