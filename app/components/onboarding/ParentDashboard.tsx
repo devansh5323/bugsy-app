@@ -4,28 +4,6 @@ import { Bobo } from "../Mascot";
 
 const F = "var(--font-nunito), system-ui, sans-serif";
 
-function ArcGauge({ value, max }: { value: number; max: number }) {
-  const r = 40;
-  const arcLen = Math.PI * r;
-  const filled = (value / max) * arcLen;
-  return (
-    <svg width="100%" viewBox="0 0 100 54" style={{ display: "block" }}>
-      <defs>
-        <linearGradient id="pd-arc-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#7C3AED" />
-          <stop offset="55%" stopColor="#0EA5E9" />
-          <stop offset="100%" stopColor="#06B6D4" />
-        </linearGradient>
-      </defs>
-      <path d="M 10,50 A 40,40 0 0 1 90,50" fill="none"
-        stroke="rgba(255,255,255,0.08)" strokeWidth="13" strokeLinecap="round" />
-      <path d="M 10,50 A 40,40 0 0 1 90,50" fill="none"
-        stroke="url(#pd-arc-grad)" strokeWidth="13" strokeLinecap="round"
-        strokeDasharray={`${filled.toFixed(1)} ${(arcLen + 20).toFixed(1)}`} />
-    </svg>
-  );
-}
-
 export function ParentDashboard({
   tint,
   childName,
@@ -38,11 +16,10 @@ export function ParentDashboard({
   onNext: () => void;
 }) {
   const name = (childName?.trim() || "your child");
-  const Name = name.charAt(0).toUpperCase() + name.slice(1);
   const PName = parentName?.trim() || "Parent";
 
   const CARD: React.CSSProperties = {
-    background: "rgba(16,12,42,0.85)",
+    background: "rgba(16,12,42,0.9)",
     borderRadius: 20,
     border: "1px solid rgba(90,60,160,0.28)",
     padding: "16px 14px",
@@ -76,6 +53,20 @@ export function ParentDashboard({
         ))}
       </div>
 
+      {/* Crescent moon — top right decoration */}
+      <div style={{ position: "absolute", top: 38, right: 18, zIndex: 1, pointerEvents: "none" }}>
+        <svg width="52" height="52" viewBox="0 0 52 52">
+          <defs>
+            <radialGradient id="pd-moon" cx="40%" cy="35%" r="60%">
+              <stop offset="0%" stopColor="#FDE68A" />
+              <stop offset="100%" stopColor="#F59E0B" />
+            </radialGradient>
+          </defs>
+          <circle cx="30" cy="26" r="17" fill="url(#pd-moon)" />
+          <circle cx="21" cy="19" r="13" fill="#080620" />
+        </svg>
+      </div>
+
       {/* ── Scrollable content ── */}
       <div className="pd-scroll" style={{
         flex: 1, overflowY: "auto", overflowX: "hidden",
@@ -83,294 +74,273 @@ export function ParentDashboard({
         position: "relative", zIndex: 1,
       }}>
 
-        {/* Header */}
+        {/* ── Header ── */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0 }}>
             <div style={{ flexShrink: 0 }}>
-              <Bobo mood="excited" tint={tint} size={88} animate tailWag armsDown />
+              <Bobo mood="excited" tint={tint} size={100} animate tailWag armsDown />
             </div>
             <div>
-              <p style={{ margin: 0, color: "#fff", fontSize: 19, fontWeight: 900, lineHeight: 1.1 }}>
-                Hi, {PName}! 🤚
+              <p style={{ margin: 0, color: "#fff", fontSize: 22, fontWeight: 900, lineHeight: 1.1 }}>
+                Hi, {PName}! 👋
               </p>
-              <p style={{ margin: "4px 0 0", color: "rgba(255,255,255,0.78)", fontSize: 12, fontWeight: 400, lineHeight: 1.4 }}>
-                Great to see you here.<br />Let&apos;s help {Name} grow together! 💜
+              <p style={{ margin: "5px 0 0", color: "rgba(255,255,255,0.72)", fontSize: 12, fontWeight: 400, lineHeight: 1.5 }}>
+                Great to see you here.<br />Let&apos;s help your child grow<br />together. 💜
               </p>
             </div>
           </div>
           {/* Switch to child */}
           <button onClick={onNext} style={{
             flexShrink: 0, cursor: "pointer",
-            background: "rgba(70,40,140,0.5)",
-            border: "1px solid rgba(120,80,220,0.35)",
-            borderRadius: 16, padding: "10px 11px",
+            background: "rgba(35,20,80,0.88)",
+            border: "1px solid rgba(100,70,200,0.38)",
+            borderRadius: 18, padding: "10px 12px",
             display: "flex", alignItems: "center", gap: 8,
           }}>
             <div style={{
-              width: 36, height: 36, borderRadius: "50%",
+              width: 38, height: 38, borderRadius: "50%",
               background: "linear-gradient(135deg, #5B32B8, #3D1E8A)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 19,
+              fontSize: 20,
             }}>👧</div>
             <div>
-              <p style={{ margin: 0, color: "rgba(255,255,255,0.8)", fontSize: 11.5, fontWeight: 700, lineHeight: 1.25 }}>Switch to</p>
-              <p style={{ margin: 0, color: "rgba(255,255,255,0.8)", fontSize: 11.5, fontWeight: 700, lineHeight: 1.25 }}>Child Dashboard</p>
+              <p style={{ margin: 0, color: "rgba(255,255,255,0.68)", fontSize: 11, fontWeight: 500, lineHeight: 1.3 }}>Switch to</p>
+              <p style={{ margin: 0, color: "#fff", fontSize: 12, fontWeight: 800, lineHeight: 1.3 }}>Child Dashboard</p>
             </div>
-            <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 18 }}>›</span>
+            <span style={{ color: "rgba(255,255,255,0.45)", fontSize: 18 }}>›</span>
           </button>
         </div>
 
-        {/* ── TODAY'S HIGHLIGHT ── */}
-        <div style={{
-          ...CARD,
-          border: "1.5px solid rgba(200,155,0,0.38)",
-          boxShadow: "0 0 28px rgba(180,130,0,0.1)",
-          padding: "12px 12px",
-          overflow: "hidden", position: "relative",
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 7 }}>
-            <span style={{ fontSize: 13 }}>⭐</span>
-            <span style={{
-              color: "rgba(255,255,255,0.5)", fontSize: 9.5, fontWeight: 700,
-              letterSpacing: "0.9px", textTransform: "uppercase",
-            }}>TODAY&apos;S HIGHLIGHT.</span>
+        {/* ── Stats Row — single card, 3 columns ── */}
+        <div style={{ ...CARD, display: "flex", padding: "16px 10px" }}>
+          {/* Streak */}
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+            <div style={{
+              width: 38, height: 38, borderRadius: "50%",
+              background: "rgba(255,100,30,0.15)",
+              display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20,
+            }}>🔥</div>
+            <p style={{ margin: 0, color: "#FF6B1A", fontSize: 30, fontWeight: 900, lineHeight: 1 }}>7</p>
+            <p style={{ margin: 0, color: "#fff", fontSize: 11, fontWeight: 700, textAlign: "center" }}>Day Streak</p>
+            <p style={{ margin: 0, color: "rgba(255,255,255,0.42)", fontSize: 10.5, textAlign: "center" }}>Keep it up!</p>
           </div>
-
-          <div style={{ display: "flex", alignItems: "flex-end" }}>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ margin: "0 0 5px", color: "#FFD700", fontSize: 21, fontWeight: 900, lineHeight: 1.1 }}>
-                Consistency Hero!
-              </p>
-              <p style={{ margin: "0 0 9px", color: "rgba(255,255,255,0.62)", fontSize: 11.5, lineHeight: 1.45 }}>
-                {Name} showed up every day this week. That&apos;s the magic!
-              </p>
-              {/* Sub-card */}
-              <div style={{
-                background: "rgba(160,30,70,0.2)", borderRadius: 10,
-                border: "1px solid rgba(220,60,100,0.25)",
-                padding: "6px 9px",
-                display: "flex", alignItems: "center", gap: 7,
-              }}>
-                <div style={{
-                  width: 26, height: 26, borderRadius: 8, flexShrink: 0,
-                  background: "linear-gradient(135deg, #D63068, #A0204A)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 12,
-                }}>⭐</div>
-                <div>
-                  <p style={{ margin: 0, color: "#fff", fontSize: 11.5, fontWeight: 700 }}>
-                    Focus improved by <span style={{ color: "#FF7A35" }}>15%</span>
-                  </p>
-                  <p style={{ margin: "1px 0 0", color: "rgba(255,255,255,0.48)", fontSize: 10 }}>Great progress!</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Bobo */}
-            <div style={{ flexShrink: 0, marginBottom: -10, marginRight: -4, marginLeft: 4 }}>
-              <Bobo mood="excited" tint={tint} size={105} animate tailWag armsDown />
-            </div>
+          {/* Divider */}
+          <div style={{ width: 1, background: "rgba(255,255,255,0.08)", margin: "4px 2px" }} />
+          {/* Focus Score */}
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+            <div style={{
+              width: 38, height: 38, borderRadius: "50%",
+              background: "rgba(120,60,220,0.18)",
+              display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20,
+            }}>🎯</div>
+            <p style={{ margin: 0, color: "#A855F7", fontSize: 30, fontWeight: 900, lineHeight: 1 }}>78</p>
+            <p style={{ margin: 0, color: "#fff", fontSize: 11, fontWeight: 700, textAlign: "center" }}>Focus Score</p>
+            <p style={{ margin: 0, color: "#22C55E", fontSize: 10.5, fontWeight: 600, textAlign: "center" }}>Above average</p>
+          </div>
+          {/* Divider */}
+          <div style={{ width: 1, background: "rgba(255,255,255,0.08)", margin: "4px 2px" }} />
+          {/* Missions */}
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+            <div style={{
+              width: 38, height: 38, borderRadius: "50%",
+              background: "rgba(34,197,94,0.14)",
+              display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20,
+            }}>✅</div>
+            <p style={{ margin: 0, color: "#22C55E", fontSize: 30, fontWeight: 900, lineHeight: 1 }}>23</p>
+            <p style={{ margin: 0, color: "#fff", fontSize: 11, fontWeight: 700, textAlign: "center" }}>Missions Completed</p>
+            <p style={{ margin: 0, color: "rgba(255,255,255,0.42)", fontSize: 10.5, textAlign: "center" }}>This week</p>
           </div>
         </div>
 
         {/* ── TODAY'S JOURNEY ── */}
-        <div style={{ ...CARD, padding: "16px 14px" }}>
-          {/* Header */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-              <span style={{ fontSize: 15 }}>🚀</span>
-              <span style={{
-                color: "rgba(255,255,255,0.5)", fontSize: 10.5, fontWeight: 700,
-                letterSpacing: "0.9px", textTransform: "uppercase",
-              }}>TODAY&apos;S JOURNEY.</span>
-            </div>
-            <div style={{
-              width: 26, height: 26, borderRadius: "50%",
-              border: "1.5px solid rgba(255,255,255,0.22)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              color: "rgba(255,255,255,0.45)", fontSize: 13, fontStyle: "italic",
-              fontFamily: "Georgia, serif",
-            }}>i</div>
-          </div>
+        <div style={{ ...CARD }}>
+          <p style={{ margin: "0 0 14px", color: "#A78BFA", fontSize: 10.5, fontWeight: 800, letterSpacing: "1.2px", textTransform: "uppercase" }}>Today&apos;s Journey</p>
 
           {/* Content row */}
-          <div style={{ display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 14 }}>
-            {/* Circular scene */}
+          <div style={{ display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 16 }}>
+            {/* Circular rocket scene */}
             <div style={{
-              width: 92, height: 92, flexShrink: 0, borderRadius: "50%",
-              background: "radial-gradient(ellipse at 40% 35%, #1C1450 0%, #07051A 100%)",
-              border: "2px solid rgba(90,60,180,0.4)",
+              width: 96, height: 96, flexShrink: 0, borderRadius: "50%",
+              background: "radial-gradient(ellipse at 40% 30%, #2D1B6B 0%, #0D0820 100%)",
+              border: "2px solid rgba(100,70,200,0.5)",
               overflow: "hidden", position: "relative",
+              display: "flex", alignItems: "center", justifyContent: "center",
             }}>
-              <div style={{
-                position: "absolute", bottom: 0, left: 0, right: 0, height: 22,
-                background: "linear-gradient(180deg, #1A3D18 0%, #0D2210 100%)",
-              }} />
-              <div style={{ position: "absolute", bottom: 6, left: 2 }}>
-                <Bobo mood="happy" tint={tint} size={54} animate={false} armsDown />
-              </div>
-              <div style={{
-                position: "absolute", bottom: 8, right: 4,
-                fontSize: 34, lineHeight: 1,
-                filter: "drop-shadow(0 0 8px rgba(255,220,0,0.9))",
-                animation: "pd-float 2.2s ease-in-out infinite",
-              }}>⭐</div>
+              {/* Purple cloud puffs */}
+              <div style={{ position: "absolute", bottom: -6, left: -14, width: 64, height: 30, borderRadius: "50%", background: "rgba(80,40,180,0.55)" }} />
+              <div style={{ position: "absolute", bottom: -6, right: -12, width: 54, height: 26, borderRadius: "50%", background: "rgba(80,40,180,0.45)" }} />
+              <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: 46, height: 20, borderRadius: "50%", background: "rgba(100,50,200,0.65)" }} />
+              {/* Rocket */}
+              <span style={{ fontSize: 38, position: "relative", zIndex: 2, transform: "rotate(45deg)", display: "block" }}>🚀</span>
+              {/* Tiny stars */}
+              <span style={{ position: "absolute", top: 10, right: 14, color: "#FFD700", fontSize: 8, opacity: 0.85 }}>✦</span>
+              <span style={{ position: "absolute", top: 22, left: 11, color: "#FFD700", fontSize: 6, opacity: 0.7 }}>✦</span>
             </div>
 
             {/* Details */}
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ margin: "0 0 5px", color: "#fff", fontSize: 18, fontWeight: 900, lineHeight: 1.2 }}>
-                Focus Explorer
-              </p>
-              <p style={{ margin: "0 0 12px", color: "rgba(255,255,255,0.52)", fontSize: 12, lineHeight: 1.45 }}>
-                Help Fumi collect all the stars by staying focused!
+              <p style={{ margin: "0 0 7px", color: "#fff", fontSize: 19, fontWeight: 900, lineHeight: 1.2 }}>Focus Explorer</p>
+              {/* Time chip */}
+              <div style={{
+                display: "inline-flex", alignItems: "center", gap: 4,
+                background: "rgba(60,40,120,0.65)", borderRadius: 20,
+                padding: "4px 10px", marginBottom: 9,
+              }}>
+                <span style={{ fontSize: 11 }}>🕐</span>
+                <span style={{ color: "rgba(255,255,255,0.85)", fontSize: 11, fontWeight: 600 }}>10 min activity</span>
+              </div>
+              <p style={{ margin: "0 0 12px", color: "rgba(255,255,255,0.58)", fontSize: 12, lineHeight: 1.5 }}>
+                A 10-minute adventure to build focus and collect stars!
               </p>
               {/* Stats row */}
               <div style={{ display: "flex" }}>
                 {[
-                  { icon: "🕐", val: "10 min", label: "Est. Time" },
-                  { icon: "🎯", val: "Not Started", label: "Status" },
-                  { icon: "⭐", val: "Collect 5 stars", label: "Goal" },
+                  { icon: "🕐", val: "10 min",        label: "Est. Time" },
+                  { icon: "🎯", val: "Not Started",    label: "Status" },
+                  { icon: "🚩", val: "Collect 5 stars", label: "Goal" },
                 ].map((s, i) => (
                   <div key={i} style={{
                     flex: 1,
                     borderLeft: i > 0 ? "1px solid rgba(255,255,255,0.1)" : "none",
-                    paddingLeft: i > 0 ? 7 : 0,
+                    paddingLeft: i > 0 ? 8 : 0,
                   }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 3, marginBottom: 2 }}>
-                      <span style={{ fontSize: 12 }}>{s.icon}</span>
-                      <span style={{ color: "#fff", fontSize: 10.5, fontWeight: 700, lineHeight: 1.2 }}>{s.val}</span>
+                      <span style={{ fontSize: 10 }}>{s.icon}</span>
+                      <span style={{ color: "#fff", fontSize: 9.5, fontWeight: 700, lineHeight: 1.2 }}>{s.val}</span>
                     </div>
-                    <p style={{ margin: 0, color: "rgba(255,255,255,0.38)", fontSize: 9.5, fontWeight: 600 }}>{s.label}</p>
+                    <p style={{ margin: 0, color: "rgba(255,255,255,0.38)", fontSize: 9.5 }}>{s.label}</p>
                   </div>
                 ))}
               </div>
             </div>
           </div>
 
+          {/* CTA Button */}
+          <button onClick={onNext} style={{
+            width: "100%", borderRadius: 16, padding: "14px 16px",
+            background: "linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)",
+            border: "none", cursor: "pointer",
+            display: "flex", alignItems: "center", gap: 12,
+          }}>
+            <span style={{ fontSize: 22 }}>👥</span>
+            <div style={{ flex: 1, textAlign: "left" }}>
+              <p style={{ margin: 0, color: "#fff", fontSize: 14.5, fontWeight: 900, lineHeight: 1.2 }}>Switch to Child Dashboard</p>
+              <p style={{ margin: 0, color: "rgba(255,255,255,0.65)", fontSize: 11.5, lineHeight: 1.3 }}>Let your child start today&apos;s journey</p>
+            </div>
+            <span style={{ color: "rgba(255,255,255,0.65)", fontSize: 20 }}>›</span>
+          </button>
         </div>
 
-        {/* ── 3 Stat Cards ── */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 11, alignItems: "stretch" }}>
+        {/* ── THIS WEEK'S HIGHLIGHT ── */}
+        <div style={{ ...CARD, overflow: "hidden", position: "relative" }}>
+          <p style={{ margin: "0 0 10px", color: "#A78BFA", fontSize: 10.5, fontWeight: 800, letterSpacing: "1.2px", textTransform: "uppercase" }}>This Week&apos;s Highlight</p>
 
-          {/* Streak */}
-          <div style={{
-            flex: 1, borderRadius: 18, padding: "13px 10px",
-            background: "rgba(10,7,30,0.95)",
-            border: "1.5px solid rgba(80,50,160,0.35)",
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
-              <span style={{ fontSize: 20 }}>🔥</span>
-              <span style={{ color: "#fff", fontSize: 9.5, fontWeight: 800, letterSpacing: "0.5px", textTransform: "uppercase" }}>Current Streak</span>
-            </div>
-            <p style={{ margin: 0, color: "#FF3D8B", fontSize: 38, fontWeight: 900, lineHeight: 1 }}>7</p>
-            <p style={{ margin: "2px 0 9px", color: "#FF3D8B", fontSize: 13, fontWeight: 700 }}>days</p>
-            <div style={{ display: "flex", gap: 1, marginBottom: 3 }}>
-              {Array.from({ length: 7 }).map((_, i) => (
-                <span key={i} style={{
-                  flex: 1, textAlign: "center", color: "#FF3D8B", fontSize: 14,
-                  textShadow: "0 0 8px rgba(255,61,139,0.7)",
-                }}>★</span>
-              ))}
-            </div>
-            <div style={{ display: "flex", gap: 1, marginBottom: 9 }}>
-              {["M","T","W","T","F","S","S"].map((d, i) => (
-                <span key={i} style={{ flex: 1, textAlign: "center", color: "rgba(255,255,255,0.4)", fontSize: 8, fontWeight: 600 }}>{d}</span>
-              ))}
-            </div>
-            <p style={{ margin: 0, color: "rgba(255,255,255,0.6)", fontSize: 10 }}>Amazing! Keep it up! 🔥</p>
-          </div>
-
-          {/* Focus Score */}
-          <div style={{
-            flex: 1, borderRadius: 18, padding: "13px 10px",
-            background: "rgba(10,7,30,0.95)",
-            border: "1.5px solid rgba(80,50,160,0.35)",
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-              <span style={{ fontSize: 20 }}>🎯</span>
-              <span style={{ color: "#fff", fontSize: 9.5, fontWeight: 800, letterSpacing: "0.5px", textTransform: "uppercase" }}>Current Focus Score</span>
-            </div>
-            <ArcGauge value={78} max={100} />
-            <div style={{ textAlign: "center", marginTop: -6 }}>
-              <span style={{ color: "#06B6D4", fontSize: 28, fontWeight: 900 }}>78</span>
-              <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, fontWeight: 600 }}> /100</span>
-            </div>
-            <p style={{ margin: "5px 0 7px", textAlign: "center", color: "#06B6D4", fontSize: 10.5, fontWeight: 600 }}>Above average! 🎉</p>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ margin: "0 0 8px", color: "#fff", fontSize: 22, fontWeight: 900, lineHeight: 1.2 }}>Consistency is key!</p>
+              <p style={{ margin: "0 0 14px", color: "rgba(255,255,255,0.62)", fontSize: 12.5, lineHeight: 1.55 }}>
+                Your child showed up every day this week. That&apos;s amazing! Small steps, big growth. 💜
+              </p>
+              {/* Green stat badge */}
               <div style={{
-                width: 17, height: 17, borderRadius: "50%",
-                background: "#22C55E",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                flexShrink: 0,
+                display: "inline-flex", alignItems: "center", gap: 8,
+                background: "rgba(16,50,26,0.6)", borderRadius: 12,
+                border: "1px solid rgba(34,197,94,0.22)",
+                padding: "7px 12px",
               }}>
-                <span style={{ color: "#fff", fontSize: 9, fontWeight: 900, lineHeight: 1 }}>↑</span>
+                <span style={{ color: "#22C55E", fontSize: 18, lineHeight: 1 }}>📈</span>
+                <div>
+                  <p style={{ margin: 0, color: "#fff", fontSize: 12, fontWeight: 700, lineHeight: 1.3 }}>
+                    Focus improved by <span style={{ color: "#22C55E" }}>12%</span>
+                  </p>
+                  <p style={{ margin: 0, color: "rgba(255,255,255,0.42)", fontSize: 10 }}>Compared to last week</p>
+                </div>
               </div>
-              <span style={{ color: "#22C55E", fontSize: 10.5, fontWeight: 700 }}>12 pts</span>
-              <span style={{ color: "rgba(255,255,255,0.42)", fontSize: 10 }}>vs last week</span>
             </div>
-          </div>
 
-          {/* Missions Completed */}
-          <div style={{
-            flex: 1, borderRadius: 18, padding: "13px 10px",
-            background: "rgba(10,7,30,0.95)",
-            border: "1.5px solid rgba(80,50,160,0.35)",
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
-              <span style={{ fontSize: 20 }}>📋</span>
-              <span style={{ color: "#fff", fontSize: 9.5, fontWeight: 800, letterSpacing: "0.5px", textTransform: "uppercase" }}>Missions Completed</span>
+            {/* Plant illustration */}
+            <div style={{ flexShrink: 0, width: 94, height: 94, position: "relative" }}>
+              <span style={{ position: "absolute", top: 0, right: 8, color: "#FFD700", fontSize: 8, opacity: 0.9 }}>✦</span>
+              <span style={{ position: "absolute", top: 12, left: 2, color: "#FFD700", fontSize: 6, opacity: 0.7 }}>✦</span>
+              <span style={{ position: "absolute", bottom: 4, right: 2, color: "#FFD700", fontSize: 10, opacity: 0.8 }}>✦</span>
+              <svg width="94" height="94" viewBox="0 0 94 94">
+                <defs>
+                  <radialGradient id="pd-plant-glow" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="rgba(120,50,200,0.55)" />
+                    <stop offset="100%" stopColor="rgba(60,20,120,0)" />
+                  </radialGradient>
+                </defs>
+                <circle cx="47" cy="52" r="38" fill="url(#pd-plant-glow)" />
+                <circle cx="47" cy="52" r="36" fill="none" stroke="rgba(120,60,200,0.38)" strokeWidth="1.5" />
+                {/* Soil mound */}
+                <ellipse cx="47" cy="76" rx="22" ry="8" fill="#5B3A1A" />
+                <ellipse cx="47" cy="74" rx="18" ry="6" fill="#7A4E2A" />
+                {/* Stem */}
+                <line x1="47" y1="74" x2="47" y2="40" stroke="#4CAF50" strokeWidth="3.5" strokeLinecap="round" />
+                {/* Left leaf */}
+                <path d="M 47 56 C 30 48 22 32 33 23 C 41 18 47 32 47 56Z" fill="#4CAF50" />
+                {/* Right leaf */}
+                <path d="M 47 50 C 64 40 74 26 61 18 C 52 13 47 28 47 50Z" fill="#66BB6A" />
+                {/* Leaf veins */}
+                <path d="M 47 56 C 38 44 34 30 35 24" fill="none" stroke="rgba(255,255,255,0.28)" strokeWidth="0.9" />
+                <path d="M 47 50 C 56 40 62 28 60 20" fill="none" stroke="rgba(255,255,255,0.28)" strokeWidth="0.9" />
+              </svg>
             </div>
-            <p style={{ margin: 0, color: "#A855F7", fontSize: 38, fontWeight: 900, lineHeight: 1 }}>23</p>
-            <p style={{ margin: "2px 0 9px", color: "#A855F7", fontSize: 13, fontWeight: 700 }}>missions</p>
-            <p style={{ margin: 0, color: "rgba(255,255,255,0.5)", fontSize: 10.5, lineHeight: 1.5 }}>
-              Total adventures<br />you&apos;ve completed
-            </p>
           </div>
         </div>
 
         {/* ── Coming Tomorrow ── */}
         <div style={{
           borderRadius: 18,
-          background: "linear-gradient(135deg, #1a1240 0%, #0f0b2e 100%)",
-          border: "1.5px solid rgba(80,50,160,0.35)",
+          background: "rgba(16,12,42,0.9)",
+          border: "1px solid rgba(90,60,160,0.28)",
           display: "flex", alignItems: "center",
           padding: "14px 14px",
           overflow: "hidden", position: "relative",
         }}>
-          {/* Left: icon + text */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 0 }}>
-            {/* Star icon tile */}
+          {/* Calendar-star icon tile */}
+          <div style={{ flexShrink: 0, marginRight: 12, position: "relative" }}>
             <div style={{
-              width: 48, height: 48, borderRadius: 14, flexShrink: 0,
-              background: "linear-gradient(145deg, #6B3FC8, #4A2899)",
-              border: "1.5px solid rgba(120,80,220,0.4)",
+              width: 54, height: 54, borderRadius: 14,
+              background: "linear-gradient(145deg, #5B32C8, #3D1E99)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 24,
+              fontSize: 28,
+            }}>📅</div>
+            <div style={{
+              position: "absolute", top: -7, right: -7,
+              width: 22, height: 22, borderRadius: "50%",
+              background: "linear-gradient(135deg, #FFD700, #FF9900)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 11, boxShadow: "0 2px 6px rgba(0,0,0,0.4)",
             }}>⭐</div>
-            <div style={{ minWidth: 0 }}>
-              <p style={{ margin: "0 0 2px", color: "#22D3EE", fontSize: 10, fontWeight: 800, letterSpacing: "1px", textTransform: "uppercase" }}>Coming Tomorrow</p>
-              <p style={{ margin: "0 0 3px", color: "rgba(255,255,255,0.85)", fontSize: 13, fontWeight: 500, lineHeight: 1.3 }}>Fumi unlocks a new skill:</p>
-              <p style={{ margin: 0, color: "#FFD700", fontSize: 14, fontWeight: 900 }}>Calm Breathing</p>
-            </div>
           </div>
-          {/* Right: moon + stars illustration */}
-          <div style={{ flexShrink: 0, position: "relative", width: 72, height: 52, marginLeft: 4 }}>
-            <span style={{ position: "absolute", top: 4, left: 6, color: "#FFD700", fontSize: 9, opacity: 0.9 }}>✦</span>
-            <span style={{ position: "absolute", top: 14, left: 22, color: "#FFD700", fontSize: 7, opacity: 0.7 }}>✦</span>
-            <span style={{ position: "absolute", bottom: 8, left: 12, color: "#FFD700", fontSize: 11, opacity: 0.85 }}>✦</span>
-            <svg width="52" height="52" viewBox="0 0 52 52" style={{ position: "absolute", right: 0, top: 0 }}>
+
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ margin: "0 0 2px", color: "#F59E0B", fontSize: 10, fontWeight: 800, letterSpacing: "1px", textTransform: "uppercase" }}>Coming Tomorrow</p>
+            <p style={{ margin: "0 0 3px", color: "rgba(255,255,255,0.85)", fontSize: 13, fontWeight: 500, lineHeight: 1.3 }}>New Adventure Unlocks</p>
+            <p style={{ margin: 0, color: "#F59E0B", fontSize: 14, fontWeight: 900 }}>Emotional Balance Builder</p>
+          </div>
+
+          {/* Moon + cloud illustration */}
+          <div style={{ flexShrink: 0, position: "relative", width: 76, height: 56 }}>
+            <span style={{ position: "absolute", top: 2, left: 6, color: "#FFD700", fontSize: 9, opacity: 0.85 }}>✦</span>
+            <span style={{ position: "absolute", top: 12, left: 26, color: "#FFD700", fontSize: 7, opacity: 0.7 }}>✦</span>
+            <svg width="68" height="56" viewBox="0 0 68 56" style={{ position: "absolute", right: 0, top: 0 }}>
               <defs>
-                <radialGradient id="ct-moon-grad" cx="40%" cy="35%" r="60%">
+                <radialGradient id="ct-mg" cx="40%" cy="35%" r="60%">
                   <stop offset="0%" stopColor="#FDE68A" />
                   <stop offset="100%" stopColor="#F59E0B" />
                 </radialGradient>
               </defs>
-              <circle cx="30" cy="26" r="18" fill="url(#ct-moon-grad)" />
-              <circle cx="22" cy="20" r="14" fill="#13103A" />
+              <circle cx="46" cy="18" r="14" fill="url(#ct-mg)" />
+              <circle cx="38" cy="13" r="11" fill="#0f0b2e" />
+              <ellipse cx="32" cy="44" rx="22" ry="11" fill="#1a1050" />
+              <ellipse cx="54" cy="46" rx="17" ry="9" fill="#1a1050" />
+              <ellipse cx="14" cy="47" rx="12" ry="8" fill="#1a1050" />
             </svg>
           </div>
-          <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 20, flexShrink: 0, marginLeft: 2 }}>›</span>
+
+          <span style={{ color: "rgba(255,255,255,0.38)", fontSize: 20, flexShrink: 0, marginLeft: 2 }}>›</span>
         </div>
 
         {/* Spacer */}
@@ -414,7 +384,6 @@ export function ParentDashboard({
         .pd-scroll::-webkit-scrollbar { display: none; }
         .pd-scroll { -ms-overflow-style: none; scrollbar-width: none; }
         @keyframes pd-twinkle { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.2;transform:scale(0.5)} }
-        @keyframes pd-float   { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
       `}</style>
     </div>
   );
