@@ -36,6 +36,7 @@ import { WhoAreYou } from "./components/onboarding/WhoAreYou";
 import { ParentIntro } from "./components/onboarding/ParentIntro";
 import { ParentJourney } from "./components/onboarding/ParentJourney";
 import { ParentBenefits } from "./components/onboarding/ParentBenefits";
+import { HandoverScreen } from "./components/onboarding/HandoverScreen";
 import { TellMeAboutChild } from "./components/onboarding/TellMeAboutChild";
 import { QuestionnaireScreen } from "./components/onboarding/QuestionnaireScreen";
 import { AssessmentCompleteScreen } from "./components/onboarding/AssessmentCompleteScreen";
@@ -565,6 +566,14 @@ export default function Home() {
           );
         case 3:
           return (
+            <HandoverScreen
+              tint={TINT}
+              onNext={advanceParent}
+              onBack={back}
+            />
+          );
+        case 4:
+          return (
             <TellMeAboutChild
               tint={TINT}
               childName={childName}
@@ -575,7 +584,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 4:
+        case 5:
           return (
             <QuestionnaireScreen
               childName={childName}
@@ -583,7 +592,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 5:
+        case 6:
           return (
             <AssessmentCompleteScreen
               childName={childName}
@@ -591,7 +600,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 7:
+        case 8:
           return (
             <JourneyCreatedScreen
               childName={childName}
@@ -599,10 +608,10 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 8:
+        case 9:
           return <WhoIsBugsy tint={TINT} onNext={advanceParent} onBack={back} />;
         // ── Collect: parent identity, child, concerns, goals ──
-        case 9:
+        case 10:
           return (
             <ParentName
               tint={TINT}
@@ -614,7 +623,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 10:
+        case 11:
           return (
             <ParentChildSetup
               tint={TINT}
@@ -627,7 +636,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 11:
+        case 12:
           return (
             <ParentNoticing
               tint={TINT}
@@ -638,7 +647,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 12:
+        case 13:
           return (
             <ParentGoals
               tint={TINT}
@@ -650,7 +659,7 @@ export default function Home() {
             />
           );
         // ── Sign in, then hand over to the child ──
-        case 13:
+        case 14:
           return (
             <ParentLogin
               tint={TINT}
@@ -659,7 +668,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 14:
+        case 15:
           return (
             <ParentDone
               tint={TINT}
