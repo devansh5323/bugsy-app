@@ -135,7 +135,9 @@ analytics events (`game_started`, `game_paused`/`resumed`,
 `game_completed`, `game_exited_early`), unlocks audio on the Start tap, and
 remounts the play area keyed by `runId` on "play again" so games get a clean
 mount instead of writing their own reset paths. Individual games don't
-reinvent exit/results UI.
+reinvent exit/results UI. Games needing a richer end screen (per-round
+stats, research metrics) pass `resultDetails: (result) => ReactNode`, which
+renders under the score on the results screen — same tone rules apply.
 
 ### `HUD.tsx` (`app/components/games/`)
 

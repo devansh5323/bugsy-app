@@ -72,6 +72,7 @@ export function GameShell({
   onExit,
   onComplete,
   resultLine,
+  resultDetails,
   tint = TINT,
   children,
 }: {
@@ -86,6 +87,10 @@ export function GameShell({
   // Bugsy's reaction on the results screen. Defaults below stay warm
   // for both outcomes — never override with anything that shames a loss.
   resultLine?: (result: GameResult) => string;
+  // Extra game-specific stats rendered under the score on the results
+  // screen (best streak, misses, reaction speed, ...). Same tone rules
+  // apply: numbers are fine, judgment is not.
+  resultDetails?: (result: GameResult) => ReactNode;
   tint?: number;
   // The game's play area; it reads its shell via useGameShell().
   children: ReactNode;
@@ -296,6 +301,7 @@ export function GameShell({
               +{result.xpEarned} XP
             </div>
           )}
+          {resultDetails?.(result)}
           <PrimaryButton onClick={playAgain}>Play again</PrimaryButton>
           <TextButton onClick={exit}>Back home</TextButton>
         </div>

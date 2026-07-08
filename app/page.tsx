@@ -63,6 +63,7 @@ import {
 } from "./components/onboarding/ChildMeet";
 import { BirdSpikeGame } from "./components/BirdSpikeGame";
 import { SnackCatchGame } from "./components/SnackCatchGame";
+import { RiverCatchGame } from "./games/river-catch/RiverCatchGame";
 import { TourOverlay, type TourStep } from "./components/TourOverlay";
 import { ProgressContext } from "./components/onboarding/ConvoUI";
 import { VoiceProvider } from "./lib/voice";
@@ -911,6 +912,19 @@ export default function Home() {
           <BirdSpikeGame
             tint={TINT}
             onExit={() => completeProject(project.id)}
+          />
+        );
+      }
+      // Fumi's River Catch — engine-based; a run that filled the food
+      // basket completes the project, a quit just returns home.
+      if (project.id === "p10") {
+        return (
+          <RiverCatchGame
+            onExit={(cleared) =>
+              cleared
+                ? completeProject(project.id)
+                : setStage({ kind: "app", tab: "projects" })
+            }
           />
         );
       }

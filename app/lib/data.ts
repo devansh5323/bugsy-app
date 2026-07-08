@@ -127,6 +127,9 @@ export const PROJECTS: Project[] = [
   // Mins is intentionally 1 so it sorts to the very top of the
   // "fastest games" picker the onboarding uses.
   { id: "p9", title: "Bird Spike",      category: "educational", kind: "game",    blurb: "Tap. Flap. Dodge the spike gauntlet with Bugsy. Each gap cleared powers him up.", points: 50, mins: 1,  emoji: "🐦", proof: "tap" },
+  // Fumi's River Catch — go/no-go fishing game on the shared engine
+  // (app/games/river-catch). points mirrors GameConfig.basePoints.
+  { id: "p10", title: "Fumi's River Catch", category: "educational", kind: "game", blurb: "Help Fumi fish for dinner! Catch the right fish, skip the junk and fake ripples.", points: 50, mins: 2, emoji: "🎣", proof: "tap" },
   { id: "p1", title: "Tower of Cards",  category: "physical",    kind: "project", blurb: "Build the tallest tower you can from a deck of cards. Snap a photo when it stands tall.", points: 60, mins: 20, emoji: "🃏", proof: "photo" },
   { id: "p2", title: "Number Spark",    category: "educational", kind: "game",    blurb: "Beat the working-memory puzzle. 10 quick rounds.", points: 40, mins: 5,  emoji: "🔢", proof: "tap" },
   { id: "p3", title: "Doodle a Beast",  category: "creative",    kind: "project", blurb: "Sketch a creature that doesn't exist. Anything goes.", points: 50, mins: 15, emoji: "🐲", proof: "photo" },

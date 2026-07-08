@@ -16,13 +16,17 @@ app/
 ├── layout.tsx
 ├── globals.css
 │
-├── games/                      # NEW — one folder per game, self-contained
+├── games/                      # one folder per game, self-contained
 │   ├── registry.ts             # GameConfig[] — every game registers here
-│   ├── bird-spike/
-│   │   ├── BirdSpikeGame.tsx   # the game component (default export)
-│   │   ├── config.ts           # GameConfig: id, title, domain, difficulty params
-│   │   └── assets/             # game-specific sprites/sfx-params, if any
-│   ├── snack-catch/
+│   ├── river-catch/            # Fumi's River Catch — BUILT (first
+│   │   ├── RiverCatchGame.tsx  # engine-based game; go/no-go fishing)
+│   │   ├── config.ts           # GameConfig + rule stages + level→tuning
+│   │   ├── entities.ts         # pure spawn/step/hit-test logic
+│   │   └── metrics.ts          # research metrics (hit rate, RT, ...)
+│   ├── bird-spike/             # planned — migration of the legacy game
+│   │   ├── BirdSpikeGame.tsx
+│   │   └── config.ts
+│   ├── snack-catch/            # planned — migration of the legacy game
 │   │   ├── SnackCatchGame.tsx
 │   │   └── config.ts
 │   └── <new-game-id>/

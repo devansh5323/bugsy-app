@@ -3,13 +3,13 @@
 // menus, pickers, and analytics rollups enumerate from this registry,
 // never by hand.
 //
-// Empty on purpose: the engine ships first, games register as they're
-// built (or migrated — BirdSpike and SnackCatch predate the registry
-// and join it when they move into app/games/, GAME_ROADMAP.md Phase 1).
+// BirdSpike and SnackCatch predate the registry and join it when they
+// migrate into app/games/ (GAME_ROADMAP.md Phase 1).
 
 import type { GameConfig } from "../lib/engine/types";
+import { RIVER_CATCH_CONFIG } from "./river-catch/config";
 
-export const GAME_REGISTRY: readonly GameConfig[] = [];
+export const GAME_REGISTRY: readonly GameConfig[] = [RIVER_CATCH_CONFIG];
 
 export function getGameConfig(id: string): GameConfig | undefined {
   return GAME_REGISTRY.find((g) => g.id === id);
