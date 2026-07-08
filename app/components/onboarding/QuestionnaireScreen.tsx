@@ -103,23 +103,21 @@ export function QuestionnaireScreen({
 
   return (
     <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
-      <NightRoomBackdrop minimal hideRug />
+      <NightRoomBackdrop minimal hideRug hideFloor />
 
       {/* ── back ── */}
-      <motion.button
+      <button
         onClick={goBack}
-        whileHover={{ scale: 1.08 }}
-        whileTap={{ scale: 0.92 }}
         style={{
           position: "absolute", top: 52, left: 16, zIndex: 10,
-          width: 46, height: 46, borderRadius: "50%",
-          background: "#5B21B6", border: "none", cursor: "pointer",
+          width: 46, height: 46, borderRadius: 14,
+          background: "rgba(59,31,140,0.82)", border: "none", cursor: "pointer",
           display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 22, color: "#fff",
-          boxShadow: "0 4px 18px rgba(0,0,0,0.45)",
+          color: "#fff", fontSize: 20, fontWeight: 400,
+          boxShadow: "0 2px 10px rgba(0,0,0,0.28)",
           touchAction: "manipulation",
         }}
-      >←</motion.button>
+      >‹</button>
 
       {/* ── music ── */}
       <motion.button

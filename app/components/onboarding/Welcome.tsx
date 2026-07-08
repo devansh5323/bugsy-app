@@ -318,7 +318,7 @@ export function Splash({ onEnter }: { onEnter: () => void }) {
               filter: "drop-shadow(0 14px 22px rgba(0,0,0,0.68)) drop-shadow(0 0 18px rgba(167,139,250,0.48))",
             }}
           >
-            <Bobo mood="happy" tint={280} size={220} animate tailWag />
+            <Bobo mood="happy" tint={210} size={220} animate tailWag />
           </motion.div>
         </motion.div>
       </div>

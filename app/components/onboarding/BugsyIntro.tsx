@@ -108,7 +108,7 @@ export function BugsyIntro({
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.22 }}
                   style={{
-                    fontFamily: F, fontSize: 14, fontWeight: 500,
+                    fontFamily: F, fontSize: 15, fontWeight: 600,
                     color: "rgba(26,15,64,0.82)",
                     margin: "10px 0 0", lineHeight: 1.65,
                     maxWidth: "100%",

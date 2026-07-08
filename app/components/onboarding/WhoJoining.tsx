@@ -91,9 +91,6 @@ export function WhoJoining({
               <div style={{ fontFamily: F, fontSize: 20, fontWeight: 800, color: "#fff", lineHeight: 1.25 }}>
                 It's Me
               </div>
-              <div style={{ fontFamily: F, fontSize: 13, fontWeight: 500, color: "rgba(195,178,255,0.78)", marginTop: 3 }}>
-                I'll play on my own
-              </div>
             </div>
             <div style={{ position: "relative", flexShrink: 0, marginRight: 2 }}>
               <Sparkle style={{ top: -10, right: 0,  fontSize: 12, color: "rgba(200,178,255,0.95)" }} />
@@ -132,9 +129,6 @@ export function WhoJoining({
             <div style={{ flex: 1, paddingLeft: 14 }}>
               <div style={{ fontFamily: F, fontSize: 20, fontWeight: 800, color: "#fff", lineHeight: 1.25 }}>
                 I'm a Parent
-              </div>
-              <div style={{ fontFamily: F, fontSize: 13, fontWeight: 500, color: "rgba(255,195,140,0.72)", marginTop: 3 }}>
-                I'm here to guide and help
               </div>
             </div>
             <div style={{ position: "relative", flexShrink: 0, marginRight: 2 }}>

@@ -1,5 +1,6 @@
-"use client";
+ "use client";
 
+import { motion } from "framer-motion";
 import { Bobo } from "../Mascot";
 
 const F = "var(--font-nunito), system-ui, sans-serif";
@@ -94,44 +95,144 @@ export function ParentDashboard({
           </button>
         </div>
 
+        {/* ── THIS WEEK'S HIGHLIGHT ── */}
+        <div style={{ ...CARD, overflow: "hidden", position: "relative" }}>
+          <p style={{ margin: "0 0 10px", color: "#A78BFA", fontSize: 10.5, fontWeight: 800, letterSpacing: "1.2px", textTransform: "uppercase" }}>This Week&apos;s Highlight</p>
+
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ margin: "0 0 8px", color: "#fff", fontSize: 22, fontWeight: 900, lineHeight: 1.2 }}>Consistency is key!</p>
+              <p style={{ margin: "0 0 14px", color: "rgba(255,255,255,0.62)", fontSize: 12.5, lineHeight: 1.55 }}>
+                Your child showed up every day this week. That&apos;s amazing! Small steps, big growth. 💜
+              </p>
+              <div style={{
+                display: "inline-flex", alignItems: "center", gap: 8,
+                background: "rgba(16,50,26,0.6)", borderRadius: 12,
+                border: "1px solid rgba(34,197,94,0.22)",
+                padding: "7px 12px",
+              }}>
+                <span style={{ color: "#22C55E", fontSize: 18, lineHeight: 1 }}>📈</span>
+                <div>
+                  <p style={{ margin: 0, color: "#fff", fontSize: 12, fontWeight: 700, lineHeight: 1.3 }}>
+                    Focus improved by <span style={{ color: "#22C55E" }}>12%</span>
+                  </p>
+                  <p style={{ margin: 0, color: "rgba(255,255,255,0.42)", fontSize: 10 }}>Compared to last week</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Plant illustration */}
+            <div style={{ flexShrink: 0, width: 94, height: 94, position: "relative" }}>
+              <span style={{ position: "absolute", top: 0, right: 8, color: "#FFD700", fontSize: 8, opacity: 0.9 }}>✦</span>
+              <span style={{ position: "absolute", top: 12, left: 2, color: "#FFD700", fontSize: 6, opacity: 0.7 }}>✦</span>
+              <span style={{ position: "absolute", bottom: 4, right: 2, color: "#FFD700", fontSize: 10, opacity: 0.8 }}>✦</span>
+              <svg width="94" height="94" viewBox="0 0 94 94">
+                <defs>
+                  <radialGradient id="pd-plant-glow" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="rgba(120,50,200,0.55)" />
+                    <stop offset="100%" stopColor="rgba(60,20,120,0)" />
+                  </radialGradient>
+                </defs>
+                <circle cx="47" cy="52" r="38" fill="url(#pd-plant-glow)" />
+                <circle cx="47" cy="52" r="36" fill="none" stroke="rgba(120,60,200,0.38)" strokeWidth="1.5" />
+                <ellipse cx="47" cy="76" rx="22" ry="8" fill="#5B3A1A" />
+                <ellipse cx="47" cy="74" rx="18" ry="6" fill="#7A4E2A" />
+                <line x1="47" y1="74" x2="47" y2="40" stroke="#4CAF50" strokeWidth="3.5" strokeLinecap="round" />
+                <path d="M 47 56 C 30 48 22 32 33 23 C 41 18 47 32 47 56Z" fill="#4CAF50" />
+                <path d="M 47 50 C 64 40 74 26 61 18 C 52 13 47 28 47 50Z" fill="#66BB6A" />
+                <path d="M 47 56 C 38 44 34 30 35 24" fill="none" stroke="rgba(255,255,255,0.28)" strokeWidth="0.9" />
+                <path d="M 47 50 C 56 40 62 28 60 20" fill="none" stroke="rgba(255,255,255,0.28)" strokeWidth="0.9" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
         {/* ── Stats Row — single card, 3 columns ── */}
-        <div style={{ ...CARD, display: "flex", padding: "16px 10px" }}>
+        <div style={{ ...CARD, display: "flex", alignItems: "center", padding: "10px 6px" }}>
+
           {/* Streak */}
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+          <div style={{ flex: 3, display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
             <div style={{
-              width: 38, height: 38, borderRadius: "50%",
+              width: 28, height: 28, borderRadius: "50%",
               background: "rgba(255,100,30,0.15)",
-              display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20,
+              display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15,
             }}>🔥</div>
-            <p style={{ margin: 0, color: "#FF6B1A", fontSize: 30, fontWeight: 900, lineHeight: 1 }}>7</p>
-            <p style={{ margin: 0, color: "#fff", fontSize: 11, fontWeight: 700, textAlign: "center" }}>Day Streak</p>
-            <p style={{ margin: 0, color: "rgba(255,255,255,0.42)", fontSize: 10.5, textAlign: "center" }}>Keep it up!</p>
+            <p style={{ margin: 0, color: "#FF6B1A", fontSize: 26, fontWeight: 900, lineHeight: 1 }}>7</p>
+            <p style={{ margin: 0, color: "#fff", fontSize: 10, fontWeight: 700, textAlign: "center" }}>Day Streak</p>
+            <p style={{ margin: 0, color: "rgba(255,255,255,0.42)", fontSize: 9.5, textAlign: "center" }}>Keep it up!</p>
           </div>
+
           {/* Divider */}
-          <div style={{ width: 1, background: "rgba(255,255,255,0.08)", margin: "4px 2px" }} />
-          {/* Focus Score */}
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+          <div style={{ width: 1, alignSelf: "stretch", background: "rgba(255,255,255,0.08)", margin: "0 3px" }} />
+
+          {/* Focus Score — gauge + badge + description */}
+          <div style={{ flex: 4, display: "flex", flexDirection: "column", alignItems: "center", minWidth: 0 }}>
+            {/* SVG gauge — r=36, viewBox trimmed */}
+            <svg viewBox="0 0 160 88" style={{ width: "100%", maxWidth: 130, display: "block" }}>
+              <defs>
+                <linearGradient id="fst-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#6D28D9" />
+                  <stop offset="100%" stopColor="#A855F7" />
+                </linearGradient>
+              </defs>
+              {/* Track — 220° arc, r=36 */}
+              <circle cx="80" cy="62" r="36"
+                fill="none" stroke="rgba(255,255,255,0.09)" strokeWidth="8" strokeLinecap="round"
+                strokeDasharray="138.5 88.1"
+                transform="rotate(160, 80, 62)"
+              />
+              {/* Fill — 78% */}
+              <circle cx="80" cy="62" r="36"
+                fill="none" stroke="url(#fst-grad)" strokeWidth="8" strokeLinecap="round"
+                strokeDasharray="108 118.6"
+                transform="rotate(160, 80, 62)"
+                style={{ filter: "drop-shadow(0 0 5px rgba(168,85,247,0.6))" }}
+              />
+              {/* Score */}
+              <text x="80" y="57" textAnchor="middle" dominantBaseline="middle"
+                fill="#fff" fontSize="32" fontWeight="900"
+                fontFamily="var(--font-nunito), system-ui, sans-serif">78</text>
+              {/* Label */}
+              <text x="80" y="76" textAnchor="middle" dominantBaseline="middle"
+                fill="rgba(200,185,255,0.72)" fontSize="9.5" fontWeight="700"
+                fontFamily="var(--font-nunito), system-ui, sans-serif">Focus Score</text>
+            </svg>
+
+            {/* Badge */}
             <div style={{
-              width: 38, height: 38, borderRadius: "50%",
-              background: "rgba(120,60,220,0.18)",
-              display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20,
-            }}>🎯</div>
-            <p style={{ margin: 0, color: "#A855F7", fontSize: 30, fontWeight: 900, lineHeight: 1 }}>78</p>
-            <p style={{ margin: 0, color: "#fff", fontSize: 11, fontWeight: 700, textAlign: "center" }}>Focus Score</p>
-            <p style={{ margin: 0, color: "#22C55E", fontSize: 10.5, fontWeight: 600, textAlign: "center" }}>Above average</p>
+              display: "inline-flex", alignItems: "center", gap: 4,
+              background: "rgba(109,40,217,0.28)", borderRadius: 20,
+              border: "1px solid rgba(124,58,237,0.45)",
+              padding: "3px 10px", marginBottom: 5,
+            }}>
+              <span style={{ color: "#A78BFA", fontSize: 11 }}>↗</span>
+              <span style={{ fontFamily: F, fontSize: 10.5, fontWeight: 800, color: "#A78BFA" }}>Above average</span>
+            </div>
+
+            {/* Description */}
+            <p style={{
+              margin: 0, textAlign: "center", fontFamily: F,
+              fontSize: 10, lineHeight: 1.4, color: "rgba(255,255,255,0.55)",
+            }}>
+              Focusing better than{" "}
+              <span style={{ color: "#fff", fontWeight: 700 }}>78%</span>{" "}
+              of kids this week!
+            </p>
           </div>
+
           {/* Divider */}
-          <div style={{ width: 1, background: "rgba(255,255,255,0.08)", margin: "4px 2px" }} />
+          <div style={{ width: 1, alignSelf: "stretch", background: "rgba(255,255,255,0.08)", margin: "0 3px" }} />
+
           {/* Missions */}
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+          <div style={{ flex: 3, display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
             <div style={{
-              width: 38, height: 38, borderRadius: "50%",
+              width: 28, height: 28, borderRadius: "50%",
               background: "rgba(34,197,94,0.14)",
-              display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20,
+              display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15,
             }}>✅</div>
-            <p style={{ margin: 0, color: "#22C55E", fontSize: 30, fontWeight: 900, lineHeight: 1 }}>23</p>
-            <p style={{ margin: 0, color: "#fff", fontSize: 11, fontWeight: 700, textAlign: "center" }}>Missions Completed</p>
-            <p style={{ margin: 0, color: "rgba(255,255,255,0.42)", fontSize: 10.5, textAlign: "center" }}>This week</p>
+            <p style={{ margin: 0, color: "#22C55E", fontSize: 26, fontWeight: 900, lineHeight: 1 }}>23</p>
+            <p style={{ margin: 0, color: "#fff", fontSize: 10, fontWeight: 700, textAlign: "center" }}>Missions Done</p>
+            <p style={{ margin: 0, color: "rgba(255,255,255,0.42)", fontSize: 9.5, textAlign: "center" }}>This week</p>
           </div>
         </div>
 
@@ -198,64 +299,6 @@ export function ParentDashboard({
             </div>
           </div>
 
-        </div>
-
-        {/* ── THIS WEEK'S HIGHLIGHT ── */}
-        <div style={{ ...CARD, overflow: "hidden", position: "relative" }}>
-          <p style={{ margin: "0 0 10px", color: "#A78BFA", fontSize: 10.5, fontWeight: 800, letterSpacing: "1.2px", textTransform: "uppercase" }}>This Week&apos;s Highlight</p>
-
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ margin: "0 0 8px", color: "#fff", fontSize: 22, fontWeight: 900, lineHeight: 1.2 }}>Consistency is key!</p>
-              <p style={{ margin: "0 0 14px", color: "rgba(255,255,255,0.62)", fontSize: 12.5, lineHeight: 1.55 }}>
-                Your child showed up every day this week. That&apos;s amazing! Small steps, big growth. 💜
-              </p>
-              {/* Green stat badge */}
-              <div style={{
-                display: "inline-flex", alignItems: "center", gap: 8,
-                background: "rgba(16,50,26,0.6)", borderRadius: 12,
-                border: "1px solid rgba(34,197,94,0.22)",
-                padding: "7px 12px",
-              }}>
-                <span style={{ color: "#22C55E", fontSize: 18, lineHeight: 1 }}>📈</span>
-                <div>
-                  <p style={{ margin: 0, color: "#fff", fontSize: 12, fontWeight: 700, lineHeight: 1.3 }}>
-                    Focus improved by <span style={{ color: "#22C55E" }}>12%</span>
-                  </p>
-                  <p style={{ margin: 0, color: "rgba(255,255,255,0.42)", fontSize: 10 }}>Compared to last week</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Plant illustration */}
-            <div style={{ flexShrink: 0, width: 94, height: 94, position: "relative" }}>
-              <span style={{ position: "absolute", top: 0, right: 8, color: "#FFD700", fontSize: 8, opacity: 0.9 }}>✦</span>
-              <span style={{ position: "absolute", top: 12, left: 2, color: "#FFD700", fontSize: 6, opacity: 0.7 }}>✦</span>
-              <span style={{ position: "absolute", bottom: 4, right: 2, color: "#FFD700", fontSize: 10, opacity: 0.8 }}>✦</span>
-              <svg width="94" height="94" viewBox="0 0 94 94">
-                <defs>
-                  <radialGradient id="pd-plant-glow" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="rgba(120,50,200,0.55)" />
-                    <stop offset="100%" stopColor="rgba(60,20,120,0)" />
-                  </radialGradient>
-                </defs>
-                <circle cx="47" cy="52" r="38" fill="url(#pd-plant-glow)" />
-                <circle cx="47" cy="52" r="36" fill="none" stroke="rgba(120,60,200,0.38)" strokeWidth="1.5" />
-                {/* Soil mound */}
-                <ellipse cx="47" cy="76" rx="22" ry="8" fill="#5B3A1A" />
-                <ellipse cx="47" cy="74" rx="18" ry="6" fill="#7A4E2A" />
-                {/* Stem */}
-                <line x1="47" y1="74" x2="47" y2="40" stroke="#4CAF50" strokeWidth="3.5" strokeLinecap="round" />
-                {/* Left leaf */}
-                <path d="M 47 56 C 30 48 22 32 33 23 C 41 18 47 32 47 56Z" fill="#4CAF50" />
-                {/* Right leaf */}
-                <path d="M 47 50 C 64 40 74 26 61 18 C 52 13 47 28 47 50Z" fill="#66BB6A" />
-                {/* Leaf veins */}
-                <path d="M 47 56 C 38 44 34 30 35 24" fill="none" stroke="rgba(255,255,255,0.28)" strokeWidth="0.9" />
-                <path d="M 47 50 C 56 40 62 28 60 20" fill="none" stroke="rgba(255,255,255,0.28)" strokeWidth="0.9" />
-              </svg>
-            </div>
-          </div>
         </div>
 
         {/* ── Coming Tomorrow ── */}
@@ -325,7 +368,10 @@ export function ParentDashboard({
         position: "relative",
       }}>
         {/* Home — active */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+        <motion.div
+          whileHover={{ scale: 1.12 }} whileTap={{ scale: 0.92 }}
+          style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2, cursor: "pointer" }}
+        >
           <div style={{
             width: 46, height: 46, borderRadius: "50%",
             background: "#7C3AED",
@@ -335,18 +381,32 @@ export function ParentDashboard({
           </div>
           <span style={{ color: "#fff", fontSize: 11, fontWeight: 800 }}>Home</span>
           <div style={{
-            position: "absolute", bottom: 0, left: "calc(25% - 20px)", width: 40, height: 3,
+            position: "absolute", bottom: 0, left: "calc(16.67% - 20px)", width: 40, height: 3,
             background: "#7C3AED", borderRadius: 2,
           }} />
-        </div>
+        </motion.div>
 
-        {/* Reports — inactive */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+        {/* Reports */}
+        <motion.div
+          whileHover={{ scale: 1.12 }} whileTap={{ scale: 0.92 }}
+          style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2, cursor: "pointer" }}
+        >
           <div style={{ width: 46, height: 46, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ fontSize: 22, opacity: 0.4 }}>📊</span>
+            <span style={{ fontSize: 22 }}>📊</span>
           </div>
-          <span style={{ color: "rgba(255,255,255,0.36)", fontSize: 11, fontWeight: 600 }}>Reports</span>
-        </div>
+          <span style={{ color: "#fff", fontSize: 11, fontWeight: 600 }}>Reports</span>
+        </motion.div>
+
+        {/* Check-In */}
+        <motion.div
+          whileHover={{ scale: 1.12 }} whileTap={{ scale: 0.92 }}
+          style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2, cursor: "pointer" }}
+        >
+          <div style={{ width: 46, height: 46, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontSize: 22 }}>📋</span>
+          </div>
+          <span style={{ color: "#fff", fontSize: 11, fontWeight: 600 }}>Check-In</span>
+        </motion.div>
       </div>
 
       <style>{`

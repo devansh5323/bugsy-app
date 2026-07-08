@@ -54,7 +54,7 @@ export function AssessmentCompleteScreen({
 
   return (
     <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
-      <NightRoomBackdrop minimal hideRug />
+      <NightRoomBackdrop minimal hideRug hideFloor />
 
       {/* ── confetti ──────────────────────────────────────────────── */}
       {CONFETTI.map((c) => (
@@ -91,20 +91,18 @@ export function AssessmentCompleteScreen({
       ))}
 
       {/* ── back ── */}
-      <motion.button
+      <button
         onClick={onBack}
-        whileHover={{ scale: 1.08 }}
-        whileTap={{ scale: 0.92 }}
         style={{
           position: "absolute", top: 52, left: 16, zIndex: 10,
-          width: 46, height: 46, borderRadius: "50%",
-          background: "#5B21B6", border: "none", cursor: "pointer",
+          width: 46, height: 46, borderRadius: 14,
+          background: "rgba(59,31,140,0.82)", border: "none", cursor: "pointer",
           display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 22, color: "#fff",
-          boxShadow: "0 4px 18px rgba(0,0,0,0.45)",
+          color: "#fff", fontSize: 20, fontWeight: 400,
+          boxShadow: "0 2px 10px rgba(0,0,0,0.28)",
           touchAction: "manipulation",
         }}
-      >←</motion.button>
+      >‹</button>
 
       {/* ── music ── */}
       <motion.button
@@ -210,40 +208,7 @@ export function AssessmentCompleteScreen({
         </motion.div>
       </div>
 
-      {/* ── concentric ring mat (renders behind Bobo) ── */}
-      <div style={{
-        position: "absolute", left: "50%", transform: "translateX(-50%)",
-        top: 628, zIndex: 3, pointerEvents: "none",
-      }}>
-        <motion.div
-          initial={{ opacity: 0, scaleX: 0.55, scaleY: 0.55 }}
-          animate={{ opacity: 1, scaleX: 1, scaleY: 1 }}
-          transition={{ delay: 0.55, duration: 0.55, ease: "easeOut" }}
-          style={{ position: "relative", width: 300, height: 90 }}
-        >
-          {([
-            { w: 300, h: 90, fill: "rgba(55,0,0,0.96)"    },
-            { w: 244, h: 73, fill: "rgba(100,3,3,0.96)"   },
-            { w: 188, h: 56, fill: "rgba(155,12,12,0.96)" },
-            { w: 133, h: 40, fill: "rgba(200,25,25,0.96)" },
-            { w:  78, h: 23, fill: "rgba(235,48,48,0.96)" },
-          ] as { w: number; h: number; fill: string }[]).map((ring, i) => (
-            <div
-              key={i}
-              style={{
-                position: "absolute",
-                left: "50%", marginLeft: -(ring.w / 2),
-                top:  "50%", marginTop:  -(ring.h / 2),
-                width: ring.w, height: ring.h,
-                borderRadius: "50%",
-                background: ring.fill,
-              }}
-            />
-          ))}
-        </motion.div>
-      </div>
-
-      {/* ── Bobo mascot ── */}
+{/* ── Bobo mascot ── */}
       {/* outer plain div: CSS centering — inner motion.div: entrance animation */}
       <div style={{
         position: "absolute", left: "50%", transform: "translateX(-50%)",
@@ -259,42 +224,23 @@ export function AssessmentCompleteScreen({
         </motion.div>
       </div>
 
-      {/* ── CTA "Let's Begin Our Journey!" ── */}
-      <div style={centered({ bottom: 36, zIndex: 7 })}>
-        {/* pulsing glow layer */}
-        <motion.div
-          animate={{ opacity: [0.45, 0.75, 0.45], scale: [1, 1.06, 1] }}
-          transition={{ duration: 2.0, repeat: Infinity, ease: "easeInOut" }}
-          style={{
-            position: "absolute", inset: -10,
-            borderRadius: 40,
-            background: "linear-gradient(135deg, #A855F7, #6D28D9)",
-            filter: "blur(16px)",
-            pointerEvents: "none",
-            zIndex: 0,
-          }}
-        />
-        <motion.button
-          initial={{ opacity: 0, y: 22 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.78, duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
+      {/* ── CTA ── */}
+      <div style={{ position: "absolute", bottom: 36, left: 16, right: 16, zIndex: 7 }}>
+        <button
           onClick={onNext}
-          whileHover={{ y: -3, scale: 1.015 }}
-          whileTap={{ scale: 0.97 }}
           style={{
-            position: "relative", zIndex: 1,
             width: "100%", height: 60,
             borderRadius: 30,
-            background: "linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)",
+            background: "linear-gradient(180deg, #9D6FE8 0%, #7C3AED 100%)",
             border: "none", cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+            display: "flex", alignItems: "center", justifyContent: "center",
             fontFamily: F, fontSize: 19, fontWeight: 900, color: "#fff",
-            boxShadow: "0 10px 30px rgba(109,40,217,0.55)",
+            boxShadow: "0 6px 0 #5B21B6, 0 10px 28px rgba(109,40,217,0.50)",
             touchAction: "manipulation",
           }}
         >
-          {"Let's Begin Our Journey! ✨ →"}
-        </motion.button>
+          Let&apos;s begin with the journey
+        </button>
       </div>
     </div>
   );

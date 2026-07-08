@@ -465,8 +465,8 @@ export function WhoAreYou({
               >
                 {/* Line 1 — small subtitle */}
                 <p style={{
-                  fontFamily: F, fontSize: 14, fontWeight: 500,
-                  color: "rgba(26,15,64,0.72)", margin: 0,
+                  fontFamily: F, fontSize: 14, fontWeight: 700,
+                  color: "#000000", margin: 0,
                   whiteSpace: "nowrap", lineHeight: 1.4,
                 }}>
                   {typedLine1}
@@ -479,8 +479,8 @@ export function WhoAreYou({
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.2 }}
                     style={{
-                      fontFamily: F, fontSize: 19, fontWeight: 800,
-                      color: "#7C3AED", margin: "6px 0 0", lineHeight: 1.3,
+                      fontFamily: F, fontSize: 19, fontWeight: 700,
+                      color: "#000000", margin: "6px 0 0", lineHeight: 1.3,
                       whiteSpace: "nowrap",
                     }}
                   >

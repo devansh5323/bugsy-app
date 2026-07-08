@@ -24,7 +24,7 @@ export function HandoverScreen({
   const [showButton, setShowButton] = useState(false);
 
   useEffect(() => {
-    const ids: ReturnType<typeof setTimeout>[] = [];
+    const ids: ReturnType<typeof setTimeout>[] = [];ma
 
     // 1. Cat slides in first
     ids.push(setTimeout(() => setCatIn(true), 300));
@@ -120,17 +120,19 @@ export function HandoverScreen({
         {/* "Now it's time…" — word-by-word animation */}
         {showText && (() => {
           const words: { text: string; purple: boolean }[] = [
-            { text: "Now",    purple: false },
-            { text: "it's",   purple: false },
-            { text: "time",   purple: false },
-            { text: "to",     purple: false },
+            { text: "Now,",   purple: false },
             { text: "hand",   purple: true  },
-            { text: "over",   purple: true  },
             { text: "the",    purple: false },
-            { text: "device", purple: false },
+            { text: "device", purple: true  },
             { text: "to",     purple: false },
             { text: "your",   purple: true  },
-            { text: "child.", purple: true  },
+            { text: "child",  purple: true  },
+            { text: "and",    purple: false },
+            { text: "I'll",   purple: false },
+            { text: "take",   purple: false },
+            { text: "it",     purple: false },
+            { text: "from",   purple: false },
+            { text: "here",   purple: false },
           ];
           return (
             <div style={{ textAlign: "center", marginTop: 20, pointerEvents: "none" }}>
@@ -145,7 +147,7 @@ export function HandoverScreen({
                     <span
                       key={i}
                       style={{
-                        color: w.purple ? "#A78BFA" : "#fff",
+                        color: "#fff",
                         display: "inline-block",
                         opacity: 0,
                         animation: `hs-word-pop 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards`,
