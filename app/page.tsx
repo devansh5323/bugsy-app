@@ -63,7 +63,7 @@ import {
 } from "./components/onboarding/ChildMeet";
 import { BirdSpikeGame } from "./components/BirdSpikeGame";
 import { SnackCatchGame } from "./components/SnackCatchGame";
-import { getGameByProjectId } from "./games/registry";
+import { getGameById, getGameByProjectId } from "./games/registry";
 import { TourOverlay, type TourStep } from "./components/TourOverlay";
 import { ProgressContext } from "./components/onboarding/ConvoUI";
 import { VoiceProvider } from "./lib/voice";
@@ -97,10 +97,10 @@ type Stage =
 // parent already completed (name, age, parent details, login,
 // noticing/achieve). 0: doorway, 1: hide-and-seek (Bugsy already knows
 // their name), 2: meet + pet Bugsy, 3: kitchen, 4: first mission
-// (Snack Catch + bomb quiz), 5: dark force + calm-Bugsy storm,
-// 6: the plan (train me, earn XP, rewards), 7: meet the clan,
-// 8: pinky promise → app.
-const HANDOVER_STEPS = 8;
+// (Snack Catch + bomb quiz), 5: second mission (Fumi's River Catch),
+// 6: dark force + calm-Bugsy storm, 7: promise to come back tomorrow,
+// 8: goodnight → app home.
+const HANDOVER_STEPS = 9;
 
 // Stored in localStorage so users can resume their place across
 // sessions — important when a parent does half the setup, exits,
@@ -204,6 +204,22 @@ export default function Home() {
     }
     setHydrated(true);
   }, []);
+
+  // Dev-only shortcut: ?dev_game=<projectId> jumps straight to a
+  // registered game, skipping onboarding/localStorage entirely.
+  // Stripped in production builds — this must never reach real users
+  // (docs/AI_RULES.md: no hidden backdoors in the shipped app).
+  // Runs after hydration so it overrides whatever stage was restored.
+  useEffect(() => {
+    if (!hydrated || process.env.NODE_ENV === "production") return;
+    const projectId = new URLSearchParams(window.location.search).get("dev_game");
+    if (!projectId) return;
+    if (!getGameByProjectId(projectId)) {
+      console.warn(`[dev_game] no registered game for project "${projectId}"`);
+      return;
+    }
+    setStage({ kind: "project", projectId });
+  }, [hydrated]);
 
   // Persist on any meaningful change. Skipped until after initial
   // hydration so we don't immediately overwrite stored state with
@@ -785,14 +801,21 @@ export default function Home() {
         // ── First mission: Snack Catch (drag the cat, catch good food) ──
         case 6:
           return <SnackCatchGame tint={TINT} onExit={advanceChild} onEarnXp={awardXp} />;
+        // ── Second mission: Fumi's River Catch (go/no-go fishing) ──
+        case 7: {
+          const riverCatch = getGameById("river-catch");
+          return riverCatch ? (
+            <riverCatch.Component onExit={() => advanceChild()} onEarnXp={awardXp} />
+          ) : null;
+        }
         // ── Dark force arrives → calm Bugsy through the storm ──
-        case 7:
+        case 8:
           return <ChildCalmBugsy tint={TINT} childName={childName} onNext={advanceChild} onBack={backChild} />;
         // ── It's getting late: when will you come back tomorrow? ──
-        case 8:
+        case 9:
           return <ChildPromise tint={TINT} childName={childName} onNext={advanceChild} onBack={backChild} />;
         // ── A little about them ──
-        case 9:
+        case 10:
           return (
             <ChildDailyGoal
               tint={TINT}
@@ -804,9 +827,9 @@ export default function Home() {
             />
           );
         // ── Night falls: goodnight, see you tomorrow → Bugsy sleeps ──
-        case 10:
-          return <ChildBedtime tint={TINT} childName={childName} onNext={advanceChild} onBack={backChild} />;
         case 11:
+          return <ChildBedtime tint={TINT} childName={childName} onNext={advanceChild} onBack={backChild} />;
+        case 12:
           return (
             <ChildAlmostDone
               tint={TINT}
@@ -815,7 +838,7 @@ export default function Home() {
               onBack={backChild}
             />
           );
-        case 12:
+        case 13:
           return (
             <ChildAdultLogin
               tint={TINT}
@@ -824,7 +847,7 @@ export default function Home() {
               onBack={backChild}
             />
           );
-        case 13:
+        case 14:
           return (
             <ChildParentDetails
               tint={TINT}
@@ -839,7 +862,7 @@ export default function Home() {
           );
         // ── Grown-up shares what they're noticing, then Bugsy's
         // response (same beats as the parent flow) ──
-        case 14:
+        case 15:
           return (
             <ParentNoticing
               tint={TINT}
@@ -886,14 +909,21 @@ export default function Home() {
           );
         case 4:
           return <SnackCatchGame tint={TINT} onExit={advanceHandover} onEarnXp={awardXp} />;
+        // ── Second mission: Fumi's River Catch (go/no-go fishing) ──
+        case 5: {
+          const riverCatch = getGameById("river-catch");
+          return riverCatch ? (
+            <riverCatch.Component onExit={() => advanceHandover()} onEarnXp={awardXp} />
+          ) : null;
+        }
         // ── Dark force arrives → calm Bugsy through the storm ──
-        case 5:
+        case 6:
           return <ChildCalmBugsy tint={TINT} childName={friend} onNext={advanceHandover} />;
         // ── It's getting late: when will you come back tomorrow? ──
-        case 6:
+        case 7:
           return <ChildPromise tint={TINT} childName={friend} onNext={advanceHandover} />;
         // ── Night falls: goodnight, see you tomorrow → app home ──
-        case 7:
+        case 8:
           return <ChildBedtime tint={TINT} childName={friend} onNext={advanceHandover} />;
       }
       return null;

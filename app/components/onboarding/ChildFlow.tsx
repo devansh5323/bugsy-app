@@ -15,23 +15,25 @@ import {
   type Relationship,
 } from "../../lib/data";
 
-// 14 screens after the shared "Who are you?" branch.
+// 16 screens after the shared "Who are you?" branch.
 // The standalone "I'm a child" path now opens with the same
 // "meet Bugsy in his room" experience as the parent-handover
 // path (doorway → hide-and-seek → first contact → pet), defined
 // in ChildMeet.tsx. ChildHideSeek collects the name first, then
 // the cuddle (belly tap → adventure) leads into the age question
-// (park, no football), the kitchen mission setup, then the SnackCatch
-// drag-to-feed mini-game, the thunderstorm box-breathing soothe
-// beat, and finally the usual grown-up steps.
+// (park, no football), the kitchen mission setup, then two mini-game
+// missions (SnackCatch drag-to-feed, then Fumi's River Catch), the
+// thunderstorm box-breathing soothe beat, and finally the usual
+// grown-up steps.
 // (BirdSpikeGame is kept in the codebase — it's used elsewhere and
 // can come back as a future mission.) Steps here:
-//   0 ChildDoorway       5 SnackCatchGame   10 ChildAlmostDone
-//   1 ChildHideSeek      6 ChildCalmBugsy   11 ChildAdultLogin
-//   2 ChildPetMeet       7 ChildPromise     12 ChildParentDetails
-//   3 ChildAgeQuestion   8 ChildDailyGoal   13 ParentNoticing
-//   4 ChildKitchen       9 ChildBedtime
-export const CHILD_STEPS = 15;
+//   0 BondWithBugsy      6 SnackCatchGame    12 ChildAlmostDone
+//   1 ChildDoorway       7 RiverCatchGame    13 ChildAdultLogin
+//   2 ChildHideSeek      8 ChildCalmBugsy    14 ChildParentDetails
+//   3 ChildPetMeet       9 ChildPromise      15 ParentNoticing
+//   4 ChildAgeQuestion  10 ChildDailyGoal
+//   5 ChildKitchen      11 ChildBedtime
+export const CHILD_STEPS = 16;
 
 type Common = { tint: number };
 

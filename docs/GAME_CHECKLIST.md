@@ -18,6 +18,10 @@ links to the doc that explains the *why*.
 - [ ] Added an entry to `PROJECTS` in `app/lib/data.ts` (category, kind:
       `"game"`, blurb, points, mins, emoji, proof) whose `id` matches the
       registry entry's `projectId`
+- [ ] If this game will also appear as an onboarding mission step (not just
+      a Projects-tab entry), call `onEarnXp?.(result.xpEarned)` from
+      `onComplete` — see `RiverCatchGame` and `AGENTS.md`'s dev-testing
+      section for the two different launch/reward paths
 - [ ] Uses shared engine pieces where applicable (`useGameLoop`, `useCanvas`,
       `audio.ts`, `storage.ts`) rather than reimplementing them
 

@@ -47,6 +47,28 @@ pnpm lint      # eslint
 There is no `pnpm test` yet — don't invent one silently; if you add real
 tests, add the script here in the same change.
 
+## Playing a registered game without going through onboarding
+
+Two ways in, both driven by `app/games/registry.ts` — never by editing
+`page.tsx`'s onboarding switch statements or hand-authoring `localStorage`
+by guesswork:
+
+- **Dev-only URL shortcut**: with `pnpm dev` running, visit
+  `http://localhost:3000/?dev_game=<projectId>` (e.g. `?dev_game=p10` for
+  Fumi's River Catch) to jump straight to that game, skipping onboarding and
+  any restored `localStorage` state entirely. Implemented in `page.tsx` as a
+  `useEffect` gated on `process.env.NODE_ENV !== "production"` — it compiles
+  out of production builds, so it's never a backdoor in the shipped app
+  (`AI_RULES.md`). `<projectId>` must match a `projectId` in the registry;
+  an unknown id logs a console warning and does nothing.
+- **Play through the real onboarding flow**: games can be registered as
+  onboarding mission steps (not just Projects-tab entries) — see
+  `RiverCatchGame` at child-flow step 7 / handover-flow step 5 in
+  `page.tsx`, looked up via `getGameById(...)` rather than
+  `getGameByProjectId(...)`. This is the actual product path a child
+  experiences, so prefer it over the dev shortcut when the thing you're
+  verifying is gameplay/UX, not just "does this game run."
+
 ## Repository layout (current + target)
 
 See [`GAME_FOLDER_STRUCTURE.md`](./GAME_FOLDER_STRUCTURE.md) for the full
@@ -71,10 +93,12 @@ docs/                   # you are here
 The shared engine now exists: `app/lib/engine/` (types, loop/canvas hooks,
 audio, difficulty, analytics, storage, timer, score, results, assets),
 `app/components/games/` (`GameShell.tsx`, `HUD.tsx`), and
-`app/games/registry.ts` (empty until games register). The two existing games
-predate it and are still self-contained with duplicated patterns — migrating
-them onto the engine is `GAME_ROADMAP.md` Phase 1's remaining work. New games
-build on the engine from day one.
+`app/games/registry.ts` (one entry today — Fumi's River Catch,
+`app/games/river-catch/`). The two legacy games (BirdSpike, SnackCatch)
+predate the engine and are still self-contained with duplicated patterns —
+migrating them onto it is `GAME_ROADMAP.md` Phase 1's remaining work. New
+games build on the engine from day one and register in
+`app/games/registry.ts`.
 
 ## Conventions
 

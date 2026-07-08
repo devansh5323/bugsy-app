@@ -77,10 +77,20 @@ app/
    matching `projectId` (the `Project.id` in `app/lib/data.ts`), and a
    `Component` loaded via `next/dynamic` so every game is its own
    code-split chunk — at 20+ games the home screen must not pay for every
-   game's code up front. `page.tsx` launches games purely by
-   `getGameByProjectId(...)` lookup: adding a game never touches the app
-   shell. Registered components implement the `GameLaunchProps` contract
-   (`onExit(cleared: boolean)`).
+   game's code up front. `page.tsx` launches games purely by registry
+   lookup — `getGameByProjectId(...)` for project-tab play,
+   `getGameById(...)` for onboarding-mission play (see `AGENTS.md`'s
+   dev-testing section for the third lookup use, the `?dev_game=` shortcut)
+   — so adding a game never touches the app shell beyond one new registry
+   entry. Registered
+   components implement the `GameLaunchProps` contract: `onExit(cleared:
+   boolean)` (required) and `onEarnXp(amount: number)` (optional). The two
+   launch sites use different reward paths — project-tab play awards a
+   flat `Project.points` via `completeProject()` on clear and omits
+   `onEarnXp`; onboarding play isn't a project completion at all, so it
+   passes `awardXp` and credits the run's actual `GameResult.xpEarned`
+   instead. A game only needs to call `onEarnXp` if the launch site
+   provided one.
 5. **No nested game nesting.** A game can't contain another game's folder.
    Sub-levels/variants of one game (e.g. easy/hard mode assets) live inside
    that game's own folder, not as siblings under `app/games/`.

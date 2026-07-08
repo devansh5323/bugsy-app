@@ -17,8 +17,17 @@ import { RIVER_CATCH_CONFIG } from "./river-catch/config";
 // The launch contract every registered game component implements.
 // `cleared` = some run this session met the game's win condition; the
 // app decides whether that completes the project.
+//
+// `onEarnXp` is optional and callsite-driven, not a fixed reward path:
+// the project-tab launch (page.tsx, via getGameByProjectId) credits a
+// flat Project.points on clear through completeProject() and omits
+// this prop; the onboarding steps (which don't go through project
+// completion at all) pass awardXp so the run's dynamic XP
+// (GameResult.xpEarned, computed by lib/engine/results.ts) is what
+// gets credited. A game only needs to call onEarnXp if it's given.
 export type GameLaunchProps = {
   onExit: (cleared: boolean) => void;
+  onEarnXp?: (amount: number) => void;
 };
 
 export type GameRegistryEntry = {
@@ -48,4 +57,10 @@ export function getGameByProjectId(
   projectId: string,
 ): GameRegistryEntry | undefined {
   return GAME_REGISTRY.find((g) => g.projectId === projectId);
+}
+
+// For launch sites that aren't project-driven (onboarding steps play
+// a game as a mission beat, not as a Projects-tab completion).
+export function getGameById(id: string): GameRegistryEntry | undefined {
+  return GAME_REGISTRY.find((g) => g.config.id === id);
 }

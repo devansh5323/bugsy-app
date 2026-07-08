@@ -18,6 +18,10 @@ import { Bobo } from "../../components/Mascot";
 import { GameShell, useGameShell } from "../../components/games/GameShell";
 import { HUD } from "../../components/games/HUD";
 import type { Mood } from "../../lib/data";
+// Type-only import: erased at compile time, so this doesn't create a
+// runtime circular dependency with registry.ts's dynamic() import of
+// this same file.
+import type { GameLaunchProps } from "../registry";
 import {
   trackDifficultyAdjusted,
   trackRoundCompleted,
@@ -76,14 +80,7 @@ function focusMultiplier(streak: number): number {
   return streak >= FOCUS_FLOW_STREAK ? FOCUS_FLOW_MULTIPLIER : 1;
 }
 
-export function RiverCatchGame({
-  onExit,
-}: {
-  // Called on every exit; `cleared` says whether any run this session
-  // filled the basket — the app decides whether that completes the
-  // project (page.tsx wiring).
-  onExit: (cleared: boolean) => void;
-}) {
+export function RiverCatchGame({ onExit, onEarnXp }: GameLaunchProps) {
   const clearedRef = useRef(false);
   const metricsRef = useRef<RoundMetrics>(createRoundMetrics());
 
@@ -99,6 +96,7 @@ export function RiverCatchGame({
       onExit={() => onExit(clearedRef.current)}
       onComplete={(r) => {
         if (r.outcome === "cleared") clearedRef.current = true;
+        onEarnXp?.(r.xpEarned);
       }}
       resultLine={(r) =>
         r.outcome === "cleared"
