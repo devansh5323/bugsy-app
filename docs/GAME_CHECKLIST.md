@@ -11,9 +11,13 @@ links to the doc that explains the *why*.
       difficulty params, estimated minutes)
 - [ ] `GameConfig.id` matches the folder name and the corresponding
       `Project.id`/title used in `app/lib/data.ts`
-- [ ] Registered in `app/games/registry.ts`
+- [ ] Registered in `app/games/registry.ts` with `config`, `projectId`, and
+      a `next/dynamic` `Component` implementing `GameLaunchProps` — this is
+      the only wiring step; `page.tsx` launches by registry lookup and must
+      not gain a per-game special case
 - [ ] Added an entry to `PROJECTS` in `app/lib/data.ts` (category, kind:
-      `"game"`, blurb, points, mins, emoji, proof)
+      `"game"`, blurb, points, mins, emoji, proof) whose `id` matches the
+      registry entry's `projectId`
 - [ ] Uses shared engine pieces where applicable (`useGameLoop`, `useCanvas`,
       `audio.ts`, `storage.ts`) rather than reimplementing them
 

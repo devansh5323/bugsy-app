@@ -72,10 +72,15 @@ app/
 3. **`app/lib/engine/` owns everything shared by ≥2 games.** If you find
    yourself copy-pasting a function from one game file into a new one,
    that's the signal to promote it into `engine/` instead.
-4. **`registry.ts` is the single source of truth for "which games exist."**
-   Adding a game means adding one entry here — nothing else should need to
-   enumerate games by hand (menus, routers, analytics dashboards all read
-   from this registry).
+4. **`registry.ts` is the single source of truth for "which games exist" —
+   and how they launch.** Each entry carries the game's `GameConfig`, its
+   matching `projectId` (the `Project.id` in `app/lib/data.ts`), and a
+   `Component` loaded via `next/dynamic` so every game is its own
+   code-split chunk — at 20+ games the home screen must not pay for every
+   game's code up front. `page.tsx` launches games purely by
+   `getGameByProjectId(...)` lookup: adding a game never touches the app
+   shell. Registered components implement the `GameLaunchProps` contract
+   (`onExit(cleared: boolean)`).
 5. **No nested game nesting.** A game can't contain another game's folder.
    Sub-levels/variants of one game (e.g. easy/hard mode assets) live inside
    that game's own folder, not as siblings under `app/games/`.

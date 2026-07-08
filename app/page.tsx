@@ -63,7 +63,7 @@ import {
 } from "./components/onboarding/ChildMeet";
 import { BirdSpikeGame } from "./components/BirdSpikeGame";
 import { SnackCatchGame } from "./components/SnackCatchGame";
-import { RiverCatchGame } from "./games/river-catch/RiverCatchGame";
+import { getGameByProjectId } from "./games/registry";
 import { TourOverlay, type TourStep } from "./components/TourOverlay";
 import { ProgressContext } from "./components/onboarding/ConvoUI";
 import { VoiceProvider } from "./lib/voice";
@@ -915,11 +915,14 @@ export default function Home() {
           />
         );
       }
-      // Fumi's River Catch — engine-based; a run that filled the food
-      // basket completes the project, a quit just returns home.
-      if (project.id === "p10") {
+      // Engine-based games launch by registry lookup — adding a game
+      // touches app/games/registry.ts, never this file. A cleared run
+      // completes the project; a quit just returns to the picker.
+      const registered = getGameByProjectId(project.id);
+      if (registered) {
+        const Game = registered.Component;
         return (
-          <RiverCatchGame
+          <Game
             onExit={(cleared) =>
               cleared
                 ? completeProject(project.id)

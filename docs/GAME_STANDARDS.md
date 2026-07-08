@@ -38,8 +38,14 @@ mobile gameplay:
 5. **Avoid allocations inside the hot loop** where reasonably possible
    (don't create new arrays/objects every frame for things that can be
    reused/mutated in place — e.g. a pooled array of active obstacles rather
-   than `.filter()`-ing a new array 60 times a second).
-6. **Audio must be triggered from a real user gesture at least once** before
+   than `.filter()`-ing a new array 60 times a second). Gradients and
+   lookup tables are allocations too — hoist them to module scope.
+6. **Render static scene layers once, not per frame.** Backgrounds that
+   never change (sky, terrain, water body) go onto an offscreen canvas at
+   the current devicePixelRatio and blit with a single `drawImage` each
+   frame — see `staticBackground()` in
+   `app/games/river-catch/RiverCatchGame.tsx` for the reference pattern.
+7. **Audio must be triggered from a real user gesture at least once** before
    any programmatic `AudioContext` use, per browser autoplay policy — the
    shared `audio.ts` singleton handles this; don't create a second
    `AudioContext` in a game file.

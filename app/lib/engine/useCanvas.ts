@@ -33,12 +33,28 @@ export function useCanvas(logicalWidth: number, logicalHeight: number): {
     configure();
 
     // DPR changes when the page moves between screens or the user
-    // zooms — matchMedia fires exactly on that boundary.
-    const media = window.matchMedia(
-      `(resolution: ${window.devicePixelRatio || 1}dppx)`,
-    );
-    media.addEventListener("change", configure);
-    return () => media.removeEventListener("change", configure);
+    // zooms — matchMedia fires exactly on that boundary. The query is
+    // pinned to the *current* DPR, so it must re-arm after each change
+    // or it only ever fires once.
+    let disposed = false;
+    let media: MediaQueryList | null = null;
+    const onChange = () => {
+      if (disposed) return;
+      configure();
+      arm();
+    };
+    const arm = () => {
+      media?.removeEventListener("change", onChange);
+      media = window.matchMedia(
+        `(resolution: ${window.devicePixelRatio || 1}dppx)`,
+      );
+      media.addEventListener("change", onChange);
+    };
+    arm();
+    return () => {
+      disposed = true;
+      media?.removeEventListener("change", onChange);
+    };
   }, [logicalWidth, logicalHeight]);
 
   const getCtx = useCallback(() => ctxRef.current, []);

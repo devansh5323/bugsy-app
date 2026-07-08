@@ -70,6 +70,12 @@ const FUMI_TINT = 35;
 
 type Popup = { x: number; y: number; text: string; color: string; bornAt: number };
 
+// Current points multiplier — Focus Flow doubles points while the
+// streak holds (used by both the loop and the tap handler).
+function focusMultiplier(streak: number): number {
+  return streak >= FOCUS_FLOW_STREAK ? FOCUS_FLOW_MULTIPLIER : 1;
+}
+
 export function RiverCatchGame({
   onExit,
 }: {
@@ -277,9 +283,7 @@ function RiverPlay({
       }
       for (let i = 0; i < out.goodSaves.length; i++) {
         metricsRef.current.goodSaves += 1;
-        const mult =
-          streakRef.current >= FOCUS_FLOW_STREAK ? FOCUS_FLOW_MULTIPLIER : 1;
-        const pts = POINTS_GOOD_SAVE * mult;
+        const pts = POINTS_GOOD_SAVE * focusMultiplier(streakRef.current);
         setScore(scoreMgr.add(pts));
         setStreakBoth(streakRef.current + 1);
         difficultyRef.current.recordSuccess();
@@ -331,9 +335,7 @@ function RiverPlay({
         if (rt !== undefined) metricsRef.current.reactionTimesMs.push(rt);
         metricsRef.current.hits += 1;
         const base = hit.kind === "golden" ? POINTS_GOLDEN : POINTS_CATCH;
-        const mult =
-          streakRef.current >= FOCUS_FLOW_STREAK ? FOCUS_FLOW_MULTIPLIER : 1;
-        const pts = base * mult;
+        const pts = base * focusMultiplier(streakRef.current);
         setScore(scoreMgr.add(pts));
         setStreakBoth(streakRef.current + 1);
         setBasket(metricsRef.current.hits);
@@ -482,6 +484,69 @@ function RiverPlay({
   );
 }
 
+// ── Static background cache ──────────────────────────────────────
+// The sky/sun/mountains/river/bank never change, so they render once
+// to an offscreen canvas (per devicePixelRatio) and blit as a single
+// drawImage per frame — rebuilding two gradients and ~15 paths at
+// 60fps was the scene's whole allocation budget
+// (docs/GAME_STANDARDS.md: no allocations in the hot loop).
+let bgCache: HTMLCanvasElement | null = null;
+let bgCacheDpr = 0;
+
+function staticBackground(dpr: number): HTMLCanvasElement | null {
+  if (bgCache && bgCacheDpr === dpr) return bgCache;
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(GAME_W * dpr);
+  canvas.height = Math.round(GAME_H * dpr);
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+  ctx.scale(dpr, dpr);
+
+  // Sunset sky.
+  const sky = ctx.createLinearGradient(0, 0, 0, RIVER_TOP);
+  sky.addColorStop(0, "#F9B97F");
+  sky.addColorStop(0.6, "#F58E7E");
+  sky.addColorStop(1, "#C96F8E");
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, GAME_W, RIVER_TOP);
+
+  // Sun + mountains + treeline.
+  ctx.fillStyle = "rgba(255, 236, 179, 0.9)";
+  ctx.beginPath();
+  ctx.arc(300, 150, 42, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#8A5A83";
+  ctx.beginPath();
+  ctx.moveTo(0, RIVER_TOP);
+  ctx.lineTo(90, 170);
+  ctx.lineTo(200, RIVER_TOP);
+  ctx.lineTo(280, 210);
+  ctx.lineTo(400, RIVER_TOP);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = "#5D3F66";
+  ctx.fillRect(0, RIVER_TOP - 18, GAME_W, 18);
+
+  // River.
+  const river = ctx.createLinearGradient(0, RIVER_TOP, 0, RIVER_BOTTOM + 60);
+  river.addColorStop(0, "#3E7CB1");
+  river.addColorStop(1, "#27476E");
+  ctx.fillStyle = river;
+  ctx.fillRect(0, RIVER_TOP, GAME_W, RIVER_BOTTOM + 60 - RIVER_TOP);
+
+  // Riverbank + Fumi's rock (the DOM cat sits on top of this).
+  ctx.fillStyle = "#3E5C3A";
+  ctx.fillRect(0, GAME_H - 160, GAME_W, 160);
+  ctx.fillStyle = "#7B8794";
+  ctx.beginPath();
+  ctx.ellipse(84, GAME_H - 150, 78, 34, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  bgCache = canvas;
+  bgCacheDpr = dpr;
+  return canvas;
+}
+
 // ── Scene painting — module-level, pure canvas + passed data ─────
 function drawScene(
   ctx: CanvasRenderingContext2D | null,
@@ -495,37 +560,9 @@ function drawScene(
   if (!ctx) return;
   const focusFlow = streak >= FOCUS_FLOW_STREAK;
 
-    // Sunset sky.
-    const sky = ctx.createLinearGradient(0, 0, 0, RIVER_TOP);
-    sky.addColorStop(0, "#F9B97F");
-    sky.addColorStop(0.6, "#F58E7E");
-    sky.addColorStop(1, "#C96F8E");
-    ctx.fillStyle = sky;
-    ctx.fillRect(0, 0, GAME_W, RIVER_TOP);
-
-    // Sun + mountains + treeline.
-    ctx.fillStyle = "rgba(255, 236, 179, 0.9)";
-    ctx.beginPath();
-    ctx.arc(300, 150, 42, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#8A5A83";
-    ctx.beginPath();
-    ctx.moveTo(0, RIVER_TOP);
-    ctx.lineTo(90, 170);
-    ctx.lineTo(200, RIVER_TOP);
-    ctx.lineTo(280, 210);
-    ctx.lineTo(400, RIVER_TOP);
-    ctx.closePath();
-    ctx.fill();
-    ctx.fillStyle = "#5D3F66";
-    ctx.fillRect(0, RIVER_TOP - 18, GAME_W, 18);
-
-    // River.
-    const river = ctx.createLinearGradient(0, RIVER_TOP, 0, RIVER_BOTTOM + 60);
-    river.addColorStop(0, focusFlow ? "#4C93C9" : "#3E7CB1");
-    river.addColorStop(1, "#27476E");
-    ctx.fillStyle = river;
-    ctx.fillRect(0, RIVER_TOP, GAME_W, RIVER_BOTTOM + 60 - RIVER_TOP);
+    // Static layers in one blit.
+    const bg = staticBackground(Math.max(1, window.devicePixelRatio || 1));
+    if (bg) ctx.drawImage(bg, 0, 0, GAME_W, GAME_H);
 
     // Gentle shimmer lines.
     ctx.strokeStyle = "rgba(255,255,255,0.16)";
@@ -611,14 +648,6 @@ function drawScene(
       ctx.globalAlpha = 1;
     }
 
-    // Riverbank + Fumi's rock (the DOM cat sits on top of this).
-    ctx.fillStyle = "#3E5C3A";
-    ctx.fillRect(0, GAME_H - 160, GAME_W, 160);
-    ctx.fillStyle = "#7B8794";
-    ctx.beginPath();
-    ctx.ellipse(84, GAME_H - 150, 78, 34, 0, 0, Math.PI * 2);
-    ctx.fill();
-
     // Focus Flow river glow.
     if (focusFlow) {
       ctx.fillStyle = "rgba(255, 211, 77, 0.10)";
@@ -635,21 +664,21 @@ function drawScene(
 // Stylized side-view fish. Color carries the rule; shape carries it
 // too (unsafe fish get spiky fins + a frown) so no state is
 // color-only (docs/GAME_UI_GUIDELINES.md).
+const FISH_COLORS: Record<Entity["color"], string> = {
+  blue: "#4FA3E3",
+  green: "#57C785",
+  red: "#E4572E",
+  gold: "#F4C430",
+  plain: "#8FA3B0",
+};
+
 function drawFish(ctx: CanvasRenderingContext2D, e: Entity, now: number) {
   const dir = e.vx >= 0 ? 1 : -1;
   const bob = Math.sin(now / 300 + e.id) * 3;
   const x = e.x;
   const y = e.y + bob;
   const s = e.size;
-
-  const body: Record<Entity["color"], string> = {
-    blue: "#4FA3E3",
-    green: "#57C785",
-    red: "#E4572E",
-    gold: "#F4C430",
-    plain: "#8FA3B0",
-  };
-  const fill = body[e.color];
+  const fill = FISH_COLORS[e.color];
 
   ctx.save();
   if (e.kind === "golden") {

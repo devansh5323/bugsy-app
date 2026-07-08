@@ -193,22 +193,7 @@ export function GameShell({
       <button
         onClick={exit}
         aria-label="Exit game"
-        style={{
-          position: "absolute",
-          top: 12,
-          right: 12,
-          width: 44,
-          height: 44,
-          borderRadius: 22,
-          border: "none",
-          background: "rgba(0,0,0,0.35)",
-          color: "#fff",
-          fontSize: 20,
-          lineHeight: "44px",
-          textAlign: "center",
-          cursor: "pointer",
-          zIndex: 30,
-        }}
+        style={{ ...cornerButtonStyle, right: 12, fontSize: 20 }}
       >
         ✕
       </button>
@@ -218,22 +203,7 @@ export function GameShell({
         <button
           onClick={pause}
           aria-label="Pause game"
-          style={{
-            position: "absolute",
-            top: 12,
-            right: 64,
-            width: 44,
-            height: 44,
-            borderRadius: 22,
-            border: "none",
-            background: "rgba(0,0,0,0.35)",
-            color: "#fff",
-            fontSize: 18,
-            lineHeight: "44px",
-            textAlign: "center",
-            cursor: "pointer",
-            zIndex: 30,
-          }}
+          style={{ ...cornerButtonStyle, right: 64, fontSize: 18 }}
         >
           ⏸
         </button>
@@ -309,6 +279,23 @@ export function GameShell({
     </div>
   );
 }
+
+// 44×44 is the minimum touch target (GAME_UI_GUIDELINES.md); the
+// corner controls stay identical across every game.
+const cornerButtonStyle: React.CSSProperties = {
+  position: "absolute",
+  top: 12,
+  width: 44,
+  height: 44,
+  borderRadius: 22,
+  border: "none",
+  background: "rgba(0,0,0,0.35)",
+  color: "#fff",
+  lineHeight: "44px",
+  textAlign: "center",
+  cursor: "pointer",
+  zIndex: 30,
+};
 
 const overlayStyle: React.CSSProperties = {
   position: "absolute",
