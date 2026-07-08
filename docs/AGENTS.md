@@ -68,10 +68,13 @@ app/
 docs/                   # you are here
 ```
 
-Two games exist today, each self-contained with duplicated patterns (RAF
-loop, Web Audio synth, difficulty ramp, exit/intro chrome). The planned
-shared engine (`GAME_ENGINE.md`) exists on paper only until a future session
-extracts it — don't assume `app/lib/engine/` exists until you've checked.
+The shared engine now exists: `app/lib/engine/` (types, loop/canvas hooks,
+audio, difficulty, analytics, storage, timer, score, results, assets),
+`app/components/games/` (`GameShell.tsx`, `HUD.tsx`), and
+`app/games/registry.ts` (empty until games register). The two existing games
+predate it and are still self-contained with duplicated patterns — migrating
+them onto the engine is `GAME_ROADMAP.md` Phase 1's remaining work. New games
+build on the engine from day one.
 
 ## Conventions
 

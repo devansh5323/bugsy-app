@@ -32,21 +32,26 @@ app/
 ├── lib/
 │   ├── data.ts                 # existing — app-wide static data & types
 │   ├── voice.tsx                # existing — TTS provider
-│   └── engine/                 # NEW — shared game engine (GAME_ENGINE.md)
-│       ├── types.ts            # GameConfig, GameResult, DifficultyCurve, GameEvent
+│   └── engine/                 # shared game engine (GAME_ENGINE.md) — BUILT
+│       ├── types.ts            # GameConfig, GameResult, DifficultyCurveParams, ...
 │       ├── useGameLoop.ts      # requestAnimationFrame hook
-│       ├── useCanvas.ts        # DPR-aware canvas setup/resize hook
-│       ├── audio.ts            # Web Audio tone-synth helpers
-│       ├── difficulty.ts       # shared adaptive difficulty engine (GAME_DIFFICULTY.md)
-│       ├── analytics.ts        # event tracking wrapper (GAME_ANALYTICS.md)
-│       └── storage.ts          # namespaced/versioned localStorage helpers
+│       ├── useCanvas.ts        # DPR-aware canvas setup hook
+│       ├── audio.ts            # sound manager: Web Audio tone-synth + presets
+│       ├── difficulty.ts       # adaptive difficulty engine (GAME_DIFFICULTY.md)
+│       ├── analytics.ts        # analytics manager (GAME_ANALYTICS.md)
+│       ├── storage.ts          # namespaced/versioned localStorage helpers
+│       ├── timer.ts            # frame-driven timers + countdown + formatMs
+│       ├── score.ts            # score manager (streaks, best-score persistence)
+│       ├── results.ts          # result calculator (GameResult + XP formula)
+│       └── assets.ts           # asset loader (image preload/cache, svgToDataUrl)
 │
 └── components/
     ├── AppShell.tsx, AppScreens.tsx, CareScreens.tsx, Mascot.tsx,
     │   TourOverlay.tsx, Typewriter.tsx, ui.tsx   # existing, unchanged
     ├── games/
-    │   └── GameShell.tsx        # NEW — shared chrome: exit button, intro
-    │                             # bubble, pause overlay, results screen
+    │   ├── GameShell.tsx        # shared chrome: exit, intro bubble, pause,
+    │   │                         # results screen — BUILT
+    │   └── HUD.tsx              # shared in-game HUD (score/lives/timer) — BUILT
     └── onboarding/               # existing, unchanged
 ```
 

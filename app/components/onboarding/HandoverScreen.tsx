@@ -24,7 +24,7 @@ export function HandoverScreen({
   const [showButton, setShowButton] = useState(false);
 
   useEffect(() => {
-    const ids: ReturnType<typeof setTimeout>[] = [];ma
+    const ids: ReturnType<typeof setTimeout>[] = [];
 
     // 1. Cat slides in first
     ids.push(setTimeout(() => setCatIn(true), 300));

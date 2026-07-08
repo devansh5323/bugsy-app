@@ -19,35 +19,17 @@ second game needs must live here, not be copy-pasted.
 ## Core pieces (`app/lib/engine/`)
 
 ### `types.ts`
-The shared vocabulary every other engine file and every game speaks:
+The shared vocabulary every other engine file and every game speaks —
+`CognitiveDomain` (kebab-case mirror of `ClanCat.domain` in `app/lib/data.ts`),
+`GameStatus`, `GameOutcome`, `DifficultyCurveParams`, `GameConfig`, and
+`GameResult`. See the file itself for the authoritative shapes; two notes
+beyond what's obvious from reading it:
 
-```ts
-export type CognitiveDomain =
-  | "visual-attention" | "sustained-attention" | "selective-attention"
-  | "cognitive-flexibility" | "working-memory" | "inhibition-control"
-  | "time-management" | "auditory-attention";
-  // Must stay in lockstep with ClanCat.domain values in app/lib/data.ts
-
-export type GameConfig = {
-  id: string;                 // kebab-case, matches folder name & registry key
-  title: string;
-  domain: CognitiveDomain;
-  minAgeMonths?: number;      // optional finer-grained age gating within 8–15
-  difficulty: DifficultyCurveParams;   // see GAME_DIFFICULTY.md
-  estimatedMins: number;      // shown in project picker
-};
-
-export type GameStatus = "idle" | "intro" | "playing" | "paused" | "gameover" | "results";
-
-export type GameResult = {
-  gameId: string;
-  score: number;
-  durationMs: number;
-  outcome: "cleared" | "failed" | "quit";
-  difficultyLevelReached: number;
-  timestamp: number;          // epoch ms, injected by caller (not Date.now() inside engine code paths that must stay resumable/testable)
-};
-```
+- `GameConfig.basePoints` mirrors the game's `Project.points` entry in
+  `app/lib/data.ts` — it's the input to the XP formula in `results.ts`.
+- `GameResult.timestamp` is epoch ms **injected by the caller**
+  (`GameShell`), never generated inside pure engine functions, so
+  difficulty/results math stays testable.
 
 ### `useGameLoop.ts`
 A single `requestAnimationFrame` hook wrapping the pattern both existing
@@ -97,10 +79,41 @@ plugs in later without touching game code). Games call semantic functions
 
 ### `storage.ts`
 Namespaced, versioned `localStorage` helpers (`getGameState(gameId)`,
-`setGameState(gameId, data)`) so every game doesn't invent its own key
-convention the way `birdspike-best` and `bugsy-snack-scores` currently do
-independently. New games should use this instead of calling
-`localStorage` directly.
+`setGameState(gameId, data)` under the `ah:v1:game:` prefix) so every game
+doesn't invent its own key convention the way `birdspike-best` and
+`bugsy-snack-scores` currently do independently. New games should use this
+instead of calling `localStorage` directly. All access is SSR-safe and
+quota-error-tolerant — persistence is best-effort, never fatal to gameplay.
+
+### `timer.ts`
+Frame-driven timers: `createGameTimer()` (count-up) and
+`createCountdown(totalMs)` (time-boxed rounds), both advanced by the
+`deltaMs` the loop already produces — never wall-clock reads — so they pause
+for free when the loop pauses and stay unit-testable. `formatMs(ms)` renders
+`m:ss` for HUD display.
+
+### `score.ts`
+`createScoreManager(gameId)` — in-run score and streak tracking that lives
+outside React state (games add points from inside the RAF loop without
+re-rendering), plus best-score persistence through `storage.ts`
+(`commitBest()` returns whether a new best was set, for the "New best!"
+moment).
+
+### `results.ts`
+The result calculator: `buildResult(...)` turns a finished run into a
+`GameResult`, and `calculateXp(config, outcome, level)` implements the XP
+model — cleared pays `basePoints` plus up to +50% for the difficulty level
+reached; failed pays a 25% participation floor (effort never pays zero for
+this age group); quit pays 0 (exiting isn't punished, but rewarding it would
+teach open-and-quit XP farming). Pure functions; the caller injects the
+timestamp.
+
+### `assets.ts`
+The asset loader: `loadImage(src)` / `loadImages({name: src})` preload and
+cache `HTMLImageElement`s so sprites are decoded before the RAF loop needs
+to `drawImage` them, and `svgToDataUrl(svg)` covers the inline-SVG-sprite
+pattern SnackCatchGame established with its bomb. Failed loads drop out of
+the cache so retries work.
 
 ## `GameShell.tsx` (`app/components/games/`)
 
@@ -112,11 +125,25 @@ look and behave identically across every game —
 - Pause overlay
 - Results screen (score, XP/points earned, "play again" / "back to home")
 
-A game's own component renders *inside* `GameShell`, focused purely on its
-play-area canvas and mechanics. `GameShell` owns `GameStatus` transitions
-(`idle → intro → playing → paused ⇄ playing → gameover → results`) and
-exposes them via props/callbacks; individual games don't reinvent their own
-exit/results UI.
+A game's own component renders *inside* `GameShell` as a child and reads
+its shell through the `useGameShell()` context hook, which returns a
+`GameShellApi` (`status`, `runId`, `pause()`, `resume()`, `finish()`) —
+keeping the game focused purely on its play-area canvas and mechanics.
+`GameShell` owns `GameStatus` transitions
+(`intro → playing → paused ⇄ playing → results`), fires the corresponding
+analytics events (`game_started`, `game_paused`/`resumed`,
+`game_completed`, `game_exited_early`), unlocks audio on the Start tap, and
+remounts the play area keyed by `runId` on "play again" so games get a clean
+mount instead of writing their own reset paths. Individual games don't
+reinvent exit/results UI.
+
+### `HUD.tsx` (`app/components/games/`)
+
+The shared in-game HUD: big score number, optional "Best: n", filled/empty
+hearts for lives (not color-only), optional `m:ss` countdown. Purely
+presentational and pinned top-left (GameShell's exit/pause own the
+top-right). Games mirror ref-held values into React state at human
+timescale and pass them down — never per frame.
 
 ## What stays per-game (never promoted to the engine)
 
