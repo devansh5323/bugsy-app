@@ -10,90 +10,102 @@ const F = "var(--font-nunito), system-ui, sans-serif";
 const LINE1 = "Yay! I'm so happy you're here. Let me tell you about myself...";
 const LINE2 = "I'm your child's pet companion- Together we grow, mastering one skill at a time";
 
-const STAGES = [
-  { num: 1,  size: 65,  title: "Tiny steps",       desc: "Fumi takes his first steps with your child's help.",                    icon: "❤️", label: "Trust",        labelColor: "#FF6BAD", gold: false },
-  { num: 3,  size: 75,  title: "Growing curious",  desc: "Your child's attention helps Fumi explore and learn.",                  icon: "🎯", label: "Focus",        labelColor: "#C084FC", gold: false },
-  { num: 6,  size: 84,  title: "More confident",   desc: "Fumi feels braver as your child keeps showing up.",                     icon: "😊", label: "Confidence",   labelColor: "#FDE68A", gold: false },
-  { num: 9,  size: 92,  title: "Growing stronger", desc: "Every mission makes Fumi stronger and smarter!",                        icon: "🧠", label: "Learning",     labelColor: "#C084FC", gold: false },
-  { num: 12, size: 88,  title: "Almost there",     desc: "Fumi is becoming your child's best adventure buddy!",                   icon: "⭐", label: "Independence", labelColor: "#FDE68A", gold: false },
-  { num: 14, size: 100, title: "Fully grown! 🎉",  desc: "Together, you've helped Fumi grow into a confident, happy companion!", icon: "🏆", label: "Growth",       labelColor: "#7C3AED", gold: true  },
+// Four growth milestones, alternating purple/gold accents — mirrors the
+// "Fumi's Growth Journey" reference layout (circular avatar + step badge
+// + title + description + tag, linked by a colored dashed path).
+const PURPLE = "#A78BFA";
+const GOLD = "#FBBF24";
+const STEPS = [
+  { num: 1, title: "Building Trust", desc: "Your child feels safe, seen and ready to begin.", tagIcon: "💜", tag: "Emotional security", mood: "happy" as const, accent: PURPLE, filled: true },
+  { num: 2, title: "Exploring & Learning", desc: "New skills, big curiosity and everyday discoveries.", tagIcon: "🎯", tag: "Focus & curiosity", mood: "excited" as const, accent: GOLD, filled: false },
+  { num: 3, title: "Growing Stronger", desc: "With practice and encouragement, they build skills and confidence.", tagIcon: "🧠", tag: "Resilience & confidence", mood: "happy" as const, accent: PURPLE, filled: true },
+  { num: 4, title: "Confident & Capable", desc: "Ready to take on new challenges, together.", tagIcon: "⭐", tag: "Independence & growth", mood: "cheer" as const, accent: GOLD, filled: false },
 ];
 
-const DASHED = "repeating-linear-gradient(to bottom, rgba(130,80,220,0.55) 0px, rgba(130,80,220,0.55) 4px, transparent 4px, transparent 9px)";
-
-
-function FullGrownCat({ tint = 210, size = 100 }: { tint?: number; size?: number }) {
-  const h   = tint;
-  const bt  = `oklch(88% 0.10 ${h})`;
-  const bm  = `oklch(76% 0.15 ${h})`;
-  const bb  = `oklch(60% 0.17 ${h})`;
-  const ei  = `oklch(74% 0.16 ${(h + 18) % 360})`;
-  const hl  = `oklch(96% 0.04 ${h})`;
-  const tm  = `oklch(94% 0.04 ${h})`;
-  const ck  = `oklch(72% 0.17 ${(h + 12) % 360})`;
-  const ns  = "oklch(68% 0.14 20)";
-  const gld = "oklch(82% 0.18 80)";
-  const blc = "oklch(68% 0.22 78)";
-  const gid = `fcg-${tint}`;
+// Curved dashed link between two consecutive step avatars, swooping from
+// whichever side the previous step sat on to whichever side the next
+// one sits on — the zig-zag path connecting the growth journey.
+function ZigZagConnector({
+  fromRight, toRight, color, revealed,
+}: {
+  fromRight: boolean; toRight: boolean; color: string; revealed: boolean;
+}) {
+  const W = 358; // approx content width (mobile viewport minus side padding)
+  const AV = 36; // half the 72px avatar, i.e. its center offset from the edge
+  const H = 52;
+  const fromX = fromRight ? W - AV : AV;
+  const toX = toRight ? W - AV : AV;
+  const path = `M ${fromX},0 C ${fromX},${H * 0.55} ${toX},${H * 0.45} ${toX},${H}`;
   return (
-    <svg viewBox="-60 -62 120 124" width={size} height={size} style={{ display: "block", overflow: "visible" }}>
+    <div style={{ position: "absolute", left: 0, right: 0, top: -H, height: H, zIndex: 0, pointerEvents: "none" }}>
+      <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ display: "block", overflow: "visible" }}>
+        <path d={path} fill="none" stroke={color} strokeOpacity={0.25} strokeWidth={2.5} strokeDasharray="6 6" vectorEffect="non-scaling-stroke" />
+        <motion.path
+          d={path} fill="none" stroke={color} strokeWidth={2.5} strokeDasharray="6 6" vectorEffect="non-scaling-stroke"
+          initial={false}
+          animate={{ opacity: revealed ? 1 : 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        />
+        <circle cx={fromX} cy={3} r={4} fill={color} opacity={revealed ? 1 : 0.3} />
+        <circle cx={toX} cy={H - 3} r={4} fill={color} opacity={revealed ? 1 : 0.3} />
+      </svg>
+    </div>
+  );
+}
+
+// A sitting kitten with big glossy eyes and a gold pendant — a
+// hand-drawn stand-in for the reference photo, styled for Step 1's avatar.
+function SittingKitten({ size = 62 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 120 120" style={{ display: "block", overflow: "visible" }}>
       <defs>
-        <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor={bt} />
-          <stop offset="55%"  stopColor={bm} />
-          <stop offset="100%" stopColor={bb} />
+        <linearGradient id="kittenHead" x1="0.2" y1="0" x2="0.8" y2="1">
+          <stop offset="0%" stopColor="#DCEBFC" />
+          <stop offset="100%" stopColor="#A9C9EE" />
         </linearGradient>
       </defs>
-      {/* Tail */}
-      <path d="M 38 28 Q 58 10 54 -8 Q 50 -20 38 -16" stroke={bm} strokeWidth="10" fill="none" strokeLinecap="round"/>
-      <path d="M 38 28 Q 58 10 54 -8 Q 50 -20 38 -16" stroke={bt}  strokeWidth="5.5" fill="none" strokeLinecap="round"/>
-      {/* Body */}
-      <path d={`M -38 -5 Q -46 6 -46 22 Q -46 48 -32 54 Q -18 60 0 60 Q 18 60 32 54 Q 46 48 46 22 Q 46 6 38 -5 Q 24 -13 0 -13 Q -24 -13 -38 -5 Z`} fill={`url(#${gid})`}/>
-      {/* Tummy */}
-      <ellipse cx="0" cy="26" rx="22" ry="30" fill={tm}/>
-      {/* Head */}
-      <circle cx="0" cy="-28" r="29" fill={bt}/>
-      {/* Ears outer */}
-      <path d="M -28 -46 L -40 -62 L -10 -50 Z" fill={bm}/>
-      <path d="M  28 -46 L  40 -62 L  10 -50 Z" fill={bm}/>
-      {/* Ears inner */}
-      <path d="M -26 -49 L -37 -59 L -13 -51 Z" fill={ei}/>
-      <path d="M  26 -49 L  37 -59 L  13 -51 Z" fill={ei}/>
+
+      {/* Shoulders / collar hint — mostly cropped by the avatar circle,
+          like the reference's tight head-and-shoulders framing */}
+      <ellipse cx="60" cy="112" rx="40" ry="22" fill="url(#kittenHead)" />
+      <path d="M 34 100 Q 60 112 86 100" stroke="#5B7EB0" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+      <circle cx="60" cy="107" r="6.5" fill="#F5C542" stroke="#C88A1A" strokeWidth="1.2" />
+      <circle cx="57.5" cy="104.5" r="2.2" fill="#FFEBAE" opacity="0.9" />
+
+      {/* Ears */}
+      <path d="M 26 30 L 14 2 L 48 20 Z" fill="url(#kittenHead)" />
+      <path d="M 94 30 L 106 2 L 72 20 Z" fill="url(#kittenHead)" />
+      <path d="M 26 26 L 20 8 L 42 21 Z" fill="#F4BFD4" opacity="0.9" />
+      <path d="M 94 26 L 100 8 L 78 21 Z" fill="#F4BFD4" opacity="0.9" />
+
+      {/* Head — big, fills most of the frame */}
+      <circle cx="60" cy="52" r="44" fill="url(#kittenHead)" />
+
+      {/* Eyebrows */}
+      <path d="M 30 26 Q 39 18 48 25" stroke="#5B7EB0" strokeWidth="2.6" fill="none" strokeLinecap="round" />
+      <path d="M 72 25 Q 81 18 90 26" stroke="#5B7EB0" strokeWidth="2.6" fill="none" strokeLinecap="round" />
+
+      {/* Eyes — big and glossy */}
+      <circle cx="42" cy="52" r="14" fill="#191527" />
+      <circle cx="78" cy="52" r="14" fill="#191527" />
+      <circle cx="37.5" cy="46" r="5" fill="#fff" />
+      <circle cx="73.5" cy="46" r="5" fill="#fff" />
+      <circle cx="46.5" cy="57" r="2.2" fill="#fff" opacity="0.85" />
+      <circle cx="82.5" cy="57" r="2.2" fill="#fff" opacity="0.85" />
+
       {/* Cheeks */}
-      <ellipse cx="-18" cy="-23" rx="8" ry="5.5" fill={ck} opacity="0.5"/>
-      <ellipse cx=" 18" cy="-23" rx="8" ry="5.5" fill={ck} opacity="0.5"/>
-      {/* Eyes */}
-      <circle cx="-10" cy="-31" r="8.5" fill="#12102a"/>
-      <circle cx=" 10" cy="-31" r="8.5" fill="#12102a"/>
-      <circle cx="-10" cy="-31" r="6"   fill="#0c1d38"/>
-      <circle cx=" 10" cy="-31" r="6"   fill="#0c1d38"/>
-      <circle cx="-6.5" cy="-35" r="3.2" fill="white"/>
-      <circle cx=" 13.5" cy="-35" r="3.2" fill="white"/>
-      {/* Nose */}
-      <ellipse cx="0" cy="-19" rx="3.5" ry="2.5" fill={ns}/>
-      {/* Mouth */}
-      <path d="M -5 -15 Q 0 -11 5 -15" stroke="#774433" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+      <ellipse cx="24" cy="64" rx="7" ry="5" fill="#F4BFD4" opacity="0.55" />
+      <ellipse cx="96" cy="64" rx="7" ry="5" fill="#F4BFD4" opacity="0.55" />
+
+      {/* Nose + open smile */}
+      <path d="M 56 68 L 64 68 L 60 73 Z" fill="#F2879C" />
+      <path d="M 60 73 Q 60 79 52 80 Q 58 84 60 79 Q 62 84 68 80 Q 60 79 60 73" fill="#3C2A4A" opacity="0.85" />
+
       {/* Whiskers */}
-      <line x1="-34" y1="-22" x2="-6" y2="-20.5" stroke={hl} strokeWidth="1.3" opacity="0.75"/>
-      <line x1="-34" y1="-17" x2="-6" y2="-17.5" stroke={hl} strokeWidth="1.3" opacity="0.60"/>
-      <line x1=" 34" y1="-22" x2=" 6" y2="-20.5" stroke={hl} strokeWidth="1.3" opacity="0.75"/>
-      <line x1=" 34" y1="-17" x2=" 6" y2="-17.5" stroke={hl} strokeWidth="1.3" opacity="0.60"/>
-      {/* Collar */}
-      <path d="M -36 -5 Q -28 -15 0 -15 Q 28 -15 36 -5 Q 28 5 0 5 Q -28 5 -36 -5 Z" fill={gld}/>
-      {/* Bell */}
-      <circle cx="0" cy="-1" r="8.5" fill={blc}/>
-      <circle cx="0" cy="-1" r="5.8" fill="oklch(88% 0.22 80)"/>
-      <circle cx="-2" cy="-3.5" r="2.8" fill="oklch(95% 0.10 80)" opacity="0.85"/>
-      <line x1="-7" y1="-1" x2="7" y2="-1" stroke={blc} strokeWidth="1.4" opacity="0.5"/>
-      {/* Paws */}
-      <ellipse cx="-22" cy="55" rx="14" ry="7"  fill={bm}/>
-      <ellipse cx=" 22" cy="55" rx="14" ry="7"  fill={bm}/>
-      <ellipse cx="-26" cy="59" rx="4" ry="3" fill={bb}/>
-      <ellipse cx="-22" cy="60" rx="4" ry="3" fill={bb}/>
-      <ellipse cx="-18" cy="59" rx="4" ry="3" fill={bb}/>
-      <ellipse cx=" 18" cy="59" rx="4" ry="3" fill={bb}/>
-      <ellipse cx=" 22" cy="60" rx="4" ry="3" fill={bb}/>
-      <ellipse cx=" 26" cy="59" rx="4" ry="3" fill={bb}/>
+      <line x1="14" y1="60" x2="34" y2="63" stroke="#fff" strokeWidth="1.4" opacity="0.7" strokeLinecap="round" />
+      <line x1="14" y1="70" x2="35" y2="70" stroke="#fff" strokeWidth="1.4" opacity="0.7" strokeLinecap="round" />
+      <line x1="106" y1="60" x2="86" y2="63" stroke="#fff" strokeWidth="1.4" opacity="0.7" strokeLinecap="round" />
+      <line x1="106" y1="70" x2="85" y2="70" stroke="#fff" strokeWidth="1.4" opacity="0.7" strokeLinecap="round" />
     </svg>
   );
 }
@@ -118,7 +130,6 @@ export function ParentJourney({
   const [showTimeline, setShowTimeline] = useState(false);
   const [stageCount,      setStageCount]      = useState(0);
   const [showButton,      setShowButton]      = useState(false);
-  const [showMorphMascot, setShowMorphMascot] = useState(false);
 
   useEffect(() => {
     const ts: ReturnType<typeof setTimeout>[] = [];
@@ -142,11 +153,10 @@ export function ParentJourney({
       const doneAt = l2S + LINE2.length * 35 + 200;
       setTimeout(() => setPhase(3), doneAt);
       setTimeout(() => setShowTimeline(true), doneAt + 400);
-      setTimeout(() => setShowMorphMascot(true), doneAt + 1400);
-      STAGES.forEach((_, i) =>
-        setTimeout(() => setStageCount(i + 1), doneAt + 2400 + i * 600)
+      STEPS.forEach((_, i) =>
+        setTimeout(() => setStageCount(i + 1), doneAt + 900 + i * 600)
       );
-      const afterAll = doneAt + 2400 + STAGES.length * 600;
+      const afterAll = doneAt + 900 + STEPS.length * 600;
       setTimeout(() => setShowButton(true), afterAll + 300);
     }
   }, [phase]);
@@ -172,9 +182,11 @@ export function ParentJourney({
         >‹</button>
       )}
 
-      {/* ── Pre-timeline: centered cat + speech bubbles ── */}
-      <AnimatePresence>
-        {!showTimeline && (
+      {/* ── Pre-timeline cat + bubbles, then the timeline itself — a single
+          AnimatePresence (mode="wait") so only one mascot instance is ever
+          mounted at a time, letting the shared layoutId FLIP cleanly. */}
+      <AnimatePresence mode="wait">
+        {!showTimeline ? (
           <motion.div
             key="pre"
             exit={{ opacity: 0 }}
@@ -221,6 +233,7 @@ export function ParentJourney({
               <AnimatePresence>
                 {catVisible && (
                   <motion.div
+                    layoutId="pj-mascot"
                     initial={{ y: 60, opacity: 0, scale: 0.65 }}
                     animate={{ y: 0, opacity: 1, scale: 1 }}
                     transition={{ type: "spring", stiffness: 200, damping: 18 }}
@@ -233,12 +246,7 @@ export function ParentJourney({
               </AnimatePresence>
             </div>
           </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── Timeline view — scrollable ── */}
-      <AnimatePresence>
-        {showTimeline && (
+        ) : (
           <motion.div
             key="timeline"
             initial={{ opacity: 0, y: 14 }}
@@ -247,173 +255,99 @@ export function ParentJourney({
             style={{ position: "absolute", inset: 0, zIndex: 8, display: "flex", flexDirection: "column", overflow: "hidden" }}
           >
             {/* Scrollable area */}
-            <div className="pj-scroll" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", paddingTop: 150 }}>
+            <div className="pj-scroll" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", paddingTop: 130 }}>
 
-              {/* Cat + speech bubble */}
-              <div style={{ display: "flex", alignItems: "flex-start", padding: "0 12px 0 10px", gap: 8, marginBottom: 0, marginTop: -40 }}>
-                <div style={{ flexShrink: 0, pointerEvents: "none" }}>
-                  <motion.div animate={{ y: [0, -5, 0] }} transition={{ duration: 3.0, repeat: Infinity, ease: "easeInOut" }}>
-                    <Bobo mood="happy" tint={tint} size={72} animate armsDown />
-                  </motion.div>
-                </div>
-                <div style={{ flex: 1, background: "#fff", borderRadius: 14, padding: "10px 13px", boxShadow: "0 5px 22px rgba(0,0,0,0.22)", position: "relative", marginTop: 6 }}>
-                  <div style={{ position: "absolute", left: -10, top: 14, width: 0, height: 0, borderTop: "8px solid transparent", borderBottom: "8px solid transparent", borderRight: "10px solid #fff" }} />
-                  <p style={{ fontFamily: F, fontSize: 13.5, fontWeight: 600, color: "#1a0f40", margin: 0, lineHeight: 1.4 }}>{LINE2}</p>
+              {/* Mascot + recap bubble — Fumi flies here from center stage
+                  (shared layoutId) and settles top-left, under the back button. */}
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "0 16px 18px" }}>
+                <motion.div layoutId="pj-mascot" style={{ flexShrink: 0 }}>
+                  <Bobo mood="happy" tint={tint} size={92} animate armsDown />
+                </motion.div>
+                <div style={{ flex: 1, background: "#fff", borderRadius: 16, padding: "14px 18px", boxShadow: "0 5px 22px rgba(0,0,0,0.22)", position: "relative", marginTop: 12 }}>
+                  <div style={{ position: "absolute", left: -10, top: 18, width: 0, height: 0, borderTop: "9px solid transparent", borderBottom: "9px solid transparent", borderRight: "11px solid #fff" }} />
+                  <p style={{ fontFamily: F, fontSize: 15, fontWeight: 600, color: "#1a0f40", margin: 0, lineHeight: 1.45 }}>{LINE2}</p>
                 </div>
               </div>
 
-              {/* ── Morphing mascot: kitten ↔ full grown cat ── */}
-              <motion.div
-                animate={{ opacity: showMorphMascot ? 1 : 0, y: showMorphMascot ? 0 : 12 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "3px 0 5px", marginTop: 40 }}
-              >
-                <div style={{ position: "relative", width: 100, height: 100 }}>
-                  <motion.div
-                    animate={{ scale: [0.42, 1] }}
-                    transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", repeatDelay: 0.6 }}
-                    style={{ transformOrigin: "center center", position: "relative", width: 100, height: 100 }}
-                  >
-                    {/* Kitten — fades out as mascot grows */}
-                    <motion.div
-                      animate={{ opacity: [1, 0] }}
-                      transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", repeatDelay: 0.6 }}
-                      style={{ position: "absolute", inset: 0 }}
-                    >
-                      <Bobo mood="happy" tint={tint} size={100} animate armsDown />
-                    </motion.div>
-                    {/* Fully grown cat — fades in as mascot grows */}
-                    <motion.div
-                      animate={{ opacity: [0, 1] }}
-                      transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", repeatDelay: 0.6 }}
-                      style={{ position: "absolute", inset: 0 }}
-                    >
-                      <FullGrownCat tint={tint} size={100} />
-                    </motion.div>
-                  </motion.div>
-                </div>
+              {/* ── Step cards — zig-zag: avatar alternates left/right,
+                  linked by a curved path colored for the step it leads into ── */}
+              <div style={{ padding: "0 16px", position: "relative" }}>
+                {STEPS.map((step, i) => {
+                  const isRight = i % 2 === 1;
+                  const prevRight = i > 0 && (i - 1) % 2 === 1;
+                  return (
+                  <div key={i} style={{ position: "relative", zIndex: 1 }}>
+                    {/* Curved connector leading into this step (skip before step 0) */}
+                    {i > 0 && (
+                      <ZigZagConnector fromRight={prevRight} toRight={isRight} color={step.accent} revealed={stageCount > i} />
+                    )}
 
-                <div style={{ height: 22, display: "flex", alignItems: "center", justifyContent: "center", marginTop: 2, position: "relative" }}>
-                  <motion.span
-                    animate={{ opacity: [1, 0] }}
-                    transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", repeatDelay: 0.6 }}
-                    style={{ position: "absolute", fontFamily: F, fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", color: "#C4B5FD" }}
-                  >🐱 Kitten</motion.span>
-                  <motion.span
-                    animate={{ opacity: [0, 1] }}
-                    transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", repeatDelay: 0.6 }}
-                    style={{ position: "absolute", fontFamily: F, fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", color: "#A78BFA" }}
-                  >😸 Fully Grown!</motion.span>
-                </div>
-              </motion.div>
+                    <div style={{ display: "flex", flexDirection: isRight ? "row-reverse" : "row", alignItems: "flex-start", gap: 12, marginBottom: i < STEPS.length - 1 ? 56 : 0 }}>
+                      {/* Circular avatar */}
+                      <div style={{ flexShrink: 0, width: 72, display: "flex", justifyContent: "center" }}>
+                        <AnimatePresence>
+                          {stageCount > i && (
+                            <motion.div
+                              key={`avatar-${i}`}
+                              initial={{ scale: 0, opacity: 0 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                              transition={{ type: "spring", stiffness: 260, damping: 22 }}
+                              style={{
+                                width: 72, height: 72, borderRadius: "50%",
+                                border: `3px solid ${step.accent}`,
+                                boxShadow: `0 0 18px ${step.accent}66`,
+                                background: "rgba(255,255,255,0.06)",
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                overflow: "hidden",
+                              }}
+                            >
+                              {i === 0
+                                ? <SittingKitten size={62} />
+                                : <Bobo mood={step.mood} tint={tint} size={62} animate armsDown />}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
 
-              {/* ── Stage cards ── */}
-              <div style={{ padding: "0 10px 0 10px", position: "relative" }}>
-                {/* Static track line (faint) */}
-                <div style={{ position: "absolute", left: 21, top: 0, bottom: 0, width: 2, background: DASHED, zIndex: 0, opacity: 0.35 }} />
-                {/* Growing glow line */}
-                <motion.div
-                  style={{
-                    position: "absolute", left: 20, top: 0, bottom: 0, width: 3,
-                    borderRadius: 2, transformOrigin: "top center", zIndex: 0,
-                  }}
-                  animate={{
-                    scaleY: stageCount / STAGES.length,
-                    background: stageCount >= STAGES.length
-                      ? "linear-gradient(to bottom, #B8860B, #DAA520, #B8860B)"
-                      : "linear-gradient(to bottom, #9D6FE8, #6D28D9, #4C1D95)",
-                    boxShadow: "none",
-                  }}
-                  transition={{
-                    scaleY: { duration: 0.55, ease: "easeOut" },
-                    background: { duration: 0.9 },
-                  }}
-                />
-
-                {STAGES.map((stage, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: i < STAGES.length - 1 ? 10 : 0, position: "relative", zIndex: 1 }}>
-
-                    {/* Left connector dot */}
-                    <div style={{ width: 24, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <AnimatePresence>
-                        {stageCount > i && (
-                          <motion.div
-                            key={`dot-${i}`}
-                            initial={{ scale: 0, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{ type: "spring", stiffness: 320, damping: 22 }}
-                            style={{
-                              width: stage.gold ? 20 : 12,
-                              height: stage.gold ? 20 : 12,
-                              borderRadius: "50%",
-                              background: stage.gold
-                                ? "radial-gradient(circle, #FFD700 0%, #B8860B 100%)"
-                                : "radial-gradient(circle, #DAA520 0%, #92680A 100%)",
-                              border: `1.5px solid rgba(218,165,32,0.70)`,
-                              boxShadow: "none",
-                              display: "flex", alignItems: "center", justifyContent: "center",
-                              fontSize: 9,
-                            }}
-                          >
-                            {stage.gold ? "⭐" : null}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-
-                    {/* Card */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <AnimatePresence>
-                        {stageCount > i && (
-                          <motion.div
-                            key={`card-${i}`}
-                            initial={{ opacity: 0, x: 16, y: 8 }}
-                            animate={{ opacity: 1, x: 0, y: 0 }}
-                            transition={{ type: "spring", stiffness: 220, damping: 28 }}
-                            style={{
-                              height: 68,
-                              background: stage.gold ? "rgba(30,12,70,0.75)" : "rgba(18,12,48,0.55)",
-                              border: `1.5px solid ${stage.gold ? "rgba(139,92,246,0.85)" : "rgba(80,60,170,0.30)"}`,
-                              borderRadius: 16,
-                              overflow: "hidden",
-                              boxShadow: stage.gold
-                                ? "0 0 0 1px rgba(139,92,246,0.25), 0 4px 18px rgba(109,40,217,0.35)"
-                                : "0 2px 10px rgba(0,0,0,0.38)",
-                              display: "flex",
-                              alignItems: "center",
-                              padding: "5px 8px 5px 10px",
-                              gap: 0,
-                            }}
-                          >
-                            {/* Text */}
-                            <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5 }}>
-                                <div style={{
-                                  display: "inline-flex", alignItems: "center", gap: 2,
-                                  background: stage.gold ? "linear-gradient(90deg, #7C3AED, #9D4EDD)" : "#5B21B6",
-                                  borderRadius: 20, padding: "1.5px 7px", flexShrink: 0,
-                                }}>
-                                  <span style={{ fontFamily: F, fontSize: 8.5, fontWeight: 900, color: "#fff" }}>DAY {stage.num}</span>
-                                </div>
-                                <span style={{ fontFamily: F, fontSize: 9, fontWeight: 800, color: stage.labelColor, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                                  {stage.label}
-                                </span>
+                      {/* Card */}
+                      <div style={{ flex: 1, minWidth: 0, paddingTop: 4 }}>
+                        <AnimatePresence>
+                          {stageCount > i && (
+                            <motion.div
+                              key={`card-${i}`}
+                              initial={{ opacity: 0, x: 16, y: 8 }}
+                              animate={{ opacity: 1, x: 0, y: 0 }}
+                              transition={{ type: "spring", stiffness: 220, damping: 28 }}
+                            >
+                              <div style={{
+                                display: "inline-flex", alignItems: "center", marginBottom: 6,
+                                borderRadius: 20, padding: "3px 11px",
+                                background: step.filled ? `linear-gradient(90deg, ${step.accent}, #7C3AED)` : "transparent",
+                                border: step.filled ? "none" : `1.5px solid ${step.accent}`,
+                              }}>
+                                <span style={{
+                                  fontFamily: F, fontSize: 10, fontWeight: 900, letterSpacing: "0.03em",
+                                  color: step.filled ? "#fff" : step.accent,
+                                }}>STEP {step.num}</span>
                               </div>
-                              <p style={{ fontFamily: F, fontSize: 14, fontWeight: 600, color: "#fff", margin: 0, lineHeight: 1.2 }}>
-                                {stage.title}
+                              <p style={{ fontFamily: F, fontSize: 15.5, fontWeight: 800, color: "#fff", margin: 0, lineHeight: 1.25 }}>
+                                {step.title}
                               </p>
-                            </div>
-
-                            {/* Icon only */}
-                            <div style={{ flex: "0 0 44px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                              <span style={{ fontSize: 28 }}>{stage.icon}</span>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                              <p style={{ fontFamily: F, fontSize: 12, fontWeight: 500, color: "rgba(220,210,255,0.75)", margin: "4px 0 6px", lineHeight: 1.4 }}>
+                                {step.desc}
+                              </p>
+                              <div style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
+                                <span style={{ fontSize: 13 }}>{step.tagIcon}</span>
+                                <span style={{ fontFamily: F, fontSize: 11.5, fontWeight: 700, color: step.accent }}>{step.tag}</span>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
 
             </div>

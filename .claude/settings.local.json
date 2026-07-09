@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(gh repo *)",
-      "Bash(pnpm tsc *)"
+      "Bash(pnpm tsc *)",
+      "Bash(node .scratch-anim1.mjs)"
     ]
   }
 }

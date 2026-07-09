@@ -221,9 +221,9 @@ function InfoCard({ icon, label, value }: { icon: string; label: string; value: 
         background: "rgba(124,58,237,0.25)", border: "1.5px solid rgba(124,58,237,0.55)",
         display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24,
       }}>{icon}</div>
-      <div>
-        <div style={{ fontFamily: F, fontSize: 13, fontWeight: 600, color: "rgba(200,190,255,0.75)" }}>{label}</div>
-        <div style={{ fontFamily: F, fontSize: 18, fontWeight: 900, color: "#FBBF24" }}>{value}</div>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontFamily: F, fontSize: 13, fontWeight: 600, color: "rgba(200,190,255,0.75)", whiteSpace: "nowrap" }}>{label}</div>
+        <div style={{ fontFamily: F, fontSize: 16, fontWeight: 900, color: "#FBBF24", whiteSpace: "nowrap" }}>{value}</div>
       </div>
     </div>
   );

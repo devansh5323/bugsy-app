@@ -958,6 +958,92 @@ textarea {
   75%       { transform: translateY(-8px)  rotate( 5deg)  scale(1.04); }
 }
 
+/* Fumi's River Catch — the mascot itself is the shared Bobo component
+   (tinted blue), so only the river/HUD keyframes live here. */
+/* Snappy press feedback for the game's glass buttons. */
+.rc-btn {
+  transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease;
+}
+.rc-btn:active:not(:disabled) {
+  transform: translateY(3px) scale(0.99);
+  filter: brightness(0.96);
+}
+/* A joyful little hop Fumi does on every successful catch. */
+@keyframes rc-mascot-hop {
+  0%   { transform: translateY(0) rotate(0deg) scale(1, 1); }
+  30%  { transform: translateY(-16px) rotate(-6deg) scale(0.95, 1.1); }
+  55%  { transform: translateY(3px) rotate(5deg) scale(1.07, 0.93); }
+  80%  { transform: translateY(-3px) rotate(-2deg) scale(0.99, 1.02); }
+  100% { transform: translateY(0) rotate(0deg) scale(1, 1); }
+}
+/* River — rule card flip-in, glow pulses, HUD chips. */
+@keyframes rule-card-in {
+  0%   { opacity: 0; transform: translateY(-16px) rotateX(40deg) scale(0.9); }
+  100% { opacity: 1; transform: translateY(0) rotateX(0deg) scale(1); }
+}
+/* Center-screen rule announcement — pops in, holds, then flies back up
+   toward the HUD's rule card as it fades (percentages are fractions of
+   the ~4s pause, so tune alongside RULE_ANNOUNCE_MS). */
+@keyframes rule-announce {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.55); }
+  8%   { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+  14%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  78%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -320%) scale(0.32); }
+}
+@keyframes rule-announce-backdrop {
+  0%   { opacity: 0; }
+  10%  { opacity: 1; }
+  82%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes focus-flow-shimmer {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+@keyframes combo-pop {
+  0%   { transform: scale(0.6); opacity: 0; }
+  55%  { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes basket-pop {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.12); }
+}
+@keyframes ripple-grow {
+  0%   { transform: scale(0.3); opacity: 0.55; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+@keyframes dragonfly-wing {
+  0%, 100% { transform: scaleY(1); }
+  50%      { transform: scaleY(0.35); }
+}
+@keyframes cloud-drift-slow {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(40px); }
+}
+/* Dragonflies / butterflies — each a distinct wandering flight path so
+   a handful of instances never look like they're on rails. */
+@keyframes bug-drift-1 {
+  0%   { transform: translate(-10vw, 55vh) rotate(-6deg); }
+  25%  { transform: translate(30vw, 30vh) rotate(8deg); }
+  50%  { transform: translate(70vw, 50vh) rotate(-4deg); }
+  75%  { transform: translate(45vw, 20vh) rotate(10deg); }
+  100% { transform: translate(-10vw, 55vh) rotate(-6deg); }
+}
+@keyframes bug-drift-2 {
+  0%   { transform: translate(90vw, 60vh) rotate(180deg) scale(-1, 1); }
+  30%  { transform: translate(50vw, 35vh) rotate(170deg) scale(-1, 1); }
+  60%  { transform: translate(20vw, 55vh) rotate(190deg) scale(-1, 1); }
+  100% { transform: translate(90vw, 60vh) rotate(180deg) scale(-1, 1); }
+}
+@keyframes bug-drift-3 {
+  0%   { transform: translate(10vw, 70vh) rotate(0deg); }
+  40%  { transform: translate(60vw, 45vh) rotate(-12deg); }
+  70%  { transform: translate(30vw, 65vh) rotate(6deg); }
+  100% { transform: translate(10vw, 70vh) rotate(0deg); }
+}
+
 /* Respect reduced motion — the design system's springy easing and
    bouncy entrances can trigger vestibular discomfort */
 @media (prefers-reduced-motion: reduce) {

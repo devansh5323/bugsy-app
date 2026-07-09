@@ -55,36 +55,99 @@ function StarShape({ size = 128, glow = false, holding = false }: { size?: numbe
   );
 }
 
-const REVEAL_DELAYS = [0, 460, 920, 1380, 3380, 3880];
+type Benefit = {
+  emoji: string;
+  stat: string;
+  statDesc: string;
+  color: string;
+  glow: string;
+  bgFrom: string;
+  bgTo: string;
+};
+
+// A single benefit card — illustration + stat, always showing its full
+// content. Shared between the resting grid slot and the center-stage
+// overlay via the caller's matching layoutId.
+function BenefitCard({ b }: { b: Benefit }) {
+  return (
+    <div style={{
+      position: "relative", width: "100%", height: "100%", borderRadius: 18, overflow: "hidden",
+      display: "flex", flexDirection: "column",
+      boxShadow: `0 4px 18px rgba(0,0,0,0.5), 0 0 0 1.5px ${b.color}40`,
+    }}>
+      <div style={{
+        position: "relative", flex: "0 0 58%",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        background: `radial-gradient(circle at 50% 32%, ${b.glow} 0%, ${b.bgFrom} 55%, ${b.bgTo} 100%)`,
+      }}>
+        <span style={{ position: "absolute", top: 10, left: 12, fontSize: 8, color: "#fff", opacity: 0.85 }}>✦</span>
+        <span style={{ position: "absolute", top: 18, right: 13, fontSize: 6, color: "#fff", opacity: 0.6 }}>✦</span>
+        <span style={{ position: "absolute", bottom: 10, right: 11, fontSize: 7, color: "#fff", opacity: 0.5 }}>✦</span>
+        <div style={{
+          width: 56, height: 56, borderRadius: "50%",
+          background: "rgba(255,255,255,0.14)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 29,
+          boxShadow: `0 0 22px ${b.glow}`,
+        }}>
+          <span>{b.emoji}</span>
+        </div>
+      </div>
+      <div style={{
+        flex: 1, background: b.bgTo,
+        padding: "10px 6px 12px", textAlign: "center",
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+      }}>
+        <p style={{ fontFamily: F, fontSize: 23, fontWeight: 900, color: "#fff", margin: 0, lineHeight: 1 }}>{b.stat}</p>
+        <p style={{ fontFamily: F, fontSize: 10.5, fontWeight: 700, color: "rgba(255,255,255,0.82)", margin: "4px 0 0", lineHeight: 1.25 }}>{b.statDesc}</p>
+        <div style={{ height: 1, width: "100%", background: `${b.color}55`, marginTop: 4 }} />
+      </div>
+    </div>
+  );
+}
+
+// A soft pulsing glow bloom behind a card, while it's center-stage.
+function SoftGlow({ color }: { color: string }) {
+  return (
+    <motion.div
+      aria-hidden
+      initial={{ opacity: 0, scale: 0.85 }}
+      animate={{ opacity: [0, 0.9, 0.65], scale: [0.85, 1.18, 1.1] }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      style={{
+        position: "absolute", inset: -34, borderRadius: 34,
+        background: `radial-gradient(circle, ${color}66 0%, ${color}22 55%, transparent 75%)`,
+        filter: "blur(8px)", pointerEvents: "none",
+      }}
+    />
+  );
+}
 
 export function ParentBenefits({
-  tint, childName = "your child", onNext, onBack,
+  tint, onNext, onBack,
 }: {
-  tint: number; childName?: string; onNext: () => void; onBack?: () => void;
+  tint: number; onNext: () => void; onBack?: () => void;
 }) {
   const BUBBLE_TEXT = useMemo(
-    () => `Will you let me become ${childName}'s little adventure buddy for just 10 minutes each day?`,
-    [childName]
+    () => "Here's my promise to you and your child",
+    []
   );
 
   const BENEFITS = [
     {
-      num: 1, emoji: "🎯",
-      title: "Grow Attention by 2x",
-      desc: "Better focus, better learning, better future.",
-      color: "#60A5FA", iconBg: "rgba(30,58,138,0.75)",
+      emoji: "🧠",
+      stat: "2x", statDesc: "longer focus sessions",
+      color: "#60A5FA", glow: "rgba(96,165,250,0.55)", bgFrom: "#1e3a8a", bgTo: "#0c1a4a",
     },
     {
-      num: 2, emoji: "🩷",
-      title: "Reduction in emotional meltdowns by 30%",
-      desc: "Calmer emotions, happier days.",
-      color: "#F472B6", iconBg: "rgba(131,24,67,0.75)",
+      emoji: "🩷",
+      stat: "30%", statDesc: "lesser emotional meltdown",
+      color: "#F472B6", glow: "rgba(244,114,182,0.55)", bgFrom: "#831843", bgTo: "#3b0a24",
     },
     {
-      num: 3, emoji: "🌱",
-      title: "Build healthy habits",
-      desc: "Strong routines today, stronger tomorrow.",
-      color: "#4ADE80", iconBg: "rgba(20,83,45,0.75)",
+      emoji: "🌱",
+      stat: "Daily", statDesc: "habit streaks that stick",
+      color: "#4ADE80", glow: "rgba(74,222,128,0.55)", bgFrom: "#14532d", bgTo: "#052e12",
     },
   ];
 
@@ -97,6 +160,16 @@ export function ParentBenefits({
   const [glowing,       setGlowing]       = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Per-card choreography: hidden → center (pops straight into view at
+  // full size, mid-screen, and glows) → settled (shrinks back to its
+  // grid slot and stays there).
+  type CardStage = "hidden" | "center" | "settled";
+  const [cardStages, setCardStages] = useState<CardStage[]>(["hidden", "hidden", "hidden"]);
+  const [activeCard, setActiveCard] = useState<number | null>(null);
+
+  const setCardAt = (i: number, stage: CardStage) =>
+    setCardStages((prev) => prev.map((v, idx) => (idx === i ? stage : v)));
+
   useEffect(() => {
     const ts: ReturnType<typeof setTimeout>[] = [];
     ts.push(setTimeout(() => setCatVisible(true), 200));
@@ -105,9 +178,31 @@ export function ParentBenefits({
       ts.push(setTimeout(() => setTypedText(BUBBLE_TEXT.slice(0, i + 1)), tS + i * 34))
     );
     const after = tS + BUBBLE_TEXT.length * 34 + 400;
-    REVEAL_DELAYS.forEach((d, i) =>
-      ts.push(setTimeout(() => setRevealStep(i + 1), after + d))
-    );
+
+    // One card's full appear-at-center → glow → return cycle.
+    const APPEAR_MS = 380;
+    const GLOW_HOLD_MS = 950;
+    const RETURN_MS = 560;
+    const GAP_MS = 220;
+    const PER_CARD_MS = APPEAR_MS + GLOW_HOLD_MS + RETURN_MS + GAP_MS;
+
+    let cursor = after + 300;
+    BENEFITS.forEach((_, i) => {
+      const t0 = cursor;
+      ts.push(setTimeout(() => { setActiveCard(i); setCardAt(i, "center"); }, t0));
+      ts.push(setTimeout(() => {
+        setActiveCard(null);
+        setCardAt(i, "settled");
+      }, t0 + APPEAR_MS + GLOW_HOLD_MS));
+      cursor = t0 + PER_CARD_MS;
+    });
+
+    // Trust subtext appears shortly after the cards settle, then the
+    // star/promise box follows quickly behind it.
+    ts.push(setTimeout(() => setRevealStep(4), cursor + 150));
+    ts.push(setTimeout(() => setRevealStep(5), cursor + 450));
+    ts.push(setTimeout(() => setRevealStep(6), cursor + 850));
+
     return () => ts.forEach(clearTimeout);
   }, [BUBBLE_TEXT]);
 
@@ -152,7 +247,7 @@ export function ParentBenefits({
     );
   };
 
-  const R  = 78;
+  const R  = 63;
   const C  = 2 * Math.PI * R;
   const SZ = (R + 10) * 2;
 
@@ -177,10 +272,11 @@ export function ParentBenefits({
         }}>‹</button>
       )}
 
-      {/* Cat + bubble */}
+      {/* Cat + bubble — vertically centered against each other so the
+          bubble's tail always points at the cat regardless of its size. */}
       <div style={{
         position: "relative", zIndex: 5, flexShrink: 0,
-        display: "flex", alignItems: "flex-start",
+        display: "flex", alignItems: "center",
         padding: "106px 14px 0 0", minHeight: 160,
       }}>
         <AnimatePresence>
@@ -189,13 +285,13 @@ export function ParentBenefits({
               initial={{ x: -100, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ type: "spring", stiffness: 160, damping: 20 }}
-              style={{ flexShrink: 0, zIndex: 2, marginBottom: -20 }}
+              style={{ flexShrink: 0, zIndex: 2 }}
             >
               <motion.div
                 animate={{ y: [0, -8, 0] }}
                 transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
               >
-                <Bobo mood="excited" tint={tint} size={145} animate tailWag />
+                <Bobo mood="excited" tint={tint} size={125} animate tailWag />
               </motion.div>
             </motion.div>
           )}
@@ -211,10 +307,10 @@ export function ParentBenefits({
                 flex: 1, background: "#fff", borderRadius: 20,
                 padding: "12px 36px 12px 14px",
                 boxShadow: "0 6px 30px rgba(0,0,0,0.25)",
-                position: "relative", marginTop: 36, marginRight: 12,
+                position: "relative", marginRight: 12,
               }}
             >
-              <div style={{ position: "absolute", left: -12, top: 22, width: 0, height: 0, borderTop: "10px solid transparent", borderBottom: "10px solid transparent", borderRight: "12px solid #fff" }} />
+              <div style={{ position: "absolute", left: -12, top: "50%", marginTop: -10, width: 0, height: 0, borderTop: "10px solid transparent", borderBottom: "10px solid transparent", borderRight: "12px solid #fff" }} />
               <p style={{ fontFamily: F, fontSize: 14.5, fontWeight: 800, color: "#1a0f40", margin: 0, lineHeight: 1.38 }}>
                 {renderBubble()}
               </p>
@@ -227,61 +323,72 @@ export function ParentBenefits({
       {/* Scrollable content */}
       <div style={{ position: "relative", zIndex: 5, flex: 1, minHeight: 0, overflowY: "auto", padding: "40px 14px 28px" }}>
 
-        {/* 1 — Header */}
+        {/* 2, 3, 4 — Three benefit cards. Each takes its turn: pops
+            straight into view at center stage (full size, glowing),
+            then shrinks back into its grid slot and stays revealed. */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 10 }}>
+          {BENEFITS.map((b, i) => (
+            <div key={i} style={{ minHeight: 156 }}>
+              <AnimatePresence>
+                {cardStages[i] === "settled" && (
+                  <motion.div
+                    key={`grid-${i}`}
+                    layoutId={`benefit-card-${i}`}
+                    style={{ width: "100%", height: 156 }}
+                    transition={{ type: "spring", stiffness: 200, damping: 24 }}
+                  >
+                    <BenefitCard b={b} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ))}
+        </div>
+
+        {/* Center-stage overlay — the card currently taking its turn. */}
         <AnimatePresence>
-          {revealStep >= 1 && (
-            <motion.div key="hdr" {...slideUp} style={{ textAlign: "center", marginBottom: 12 }}>
-              <span style={{ fontFamily: F, fontSize: 15.5, fontWeight: 700, color: "#fff", whiteSpace: "nowrap" }}>
-                Here&apos;s my promise to you and your child
-              </span>
-            </motion.div>
+          {activeCard !== null && (
+            <div style={{
+              position: "fixed", inset: 0, zIndex: 50,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              pointerEvents: "none",
+            }}>
+              <div style={{ position: "relative", width: 196, height: 264 }}>
+                <SoftGlow color={BENEFITS[activeCard].color} />
+                <motion.div
+                  key={`overlay-${activeCard}`}
+                  layoutId={`benefit-card-${activeCard}`}
+                  style={{ position: "absolute", inset: 0 }}
+                  initial={{ opacity: 0, scale: 0.82 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ type: "spring", stiffness: 170, damping: 26 }}
+                >
+                  <BenefitCard b={BENEFITS[activeCard]} />
+                </motion.div>
+              </div>
+            </div>
           )}
         </AnimatePresence>
 
-        {/* 2, 3, 4 — Three benefit cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 12 }}>
-          {BENEFITS.map((b, i) => (
-            <AnimatePresence key={i}>
-              {revealStep >= i + 2 && (
-                <motion.div key={`card-${i}`} {...slideUp} style={{
-                  background: "rgba(18,12,55,0.96)",
-                  borderRadius: 14, overflow: "hidden",
-                  display: "flex", flexDirection: "column",
-                  boxShadow: "0 4px 18px rgba(0,0,0,0.50)",
-                  position: "relative", padding: "10px 6px 0",
-                }}>
-                  {/* Number badge top-left */}
-                  <div style={{
-                    position: "absolute", top: 7, left: 7, zIndex: 2,
-                    width: 20, height: 20, borderRadius: "50%",
-                    background: b.color,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                  }}>
-                    <span style={{ fontFamily: F, fontSize: 11, fontWeight: 900, color: "#fff" }}>{b.num}</span>
-                  </div>
-                  {/* Sparkle top-right */}
-                  <span style={{ position: "absolute", top: 7, right: 7, color: "#FFD700", fontSize: 12, zIndex: 2 }}>✦</span>
-                  {/* Circular icon */}
-                  <div style={{
-                    width: 62, height: 62, borderRadius: "50%",
-                    background: b.iconBg,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    alignSelf: "center", marginTop: 12, marginBottom: 9,
-                    boxShadow: `0 0 16px ${b.color}55`,
-                  }}>
-                    <span style={{ fontSize: 33 }}>{b.emoji}</span>
-                  </div>
-                  {/* Text */}
-                  <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 3, paddingBottom: 11, textAlign: "center" }}>
-                    <p style={{ fontFamily: F, fontSize: 12, fontWeight: 800, color: "#fff", margin: 0, lineHeight: 1.25 }}>{b.title}</p>
-                  </div>
-                  {/* Color bar */}
-                  <div style={{ height: 3, background: b.color }} />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          ))}
-        </div>
+        {/* Trust subtext under the 3 cards */}
+        <AnimatePresence>
+          {revealStep >= 4 && (
+            <motion.div key="study-note" {...slideUp} style={{
+              display: "flex", justifyContent: "center", marginBottom: 20,
+            }}>
+              <div style={{
+                display: "flex", alignItems: "center", gap: 6,
+                background: "rgba(124,58,237,0.14)", border: "1px solid rgba(124,58,237,0.35)",
+                borderRadius: 999, padding: "6px 14px",
+              }}>
+                <span style={{ fontSize: 11 }}>✅</span>
+                <p style={{ fontFamily: F, fontSize: 11.5, fontWeight: 600, color: "rgba(220,210,255,0.82)", margin: 0 }}>
+                  Based on the internal study of <span style={{ fontWeight: 800, color: "#fff" }}>500 families</span> in 2026
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* 5 — Promise / high-five box */}
         <AnimatePresence>
@@ -289,21 +396,21 @@ export function ParentBenefits({
             <motion.div key="paw" {...slideUp} style={{
               background: "rgba(13,8,42,0.96)",
               border: "1.5px solid rgba(110,72,200,0.45)",
-              borderRadius: 20, padding: "14px 12px 12px", marginBottom: 12,
+              borderRadius: 18, padding: "12px 10px 10px", marginBottom: 10,
             }}>
               {/* Title */}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 2 }}>
-                <span style={{ fontFamily: F, fontSize: 14.5, fontWeight: 900, color: "#fff" }}>Let&apos;s make our first promise together!</span>
-                <span style={{ fontSize: 15 }}>💜</span>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, marginBottom: 2 }}>
+                <span style={{ fontFamily: F, fontSize: 13, fontWeight: 900, color: "#fff" }}>Let&apos;s make our first promise together!</span>
+                <span style={{ fontSize: 13.5 }}>💜</span>
               </div>
-              <p style={{ fontFamily: F, fontSize: 12.5, fontWeight: 600, color: "#8B5CF6", textAlign: "center", margin: "0 0 8px", fontStyle: "italic" }}>
+              <p style={{ fontFamily: F, fontSize: 11.5, fontWeight: 600, color: "#8B5CF6", textAlign: "center", margin: "0 0 6px", fontStyle: "italic" }}>
                 Hold to begin our adventure
               </p>
 
               {/* Star interactive area */}
               <div
                 style={{
-                  position: "relative", height: 200, overflow: "hidden", borderRadius: 14,
+                  position: "relative", height: 178, overflow: "hidden", borderRadius: 14,
                   cursor: "pointer", userSelect: "none", touchAction: "none",
                 }}
                 onPointerDown={startHold}
@@ -322,17 +429,32 @@ export function ParentBenefits({
 
 
 
+                {/* Soft neon glow halo — static at rest, only brightens once promised */}
+                <div
+                  style={{
+                    position: "absolute", top: "50%", left: "50%",
+                    width: SZ + 40, height: SZ + 40, marginLeft: -(SZ + 40) / 2, marginTop: -(SZ + 40) / 2,
+                    borderRadius: "50%", pointerEvents: "none", zIndex: 1,
+                    opacity: promised ? 0.9 : 0.4,
+                    background: promised
+                      ? "radial-gradient(circle, rgba(255,215,0,0.35) 0%, rgba(255,215,0,0) 70%)"
+                      : "radial-gradient(circle, rgba(167,139,250,0.35) 0%, rgba(167,139,250,0) 70%)",
+                    filter: "blur(6px)",
+                    transition: "opacity 0.4s ease, background 0.4s ease",
+                  }}
+                />
+
                 {/* Circle track + fill arc around star */}
                 <svg
                   width={SZ} height={SZ}
                   style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", pointerEvents: "none", zIndex: 2 }}
                 >
-                  {/* Static track ring — always visible */}
+                  {/* Base ring — plain, no glow until the fill arc appears */}
                   <circle
                     cx={SZ / 2} cy={SZ / 2} r={R}
                     fill="none"
-                    stroke="rgba(167,139,250,0.22)"
-                    strokeWidth={4}
+                    stroke="rgba(167,139,250,0.45)"
+                    strokeWidth={5}
                   />
                   {/* Fill arc — grows as user holds */}
                   {(holding || promised) && (
@@ -340,12 +462,12 @@ export function ParentBenefits({
                       cx={SZ / 2} cy={SZ / 2} r={R}
                       fill="none"
                       stroke={promised ? "#FFD700" : "#A78BFA"}
-                      strokeWidth={4}
+                      strokeWidth={5}
                       strokeLinecap="round"
                       strokeDasharray={C}
                       strokeDashoffset={C * (1 - holdProgress / 100)}
                       transform={`rotate(-90 ${SZ / 2} ${SZ / 2})`}
-                      style={{ transition: "stroke-dashoffset 0.03s linear, stroke 0.4s ease" }}
+                      style={{ transition: "stroke-dashoffset 0.03s linear, stroke 0.4s ease", filter: "drop-shadow(0 0 10px rgba(255,215,0,0.85))" }}
                     />
                   )}
                 </svg>
@@ -354,37 +476,18 @@ export function ParentBenefits({
                 <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 3 }}>
                   <motion.div
                     animate={
-                      promised ? { scale: [1, 1.22, 1], rotate: [0, -8, 8, 0] } :
+                      promised ? { scale: [1, 1.22, 1], rotate: [0, -8, 8, 0], y: 0 } :
                       holding  ? { scale: 1.10, y: -4 } :
-                      { y: [0, -7, 0] }
+                      { scale: 1, y: 0 }
                     }
                     transition={
                       promised ? { duration: 0.55 } :
                       holding  ? { duration: 0.18 } :
-                      { duration: 2.6, repeat: Infinity, ease: "easeInOut" }
+                      { duration: 0.2 }
                     }
                   >
-                    <StarShape size={128} glow={promised} holding={holding} />
+                    <StarShape size={112} glow={promised} holding={holding} />
                   </motion.div>
-                </div>
-
-                {/* Hold label — bottom left */}
-                <div style={{
-                  position: "absolute", bottom: 14, left: 10, zIndex: 4,
-                  display: "flex", flexDirection: "column", alignItems: "flex-start",
-                  gap: 2, pointerEvents: "none",
-                }}>
-                  <p style={{ fontFamily: F, fontSize: 11, fontWeight: 800, color: "#C4B5FD", margin: 0, lineHeight: 1.25, textAlign: "left", letterSpacing: 0.2 }}>
-                    ✨ Press &amp; hold
-                  </p>
-                  <p style={{ fontFamily: F, fontSize: 10, fontWeight: 600, color: "rgba(167,139,250,0.75)", margin: 0, lineHeight: 1.2, fontStyle: "italic" }}>
-                    for 2 seconds
-                  </p>
-                  {/* Arrow pointing up-right toward the centered star */}
-                  <svg width="60" height="50" viewBox="0 0 60 50" fill="none" style={{ marginTop: 3 }}>
-                    <path d="M4,48 Q20,28 56,6" stroke="#A78BFA" strokeWidth="2" strokeLinecap="round" fill="none" />
-                    <polygon points="53,0 62,10 50,11" fill="#A78BFA" />
-                  </svg>
                 </div>
 
                 {/* Floating gold stars */}
@@ -410,6 +513,39 @@ export function ParentBenefits({
                 ))}
               </div>
 
+              {/* Tap hint — centered below the star, pulsing pointer + press & hold */}
+              <div style={{
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                marginTop: 10, pointerEvents: "none",
+              }}>
+                <div style={{ position: "relative", width: 29, height: 29, flexShrink: 0 }}>
+                  <motion.div
+                    animate={{ scale: [1, 1.9], opacity: [0.55, 0] }}
+                    transition={{ duration: 1.4, repeat: Infinity, ease: "easeOut" }}
+                    style={{
+                      position: "absolute", inset: 0, borderRadius: "50%",
+                      border: "2px solid #A78BFA",
+                    }}
+                  />
+                  <div style={{
+                    position: "absolute", inset: 5, borderRadius: "50%",
+                    background: "linear-gradient(180deg, #C4B5FD, #7C3AED)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 13, boxShadow: "0 2px 8px rgba(124,58,237,0.6)",
+                  }}>👆</div>
+                </div>
+                <p style={{ fontFamily: F, fontSize: 11.5, fontWeight: 700, color: "#fff", margin: 0, lineHeight: 1.25 }}>
+                  Press &amp; hold for <span style={{ color: "#C4B5FD", fontWeight: 900 }}>2 seconds</span>
+                </p>
+              </div>
+
+              <motion.p
+                animate={{ opacity: [0.7, 1, 0.7] }}
+                transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+                style={{ fontFamily: F, fontSize: 11, fontWeight: 700, color: "#FBBF24", textAlign: "center", margin: "6px 0 0" }}
+              >
+                ✨ Keep holding to begin ✨
+              </motion.p>
             </motion.div>
           )}
         </AnimatePresence>
