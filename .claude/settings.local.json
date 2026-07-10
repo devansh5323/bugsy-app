@@ -3,7 +3,13 @@
     "allow": [
       "Bash(gh repo *)",
       "Bash(pnpm tsc *)",
-      "Bash(node .scratch-anim1.mjs)"
+      "Bash(node .scratch-anim1.mjs)",
+      "Bash(npx tsc *)",
+      "Bash(npx eslint *)",
+      "Bash(rm -f /Users/apple/Desktop/bugsy/bugsy-app/.scratch-avatar.mjs)"
+    ],
+    "additionalDirectories": [
+      "/Users/apple/Desktop/bugsy/bugsy-app"
     ]
   }
 }

@@ -42,15 +42,12 @@ const CONFETTI = [
 ];
 
 export function AssessmentCompleteScreen({
-  childName,
   onNext,
   onBack,
 }: {
-  childName: string;
   onNext: () => void;
   onBack: () => void;
 }) {
-  const name = childName.trim() || "your child";
 
   return (
     <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
@@ -193,17 +190,10 @@ export function AssessmentCompleteScreen({
         >
           <p style={{
             fontFamily: F, fontSize: 17, fontWeight: 700,
-            color: "#A78BFA", textAlign: "center",
-            margin: "0 0 4px",
-          }}>
-            Yay! Now I know {name} a little better.
-          </p>
-          <p style={{
-            fontFamily: F, fontSize: 17, fontWeight: 700,
             color: "#fff", textAlign: "center",
             margin: 0,
           }}>
-            {"I can't wait to start our adventures together! 💜"}
+            Thank you! You&apos;ve helped us understand your child better.
           </p>
         </motion.div>
       </div>
@@ -220,7 +210,7 @@ export function AssessmentCompleteScreen({
           transition={{ type: "spring", stiffness: 250, damping: 20, delay: 0.52 }}
           style={{ display: "flex", justifyContent: "center" }}
         >
-          <Bobo mood="excited" tint={CAT_TINT} size={225} animate tailWag />
+          <Bobo mood="excited" tint={CAT_TINT} size={225} animate tailWag armsUp />
         </motion.div>
       </div>
 

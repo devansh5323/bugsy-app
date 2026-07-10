@@ -8,16 +8,88 @@ import { NightRoomBackdrop } from "./WhoAreYou";
 const F = "var(--font-nunito), system-ui, sans-serif";
 
 const WORDS = [
-  "Your","child","will","build","skills","through",
-  "daily","missions","which","reinforce","neural","pathways.",
+  "Daily","missions","build","lasting","skills","and",
+  "stronger","neural","pathways.",
+];
+const SKILLS = [
+  { id: 1, name: "Attention",          desc: "Stay focused longer",               Icon: StarFaceGlyph, color: "#FFD700", glowColor: "rgba(255,215,0,0.65)",   outer: { x: 72, y: 57 }, inner: { x: 93, y: 69 }, side: "left"  as const },
+  { id: 2, name: "Impulse Control",    desc: "Think before you act",              Icon: TargetGlyph,   color: "#22D3EE", glowColor: "rgba(34,211,238,0.65)",   outer: { x: 148, y: 57 }, inner: { x: 127, y: 69 }, side: "right" as const },
+  { id: 3, name: "Executive Function", desc: "Plan, organize and solve problems", Icon: PuzzleGlyph,   color: "#C084FC", glowColor: "rgba(192,132,252,0.65)", outer: { x: 72, y: 99 }, inner: { x: 93, y: 87 },  side: "left"  as const },
+  { id: 4, name: "Memory",             desc: "Remember more, learn better",       Icon: BookGlyph,     color: "#4ADE80", glowColor: "rgba(74,222,128,0.65)",  outer: { x: 148, y: 99 }, inner: { x: 127, y: 87 }, side: "right" as const },
 ];
 
-const SKILLS = [
-  { id: 1, name: "Attention",          desc: "Stay focused longer",               emoji: "⭐", color: "#FFD700", glowColor: "rgba(255,215,0,0.65)",   outer: { x: 72, y: 57 }, inner: { x: 93, y: 69 }, side: "left"  as const },
-  { id: 2, name: "Impulse Control",    desc: "Think before you act",              emoji: "🎯", color: "#22D3EE", glowColor: "rgba(34,211,238,0.65)",   outer: { x: 148, y: 57 }, inner: { x: 127, y: 69 }, side: "right" as const },
-  { id: 3, name: "Executive Function", desc: "Plan, organize and solve problems", emoji: "🧩", color: "#C084FC", glowColor: "rgba(192,132,252,0.65)", outer: { x: 72, y: 99 }, inner: { x: 93, y: 87 },  side: "left"  as const },
-  { id: 4, name: "Memory",             desc: "Remember more, learn better",       emoji: "📗", color: "#4ADE80", glowColor: "rgba(74,222,128,0.65)",  outer: { x: 148, y: 99 }, inner: { x: 127, y: 87 }, side: "right" as const },
-];
+// ── Glossy 3D skill icons — hand-drawn so they render identically
+// everywhere, instead of relying on the platform's plain emoji font. ──
+function StarFaceGlyph({ size = 30 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 34 34" style={{ display: "block" }}>
+      <defs>
+        <linearGradient id="nbStarFill" x1="0.25" y1="0" x2="0.75" y2="1">
+          <stop offset="0%" stopColor="#FFF3B0" />
+          <stop offset="45%" stopColor="#FFC940" />
+          <stop offset="100%" stopColor="#E8880E" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M17,1 L20.8,11.5 L32,11.9 L23.1,18.9 L26.2,29.6 L17,23.2 L7.8,29.6 L10.9,18.9 L2,11.9 L13.2,11.5 Z"
+        fill="url(#nbStarFill)" stroke="#B85E00" strokeWidth="0.6" strokeLinejoin="round"
+      />
+      <circle cx="13.5" cy="16" r="1.3" fill="#7A4400" />
+      <circle cx="20.5" cy="16" r="1.3" fill="#7A4400" />
+      <path d="M13.5 19.5 Q17 22.3 20.5 19.5" stroke="#7A4400" strokeWidth="1.3" fill="none" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function TargetGlyph({ size = 30 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 34 34" style={{ display: "block" }}>
+      <circle cx="15" cy="19" r="13" fill="#EF4444" stroke="#B91C1C" strokeWidth="0.8" />
+      <circle cx="15" cy="19" r="9.4" fill="#fff" />
+      <circle cx="15" cy="19" r="6" fill="#EF4444" />
+      <circle cx="15" cy="19" r="2.6" fill="#fff" />
+      <path d="M27 4 L20 11" stroke="#3B82F6" strokeWidth="2.4" strokeLinecap="round" />
+      <path d="M17 15 L21 10 L23.5 11.5 Z" fill="#1D4ED8" />
+      <path d="M24 3 L28.5 1.5 L27 6 L24.5 6.5 Z" fill="#93C5FD" stroke="#3B82F6" strokeWidth="0.6" strokeLinejoin="round" />
+      <ellipse cx="10.5" cy="13" rx="4" ry="2.2" fill="#fff" opacity="0.3" transform="rotate(-25 10.5 13)" />
+    </svg>
+  );
+}
+
+function PuzzleGlyph({ size = 30 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 34 34" style={{ display: "block" }}>
+      <defs>
+        <linearGradient id="nbPuzzleFill" x1="0.2" y1="0" x2="0.8" y2="1">
+          <stop offset="0%" stopColor="#8CE87A" />
+          <stop offset="100%" stopColor="#2F9E44" />
+        </linearGradient>
+      </defs>
+      <rect x="5" y="5" width="22" height="22" rx="5" fill="url(#nbPuzzleFill)" stroke="#1F7A32" strokeWidth="0.9" />
+      <circle cx="27" cy="16" r="4.4" fill="url(#nbPuzzleFill)" stroke="#1F7A32" strokeWidth="0.9" />
+      <ellipse cx="12" cy="10" rx="3.6" ry="2.2" fill="#fff" opacity="0.35" transform="rotate(-20 12 10)" />
+    </svg>
+  );
+}
+
+function BookGlyph({ size = 30 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 34 34" style={{ display: "block" }}>
+      <defs>
+        <linearGradient id="nbBookFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#8CE87A" />
+          <stop offset="100%" stopColor="#2F9E44" />
+        </linearGradient>
+      </defs>
+      <rect x="7" y="4" width="20" height="26" rx="2.5" fill="url(#nbBookFill)" stroke="#1F7A32" strokeWidth="0.9" />
+      <rect x="7" y="4" width="5" height="26" rx="2" fill="#1F7A32" opacity="0.35" />
+      <line x1="16" y1="10" x2="24" y2="10" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" opacity="0.85" />
+      <line x1="16" y1="15" x2="24" y2="15" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" opacity="0.85" />
+      <line x1="16" y1="20" x2="22" y2="20" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" opacity="0.7" />
+      <ellipse cx="13" cy="9" rx="3.2" ry="2" fill="#fff" opacity="0.3" transform="rotate(-15 13 9)" />
+    </svg>
+  );
+}
 
 // viewBox 390×500; brain 300×211 centered at (195,250)
 // outer nodes: Attn(143,222), Imp(247,222), Exec(143,279), Mem(247,279)
@@ -218,11 +290,11 @@ export function NeuralBrain({
               >
                 <div style={{ position: "absolute", left: -10, top: "50%", transform: "translateY(-50%)", width: 0, height: 0, borderTop: "10px solid transparent", borderBottom: "10px solid transparent", borderRight: "10px solid #fff" }} />
                 <p style={{ fontFamily: F, fontSize: 14.5, fontWeight: 600, color: "#000", lineHeight: 1.45, margin: 0 }}>
-                  Your child will build skills through daily missions which reinforce neural pathways.
+                  Daily missions build lasting skills and stronger neural pathways.
                 </p>
               </motion.div>
             </motion.div>
-
+ 
             {/* ── Brain section: heading + cards ── */}
             <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", alignItems: "center" }}>
 
@@ -267,7 +339,7 @@ export function NeuralBrain({
                 initial={{ opacity: 0, scale: 0.92 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.50 }}
-                style={{ flexShrink: 0, height: 330, width: "100%", position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}
+                style={{ flexShrink: 0, height: 360, width: "100%", position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}
               >
 
               {/* Brain SVG — centered by flex */}
@@ -293,7 +365,7 @@ export function NeuralBrain({
                     repeatDelay: 0.3,
                   } : {}}
                 >
-                  <BrainSVG progress={progress} svgWidth={340} svgHeight={239} connectionGrow={connGrow} brainGlow={brainGlow} />
+                  <BrainSVG progress={progress} svgWidth={230} svgHeight={162} connectionGrow={connGrow} brainGlow={brainGlow} />
                 </motion.div>
               </motion.div>
 
@@ -342,29 +414,29 @@ export function NeuralBrain({
                     style={{
                       position: "absolute",
                       ...(isTop
-                        ? { top: "calc(50% - 140px)" }
-                        : { bottom: "calc(50% - 140px)" }),
-                      ...(isLeft ? { left: 8 } : { right: 8 }),
-                      width: 106,
-                      background: "rgba(8, 4, 38, 0.92)",
-                      border: `1.5px solid ${skill.color}`,
-                      borderRadius: 14,
-                      padding: "10px 9px 11px",
-                      display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 5,
-                      boxShadow: `0 0 22px ${skill.glowColor}, 0 3px 14px rgba(0,0,0,0.55)`,
+                        ? { top: "calc(50% - 158px)" }
+                        : { bottom: "calc(50% - 158px)" }),
+                      ...(isLeft ? { left: 6 } : { right: 6 }),
+                      width: 118,
+                      background: "rgba(6, 4, 16, 0.95)",
+                      border: `2px solid ${skill.color}`,
+                      borderRadius: 18,
+                      padding: "14px 10px 13px",
+                      display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
+                      boxShadow: `0 0 24px ${skill.glowColor}, 0 3px 14px rgba(0,0,0,0.55)`,
                       zIndex: 20,
                     }}
                   >
                     <div style={{
-                      width: 34, height: 34, borderRadius: 9,
-                      background: `rgba(${hexChan(skill.color)},0.18)`,
+                      width: 56, height: 56, borderRadius: "50%",
+                      background: `rgba(${hexChan(skill.color)},0.16)`,
                       display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 17,
+                      boxShadow: `0 0 16px 2px ${skill.glowColor}`,
                       flexShrink: 0,
                     }}>
-                      {skill.emoji}
+                      <skill.Icon size={32} />
                     </div>
-                    <span style={{ fontFamily: F, fontSize: 11.5, fontWeight: 800, color: "#fff", lineHeight: 1.25 }}>
+                    <span style={{ fontFamily: F, fontSize: 14, fontWeight: 800, color: "#fff", lineHeight: 1.25, textAlign: "center" }}>
                       {skill.name}
                     </span>
                   </motion.div>
@@ -409,14 +481,14 @@ const VEINS: { d: string; dur: number; delay: number }[] = [
   { d: "M 108,60 C 98,56 88,54 80,57",   dur: 1.4, delay: 0.0 },
   { d: "M 108,78 C 97,75 86,74 78,77",   dur: 1.6, delay: 0.7 },
   { d: "M 108,96 C 97,94 86,93 78,97",   dur: 1.3, delay: 1.3 },
-  { d: "M 88,55 C 84,49 82,44",          dur: 0.8, delay: 0.3 },
-  { d: "M 86,74 C 82,68 80,63",          dur: 0.7, delay: 1.0 },
+  { d: "M 88,55 C 84,49 82,44 80,40",     dur: 0.8, delay: 0.3 },
+  { d: "M 86,74 C 82,68 80,63 78,59",     dur: 0.7, delay: 1.0 },
   // right hemisphere (mirror)
   { d: "M 112,60 C 122,56 132,54 140,57", dur: 1.4, delay: 0.4 },
   { d: "M 112,78 C 123,75 134,74 142,77", dur: 1.6, delay: 1.1 },
   { d: "M 112,96 C 123,94 134,93 142,97", dur: 1.3, delay: 1.7 },
-  { d: "M 132,55 C 136,49 138,44",        dur: 0.8, delay: 0.7 },
-  { d: "M 134,74 C 138,68 140,63",        dur: 0.7, delay: 1.4 },
+  { d: "M 132,55 C 136,49 138,44 140,40", dur: 0.8, delay: 0.7 },
+  { d: "M 134,74 C 138,68 140,63 142,59", dur: 0.7, delay: 1.4 },
 ];
 
 // ── Brain SVG ─────────────────────────────────────────────────────

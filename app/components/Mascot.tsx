@@ -48,6 +48,9 @@ type BoboProps = {
   // When true, both arms hang at resting position (overrides the default
   // raised-left-arm greeting pose). Use for calm / happy-sitting moments.
   armsDown?: boolean;
+  // When true, both arms raise into the greeting pose (mirrored left +
+  // right) for a two-paw "hooray" celebration. Ignored if armsDown is set.
+  armsUp?: boolean;
 };
 
 // Hats sit above the ears — y centred around -120
@@ -117,7 +120,7 @@ function Hat({ kind }: { kind: string }) {
   }
 }
 
-export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, hat, angerLevel, eyeOpen, tailWag, walking, mouthOpen, frazzled, glowRightPaw, noSparkles, armsDown }: BoboProps) {
+export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, hat, angerLevel, eyeOpen, tailWag, walking, mouthOpen, frazzled, glowRightPaw, noSparkles, armsDown, armsUp }: BoboProps) {
   const lidControlled = eyeOpen !== undefined;
   const eyeOpenClamped = Math.max(0, Math.min(1, eyeOpen ?? 1));
   // Continuous anger 0..1. mood="angry" implies 1 when angerLevel
@@ -486,15 +489,29 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
             )
           )}
           {mood !== "waving" && mood !== "shy" && (
-            <g transform="rotate(14 82 48)">
-              <ellipse cx="82" cy="48" rx="15" ry="22" fill={bodyMid}/>
-              <ellipse cx="82" cy="64" rx="7" ry="4.5" fill={bodyBottom} opacity="0.45"/>
-              <circle cx="76" cy="56" r="1.8" fill={bodyBottom} opacity="0.55"/>
-              <circle cx="82" cy="54" r="1.8" fill={bodyBottom} opacity="0.55"/>
-              <circle cx="88" cy="56" r="1.8" fill={bodyBottom} opacity="0.55"/>
-              <path d="M 94 32 Q 98 48 92 66" stroke={highlight} strokeWidth="2.5" fill="none" opacity="0.5" strokeLinecap="round"/>
-              <ellipse cx="78" cy="36" rx="3.5" ry="2.5" fill="#fff" opacity="0.4"/>
-            </g>
+            armsUp && !armsDown ? (
+              // Mirror of the raised-left-arm greeting pose — two-paw "hooray"
+              <g>
+                <path d="M 78 14 Q 108 -10 104 -46" stroke={bodyMid} strokeWidth="22" fill="none" strokeLinecap="round"/>
+                <path d="M 74 18 Q 100 -6 96 -38" stroke={highlight} strokeWidth="3" fill="none" opacity="0.45" strokeLinecap="round"/>
+                <circle cx="104" cy="-48" r="16" fill={bodyMid}/>
+                <ellipse cx="104" cy="-42" rx="6.5" ry="4.5" fill={bodyBottom} opacity="0.5"/>
+                <circle cx="112" cy="-56" r="2.2" fill={bodyBottom} opacity="0.55"/>
+                <circle cx="104" cy="-60" r="2.2" fill={bodyBottom} opacity="0.55"/>
+                <circle cx="96" cy="-56" r="2.2" fill={bodyBottom} opacity="0.55"/>
+                <ellipse cx="110" cy="-54" rx="4.5" ry="2.5" fill="#fff" opacity="0.45"/>
+              </g>
+            ) : (
+              <g transform="rotate(14 82 48)">
+                <ellipse cx="82" cy="48" rx="15" ry="22" fill={bodyMid}/>
+                <ellipse cx="82" cy="64" rx="7" ry="4.5" fill={bodyBottom} opacity="0.45"/>
+                <circle cx="76" cy="56" r="1.8" fill={bodyBottom} opacity="0.55"/>
+                <circle cx="82" cy="54" r="1.8" fill={bodyBottom} opacity="0.55"/>
+                <circle cx="88" cy="56" r="1.8" fill={bodyBottom} opacity="0.55"/>
+                <path d="M 94 32 Q 98 48 92 66" stroke={highlight} strokeWidth="2.5" fill="none" opacity="0.5" strokeLinecap="round"/>
+                <ellipse cx="78" cy="36" rx="3.5" ry="2.5" fill="#fff" opacity="0.4"/>
+              </g>
+            )
           )}
 
           <ellipse cx="0" cy="56" rx="42" ry="26" fill={tummy} opacity="0.55"/>

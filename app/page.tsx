@@ -35,6 +35,7 @@ import { LoginScreen } from "./components/onboarding/LoginScreen";
 import { WhoAreYou } from "./components/onboarding/WhoAreYou";
 import { ParentIntro } from "./components/onboarding/ParentIntro";
 import { ParentJourney } from "./components/onboarding/ParentJourney";
+import { GrowthJourney } from "./components/onboarding/GrowthJourney";
 import { NeuralBrain } from "./components/onboarding/NeuralBrain";
 import { ParentBenefits } from "./components/onboarding/ParentBenefits";
 import { AssessmentIntro } from "./components/onboarding/AssessmentIntro";
@@ -561,15 +562,14 @@ export default function Home() {
           );
         case 2:
           return (
-            <NeuralBrain
-              tint={TINT}
+            <GrowthJourney
               onNext={advanceParent}
               onBack={back}
             />
           );
         case 3:
           return (
-            <ParentBenefits
+            <NeuralBrain
               tint={TINT}
               onNext={advanceParent}
               onBack={back}
@@ -577,30 +577,38 @@ export default function Home() {
           );
         case 4:
           return (
-            <AssessmentIntro
+            <ParentBenefits
               tint={TINT}
-              onNext={() => setStage({ kind: "parent", step: 6 })}
-              onSkip={() => setStage({ kind: "parent", step: 10 })}
+              onNext={advanceParent}
               onBack={back}
-            />
-          );
-        case 10:
-          return (
-            <ConsentScreen
-              tint={TINT}
-              onNext={() => setStage({ kind: "parent", step: 5 })}
-              onBack={() => setStage({ kind: "parent", step: 4 })}
             />
           );
         case 5:
           return (
-            <HandoverScreen
+            <AssessmentIntro
               tint={TINT}
-              onNext={() => setStage({ kind: "parent", step: 8 })}
+              onNext={() => setStage({ kind: "parent", step: 7 })}
+              onSkip={() => setStage({ kind: "parent", step: 11 })}
               onBack={back}
             />
           );
+        case 11:
+          return (
+            <ConsentScreen
+              tint={TINT}
+              onNext={() => setStage({ kind: "parent", step: 6 })}
+              onBack={() => setStage({ kind: "parent", step: 5 })}
+            />
+          );
         case 6:
+          return (
+            <HandoverScreen
+              tint={TINT}
+              onNext={() => setStage({ kind: "parent", step: 9 })}
+              onBack={back}
+            />
+          );
+        case 7:
           return (
             <TellMeAboutChild
               childName={childName}
@@ -608,18 +616,18 @@ export default function Home() {
               childAge={childAge}
               setChildAge={setChildAge}
               onNext={advanceParent}
-              onBack={() => setStage({ kind: "parent", step: 4 })}
-            />
-          );
-        case 7:
-          return (
-            <QuestionnaireScreen
-              childName={childName}
-              onNext={() => setStage({ kind: "parent", step: 9 })}
-              onBack={back}
+              onBack={() => setStage({ kind: "parent", step: 5 })}
             />
           );
         case 8:
+          return (
+            <QuestionnaireScreen
+              childName={childName}
+              onNext={() => setStage({ kind: "parent", step: 10 })}
+              onBack={back}
+            />
+          );
+        case 9:
           return (
             <ParentDashboard
               tint={TINT}
@@ -627,15 +635,14 @@ export default function Home() {
               onNext={advanceParent}
             />
           );
-        case 9:
+        case 10:
           return (
             <AssessmentCompleteScreen
-              childName={childName}
               onNext={advanceParent}
               onBack={back}
             />
           );
-        case 11:
+        case 12:
           return (
             <JourneyCreatedScreen
               childName={childName}
@@ -643,10 +650,10 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 12:
+        case 13:
           return <WhoIsBugsy tint={TINT} onNext={advanceParent} onBack={back} />;
         // ── Collect: parent identity, child, concerns, goals ──
-        case 13:
+        case 14:
           return (
             <ParentName
               tint={TINT}
@@ -658,7 +665,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 14:
+        case 15:
           return (
             <ParentChildSetup
               tint={TINT}
@@ -671,7 +678,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 15:
+        case 16:
           return (
             <ParentNoticing
               tint={TINT}
@@ -682,7 +689,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 16:
+        case 17:
           return (
             <ParentGoals
               tint={TINT}
@@ -694,7 +701,7 @@ export default function Home() {
             />
           );
         // ── Sign in, then hand over to the child ──
-        case 17:
+        case 18:
           return (
             <ParentLogin
               tint={TINT}
@@ -703,7 +710,7 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 18:
+        case 19:
           return (
             <ParentDone
               tint={TINT}

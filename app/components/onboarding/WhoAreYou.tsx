@@ -463,10 +463,10 @@ export function WhoAreYou({
                   textAlign: "center",
                 }}
               >
-                {/* Line 1 — small subtitle */}
+                {/* Line 1 */}
                 <p style={{
-                  fontFamily: F, fontSize: 14, fontWeight: 700,
-                  color: "#000000", margin: 0,
+                  fontFamily: F, fontSize: 16, fontWeight: 700,
+                  color: "#1a0f40", margin: 0,
                   whiteSpace: "nowrap", lineHeight: 1.4,
                 }}>
                   {typedLine1}
@@ -479,8 +479,8 @@ export function WhoAreYou({
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.2 }}
                     style={{
-                      fontFamily: F, fontSize: 19, fontWeight: 700,
-                      color: "#000000", margin: "6px 0 0", lineHeight: 1.3,
+                      fontFamily: F, fontSize: 16, fontWeight: 700,
+                      color: "#1a0f40", margin: "6px 0 0", lineHeight: 1.4,
                       whiteSpace: "nowrap",
                     }}
                   >

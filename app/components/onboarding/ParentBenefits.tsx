@@ -1,125 +1,127 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform, animate } from "framer-motion";
 import { Bobo } from "../Mascot";
 import { NightRoomBackdrop } from "./WhoAreYou";
 
 const F = "var(--font-nunito), system-ui, sans-serif";
 
+type BuildItem = {
+  Icon: (props: { size?: number }) => React.ReactElement;
+  iconBg: string;
+  iconGlow: string;
+  title: string;
+  desc: string;
+};
 
-function StarShape({ size = 128, glow = false, holding = false }: { size?: number; glow?: boolean; holding?: boolean }) {
-  const star = "M50,4 L61.2,34.6 L93.7,35.8 L68.1,55.9 L77.1,87.2 L50,69 L22.9,87.2 L31.9,55.9 L6.3,35.8 L38.8,34.6 Z";
+// Glossy gradient-shaded star — reads crisply at small sizes regardless
+// of the platform's emoji font, unlike a plain text "⭐".
+function StarGlyph({ size = 34 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" style={{
-      display: "block",
-      filter: glow
-        ? "drop-shadow(0 0 26px rgba(255,210,0,1)) drop-shadow(0 0 52px rgba(255,140,0,0.80))"
-        : holding
-        ? "drop-shadow(0 2px 14px rgba(200,110,0,0.90))"
-        : "drop-shadow(0 4px 10px rgba(160,70,0,0.60))",
-    }}>
+    <svg width={size} height={size} viewBox="0 0 34 34" style={{ display: "block" }}>
       <defs>
-        <linearGradient id="sgFace" x1="0.28" y1="0" x2="0.72" y2="1">
-          <stop offset="0%" stopColor="#FFF07A" />
-          <stop offset="38%" stopColor="#FFC400" />
-          <stop offset="100%" stopColor="#E07200" />
+        <linearGradient id="pbStarFill" x1="0.25" y1="0" x2="0.75" y2="1">
+          <stop offset="0%" stopColor="#FFF3B0" />
+          <stop offset="45%" stopColor="#FFC940" />
+          <stop offset="100%" stopColor="#E8880E" />
         </linearGradient>
-        <linearGradient id="sgSide" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#B85000" />
-          <stop offset="100%" stopColor="#7A2800" />
-        </linearGradient>
-        <radialGradient id="sgSpec" cx="33%" cy="20%" r="42%">
-          <stop offset="0%" stopColor="rgba(255,255,255,0.92)" />
-          <stop offset="55%" stopColor="rgba(255,255,220,0.28)" />
-          <stop offset="100%" stopColor="rgba(255,255,255,0)" />
-        </radialGradient>
-        <radialGradient id="sgBot" cx="50%" cy="94%" r="55%">
-          <stop offset="0%" stopColor="rgba(110,35,0,0.42)" />
-          <stop offset="100%" stopColor="rgba(110,35,0,0)" />
-        </radialGradient>
       </defs>
-      {/* 3-D extrusion layers — depth shadow */}
-      <g transform="translate(3,5)"><path d={star} fill="url(#sgSide)" opacity="0.65" /></g>
-      <g transform="translate(2,3.5)"><path d={star} fill="#C05800" opacity="0.50" /></g>
-      <g transform="translate(1,2)"><path d={star} fill="#D06800" opacity="0.40" /></g>
-      {/* Main face */}
-      <path d={star} fill="url(#sgFace)" />
-      {/* Bottom depth shadow */}
-      <path d={star} fill="url(#sgBot)" />
-      {/* Specular highlight */}
-      <path d={star} fill="url(#sgSpec)" />
-      {/* Bright inner glint */}
-      <ellipse cx="34" cy="22" rx="9" ry="7" fill="rgba(255,255,255,0.38)" transform="rotate(-18 34 22)" />
+      <path
+        d="M17,1 L20.8,11.5 L32,11.9 L23.1,18.9 L26.2,29.6 L17,23.2 L7.8,29.6 L10.9,18.9 L2,11.9 L13.2,11.5 Z"
+        fill="url(#pbStarFill)" stroke="#B85E00" strokeWidth="0.6" strokeLinejoin="round"
+      />
+      <ellipse cx="12" cy="9" rx="4.3" ry="2.4" fill="#fff" opacity="0.55" transform="rotate(-18 12 9)" />
     </svg>
   );
 }
 
-type Benefit = {
-  emoji: string;
-  stat: string;
-  statDesc: string;
-  color: string;
-  glow: string;
-  bgFrom: string;
-  bgTo: string;
-};
+// Glossy gradient-shaded heart.
+function HeartGlyph({ size = 34 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 34 34" style={{ display: "block" }}>
+      <defs>
+        <linearGradient id="pbHeartFill" x1="0.3" y1="0" x2="0.7" y2="1">
+          <stop offset="0%" stopColor="#FF9AAE" />
+          <stop offset="45%" stopColor="#FB4D6A" />
+          <stop offset="100%" stopColor="#C4123F" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M17 30 C17 30 3 21 3 11.5 C3 6 7 3 11 3 C14 3 16.3 4.8 17 7 C17.7 4.8 20 3 23 3 C27 3 31 6 31 11.5 C31 21 17 30 17 30 Z"
+        fill="url(#pbHeartFill)"
+      />
+      <ellipse cx="10.3" cy="9" rx="4" ry="2.4" fill="#fff" opacity="0.5" transform="rotate(-25 10.3 9)" />
+    </svg>
+  );
+}
 
-// A single benefit card — illustration + stat, always showing its full
-// content. Shared between the resting grid slot and the center-stage
-// overlay via the caller's matching layoutId.
-function BenefitCard({ b }: { b: Benefit }) {
+// Glossy gradient-shaded sprout.
+function SproutGlyph({ size = 34 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 34 34" style={{ display: "block" }}>
+      <defs>
+        <linearGradient id="pbSproutFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#8CE87A" />
+          <stop offset="100%" stopColor="#2F9E44" />
+        </linearGradient>
+      </defs>
+      <path d="M17 31 V17" stroke="#4C8C2E" strokeWidth="2.4" strokeLinecap="round" />
+      <path d="M17 19 C17 12 10 11 6 12 C6 19 12 21 17 19 Z" fill="url(#pbSproutFill)" />
+      <path d="M17 15 C17 9 24 8 28 9 C28 16 21 18 17 15 Z" fill="url(#pbSproutFill)" />
+      <ellipse cx="10" cy="14" rx="2.2" ry="1.1" fill="#fff" opacity="0.4" transform="rotate(-30 10 14)" />
+    </svg>
+  );
+}
+
+// A single "what we'll build together" item — its own rounded card with
+// a glowing icon badge, a vertical divider, title + description, and a
+// trailing chevron.
+function BuildRow({ item }: { item: BuildItem }) {
   return (
     <div style={{
-      position: "relative", width: "100%", height: "100%", borderRadius: 18, overflow: "hidden",
-      display: "flex", flexDirection: "column",
-      boxShadow: `0 4px 18px rgba(0,0,0,0.5), 0 0 0 1.5px ${b.color}40`,
+      display: "flex", alignItems: "center", gap: 16,
+      background: "rgba(20,14,44,0.7)",
+      border: "1.5px solid rgba(124,58,237,0.4)",
+      borderRadius: 20, padding: "16px 16px",
+      boxShadow: "0 4px 18px rgba(0,0,0,0.25)",
     }}>
       <div style={{
-        position: "relative", flex: "0 0 58%",
+        position: "relative", flexShrink: 0, width: 64, height: 64, borderRadius: "50%",
+        background: item.iconBg,
         display: "flex", alignItems: "center", justifyContent: "center",
-        background: `radial-gradient(circle at 50% 32%, ${b.glow} 0%, ${b.bgFrom} 55%, ${b.bgTo} 100%)`,
+        boxShadow: `0 0 22px 4px ${item.iconGlow}`, overflow: "hidden",
       }}>
-        <span style={{ position: "absolute", top: 10, left: 12, fontSize: 8, color: "#fff", opacity: 0.85 }}>✦</span>
-        <span style={{ position: "absolute", top: 18, right: 13, fontSize: 6, color: "#fff", opacity: 0.6 }}>✦</span>
-        <span style={{ position: "absolute", bottom: 10, right: 11, fontSize: 7, color: "#fff", opacity: 0.5 }}>✦</span>
-        <div style={{
-          width: 56, height: 56, borderRadius: "50%",
-          background: "rgba(255,255,255,0.14)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 29,
-          boxShadow: `0 0 22px ${b.glow}`,
-        }}>
-          <span>{b.emoji}</span>
-        </div>
+        <item.Icon size={34} />
       </div>
-      <div style={{
-        flex: 1, background: b.bgTo,
-        padding: "10px 6px 12px", textAlign: "center",
-        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-      }}>
-        <p style={{ fontFamily: F, fontSize: 23, fontWeight: 900, color: "#fff", margin: 0, lineHeight: 1 }}>{b.stat}</p>
-        <p style={{ fontFamily: F, fontSize: 10.5, fontWeight: 700, color: "rgba(255,255,255,0.82)", margin: "4px 0 0", lineHeight: 1.25 }}>{b.statDesc}</p>
-        <div style={{ height: 1, width: "100%", background: `${b.color}55`, marginTop: 4 }} />
+      <div style={{ width: 1, alignSelf: "stretch", background: "rgba(167,139,250,0.3)" }} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontFamily: F, fontSize: 18, fontWeight: 800, color: "#fff", margin: 0, lineHeight: 1.25 }}>
+          {item.title}
+        </p>
+        <p style={{ fontFamily: F, fontSize: 13.5, fontWeight: 500, color: "#fff", margin: "3px 0 0", lineHeight: 1.35 }}>
+          {item.desc}
+        </p>
       </div>
+      <span style={{ flexShrink: 0, fontSize: 22, fontWeight: 900, color: "rgba(167,139,250,0.75)" }}>›</span>
     </div>
   );
 }
 
-// A soft pulsing glow bloom behind a card, while it's center-stage.
-function SoftGlow({ color }: { color: string }) {
+const THUMB = 62;
+const TRACK_PAD = 8;
+
+// A single-color paw print — one main pad plus four toes, matching the
+// clean vector icon used inside the slide-to-begin thumb.
+function PawIcon({ size = 30, color = "#6D28D9" }: { size?: number; color?: string }) {
   return (
-    <motion.div
-      aria-hidden
-      initial={{ opacity: 0, scale: 0.85 }}
-      animate={{ opacity: [0, 0.9, 0.65], scale: [0.85, 1.18, 1.1] }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      style={{
-        position: "absolute", inset: -34, borderRadius: 34,
-        background: `radial-gradient(circle, ${color}66 0%, ${color}22 55%, transparent 75%)`,
-        filter: "blur(8px)", pointerEvents: "none",
-      }}
-    />
+    <svg width={size} height={size} viewBox="0 0 44 44" style={{ display: "block" }}>
+      <ellipse cx="22" cy="29" rx="13" ry="10.5" fill={color} />
+      <ellipse cx="9" cy="16" rx="5.4" ry="7" fill={color} transform="rotate(-18 9 16)" />
+      <ellipse cx="20" cy="9" rx="5.2" ry="7" fill={color} />
+      <ellipse cx="31.5" cy="10.5" rx="5.2" ry="7" fill={color} transform="rotate(14 31.5 10.5)" />
+      <ellipse cx="37.5" cy="20" rx="4.6" ry="6.2" fill={color} transform="rotate(34 37.5 20)" />
+    </svg>
   );
 }
 
@@ -133,42 +135,34 @@ export function ParentBenefits({
     []
   );
 
-  const BENEFITS = [
+  const BUILD_ITEMS: BuildItem[] = [
     {
-      emoji: "🧠",
-      stat: "2x", statDesc: "longer focus sessions",
-      color: "#60A5FA", glow: "rgba(96,165,250,0.55)", bgFrom: "#1e3a8a", bgTo: "#0c1a4a",
+      Icon: StarGlyph,
+      iconBg: "rgba(251,191,36,0.22)", iconGlow: "rgba(251,191,36,0.5)",
+      title: "Better Focus", desc: "Helps your child grow Attention by 2x",
     },
     {
-      emoji: "🩷",
-      stat: "30%", statDesc: "lesser emotional meltdown",
-      color: "#F472B6", glow: "rgba(244,114,182,0.55)", bgFrom: "#831843", bgTo: "#3b0a24",
+      Icon: HeartGlyph,
+      iconBg: "rgba(216,70,239,0.22)", iconGlow: "rgba(216,70,239,0.5)",
+      title: "Confidence", desc: "Helps your child feel braver every day.",
     },
     {
-      emoji: "🌱",
-      stat: "Daily", statDesc: "habit streaks that stick",
-      color: "#4ADE80", glow: "rgba(74,222,128,0.55)", bgFrom: "#14532d", bgTo: "#052e12",
+      Icon: SproutGlyph,
+      iconBg: "rgba(74,222,128,0.22)", iconGlow: "rgba(74,222,128,0.5)",
+      title: "Healthy Habits", desc: "Helps your child build positive habits that last.",
     },
   ];
 
   const [catVisible,    setCatVisible]    = useState(false);
   const [typedText,     setTypedText]     = useState("");
   const [revealStep,    setRevealStep]    = useState(0);
-  const [holding,       setHolding]       = useState(false);
-  const [holdProgress,  setHoldProgress]  = useState(0);
+  const [itemsShown,    setItemsShown]    = useState(0);
   const [promised,      setPromised]      = useState(false);
   const [glowing,       setGlowing]       = useState(false);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Per-card choreography: hidden → center (pops straight into view at
-  // full size, mid-screen, and glows) → settled (shrinks back to its
-  // grid slot and stays there).
-  type CardStage = "hidden" | "center" | "settled";
-  const [cardStages, setCardStages] = useState<CardStage[]>(["hidden", "hidden", "hidden"]);
-  const [activeCard, setActiveCard] = useState<number | null>(null);
-
-  const setCardAt = (i: number, stage: CardStage) =>
-    setCardStages((prev) => prev.map((v, idx) => (idx === i ? stage : v)));
+  const trackRef = useRef<HTMLDivElement>(null);
+  const dragX = useMotionValue(0);
+  const fillWidth = useTransform(dragX, (x) => x + THUMB);
 
   useEffect(() => {
     const ts: ReturnType<typeof setTimeout>[] = [];
@@ -179,59 +173,37 @@ export function ParentBenefits({
     );
     const after = tS + BUBBLE_TEXT.length * 34 + 400;
 
-    // One card's full appear-at-center → glow → return cycle.
-    const APPEAR_MS = 380;
-    const GLOW_HOLD_MS = 950;
-    const RETURN_MS = 560;
-    const GAP_MS = 220;
-    const PER_CARD_MS = APPEAR_MS + GLOW_HOLD_MS + RETURN_MS + GAP_MS;
-
-    let cursor = after + 300;
-    BENEFITS.forEach((_, i) => {
-      const t0 = cursor;
-      ts.push(setTimeout(() => { setActiveCard(i); setCardAt(i, "center"); }, t0));
-      ts.push(setTimeout(() => {
-        setActiveCard(null);
-        setCardAt(i, "settled");
-      }, t0 + APPEAR_MS + GLOW_HOLD_MS));
-      cursor = t0 + PER_CARD_MS;
-    });
-
-    // Trust subtext appears shortly after the cards settle, then the
-    // star/promise box follows quickly behind it.
-    ts.push(setTimeout(() => setRevealStep(4), cursor + 150));
-    ts.push(setTimeout(() => setRevealStep(5), cursor + 450));
-    ts.push(setTimeout(() => setRevealStep(6), cursor + 850));
+    // Cascade: "What we'll build together" header, then the 3 tabs one
+    // by one at an unhurried pace, then the trust note, then the
+    // slide-to-begin bar.
+    const ITEM_START_GAP = 400;
+    const ITEM_STAGGER = 550;
+    const headerAt = after + 200;
+    const itemsStart = headerAt + ITEM_START_GAP;
+    ts.push(setTimeout(() => setRevealStep(1), headerAt));
+    BUILD_ITEMS.forEach((_, i) =>
+      ts.push(setTimeout(() => setItemsShown(i + 1), itemsStart + i * ITEM_STAGGER))
+    );
+    const lastItemAt = itemsStart + (BUILD_ITEMS.length - 1) * ITEM_STAGGER;
+    ts.push(setTimeout(() => setRevealStep(2), lastItemAt + 700));
+    ts.push(setTimeout(() => setRevealStep(3), lastItemAt + 1100));
 
     return () => ts.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [BUBBLE_TEXT]);
 
-  useEffect(() => () => { if (intervalRef.current) clearInterval(intervalRef.current); }, []);
-
-  const startHold = () => {
-    if (promised) return;
-    setHolding(true);
-    setHoldProgress(0);
-    let step = 0;
-    const steps = 2000 / 30;
-    intervalRef.current = setInterval(() => {
-      step++;
-      const pct = Math.min((step / steps) * 100, 100);
-      setHoldProgress(pct);
-      if (pct >= 100) {
-        clearInterval(intervalRef.current!);
-        intervalRef.current = null;
-        setPromised(true);
-        setHolding(false);
-        setTimeout(() => setGlowing(true), 120);
-        setTimeout(() => onNext(), 1100);
-      }
-    }, 30);
-  };
-
-  const cancelHold = () => {
-    if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
-    if (!promised) { setHolding(false); setHoldProgress(0); }
+  const handleDragEnd = () => {
+    if (!trackRef.current) return;
+    const max = trackRef.current.offsetWidth - THUMB - TRACK_PAD * 2;
+    const pct = max > 0 ? (dragX.get() / max) * 100 : 0;
+    if (pct >= 85) {
+      animate(dragX, max, { type: "spring", stiffness: 300, damping: 30 });
+      setPromised(true);
+      setTimeout(() => setGlowing(true), 120);
+      setTimeout(() => onNext(), 900);
+    } else {
+      animate(dragX, 0, { type: "spring", stiffness: 300, damping: 26 });
+    }
   };
 
   const renderBubble = () => {
@@ -246,10 +218,6 @@ export function ParentBenefits({
       </>
     );
   };
-
-  const R  = 63;
-  const C  = 2 * Math.PI * R;
-  const SZ = (R + 10) * 2;
 
   const slideUp = {
     initial:    { opacity: 0, y: 20 },
@@ -321,58 +289,41 @@ export function ParentBenefits({
       </div>
 
       {/* Scrollable content */}
-      <div style={{ position: "relative", zIndex: 5, flex: 1, minHeight: 0, overflowY: "auto", padding: "40px 14px 28px" }}>
+      <div style={{ position: "relative", zIndex: 5, flex: 1, minHeight: 0, overflowY: "auto", padding: "40px 14px 8px" }}>
 
-        {/* 2, 3, 4 — Three benefit cards. Each takes its turn: pops
-            straight into view at center stage (full size, glowing),
-            then shrinks back into its grid slot and stays revealed. */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 10 }}>
-          {BENEFITS.map((b, i) => (
-            <div key={i} style={{ minHeight: 156 }}>
-              <AnimatePresence>
-                {cardStages[i] === "settled" && (
-                  <motion.div
-                    key={`grid-${i}`}
-                    layoutId={`benefit-card-${i}`}
-                    style={{ width: "100%", height: 156 }}
-                    transition={{ type: "spring", stiffness: 200, damping: 24 }}
-                  >
-                    <BenefitCard b={b} />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          ))}
-        </div>
-
-        {/* Center-stage overlay — the card currently taking its turn. */}
+        {/* 1 — "What we'll build together" header, then each tab arrives
+            one by one at an unhurried pace */}
         <AnimatePresence>
-          {activeCard !== null && (
-            <div style={{
-              position: "fixed", inset: 0, zIndex: 50,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              pointerEvents: "none",
-            }}>
-              <div style={{ position: "relative", width: 196, height: 264 }}>
-                <SoftGlow color={BENEFITS[activeCard].color} />
-                <motion.div
-                  key={`overlay-${activeCard}`}
-                  layoutId={`benefit-card-${activeCard}`}
-                  style={{ position: "absolute", inset: 0 }}
-                  initial={{ opacity: 0, scale: 0.82 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ type: "spring", stiffness: 170, damping: 26 }}
-                >
-                  <BenefitCard b={BENEFITS[activeCard]} />
-                </motion.div>
+          {revealStep >= 1 && (
+            <motion.div key="build-header" {...slideUp} style={{ marginBottom: 14 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 9 }}>
+                <span style={{ fontSize: 17 }}>✨</span>
+                <span style={{ fontFamily: F, fontSize: 19, fontWeight: 900, color: "#fff" }}>What we&apos;ll build together</span>
+                <span style={{ fontSize: 17 }}>✨</span>
               </div>
-            </div>
+            </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Trust subtext under the 3 cards */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 18 }}>
+          {BUILD_ITEMS.map((item, i) => (
+            <AnimatePresence key={i}>
+              {itemsShown > i && (
+                <motion.div
+                  initial={{ opacity: 0, y: 24, scale: 0.94 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ type: "spring", stiffness: 210, damping: 24 }}
+                >
+                  <BuildRow item={item} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          ))}
+        </div>
+
+        {/* Trust subtext under the list */}
         <AnimatePresence>
-          {revealStep >= 4 && (
+          {revealStep >= 2 && (
             <motion.div key="study-note" {...slideUp} style={{
               display: "flex", justifyContent: "center", marginBottom: 20,
             }}>
@@ -389,184 +340,101 @@ export function ParentBenefits({
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* 5 — Promise / high-five box */}
-        <AnimatePresence>
-          {revealStep >= 5 && (
-            <motion.div key="paw" {...slideUp} style={{
-              background: "rgba(13,8,42,0.96)",
-              border: "1.5px solid rgba(110,72,200,0.45)",
-              borderRadius: 18, padding: "12px 10px 10px", marginBottom: 10,
-            }}>
-              {/* Title */}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, marginBottom: 2 }}>
-                <span style={{ fontFamily: F, fontSize: 13, fontWeight: 900, color: "#fff" }}>Let&apos;s make our first promise together!</span>
-                <span style={{ fontSize: 13.5 }}>💜</span>
-              </div>
-              <p style={{ fontFamily: F, fontSize: 11.5, fontWeight: 600, color: "#8B5CF6", textAlign: "center", margin: "0 0 6px", fontStyle: "italic" }}>
-                Hold to begin our adventure
-              </p>
-
-              {/* Star interactive area */}
-              <div
-                style={{
-                  position: "relative", height: 178, overflow: "hidden", borderRadius: 14,
-                  cursor: "pointer", userSelect: "none", touchAction: "none",
-                }}
-                onPointerDown={startHold}
-                onPointerUp={cancelHold}
-                onPointerLeave={cancelHold}
-              >
-                {/* Cloud shapes at bottom */}
-                <svg width="100%" height="70" viewBox="0 0 320 70" preserveAspectRatio="none"
-                  style={{ position: "absolute", bottom: 0, left: 0, right: 0, pointerEvents: "none" }}>
-                  <ellipse cx="60" cy="58" rx="90" ry="32" fill="rgba(22,10,58,0.90)" />
-                  <ellipse cx="200" cy="62" rx="110" ry="36" fill="rgba(18,8,50,0.95)" />
-                  <ellipse cx="310" cy="56" rx="80" ry="30" fill="rgba(20,9,54,0.88)" />
-                </svg>
-
-
-
-
-
-                {/* Soft neon glow halo — static at rest, only brightens once promised */}
-                <div
-                  style={{
-                    position: "absolute", top: "50%", left: "50%",
-                    width: SZ + 40, height: SZ + 40, marginLeft: -(SZ + 40) / 2, marginTop: -(SZ + 40) / 2,
-                    borderRadius: "50%", pointerEvents: "none", zIndex: 1,
-                    opacity: promised ? 0.9 : 0.4,
-                    background: promised
-                      ? "radial-gradient(circle, rgba(255,215,0,0.35) 0%, rgba(255,215,0,0) 70%)"
-                      : "radial-gradient(circle, rgba(167,139,250,0.35) 0%, rgba(167,139,250,0) 70%)",
-                    filter: "blur(6px)",
-                    transition: "opacity 0.4s ease, background 0.4s ease",
-                  }}
-                />
-
-                {/* Circle track + fill arc around star */}
-                <svg
-                  width={SZ} height={SZ}
-                  style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", pointerEvents: "none", zIndex: 2 }}
-                >
-                  {/* Base ring — plain, no glow until the fill arc appears */}
-                  <circle
-                    cx={SZ / 2} cy={SZ / 2} r={R}
-                    fill="none"
-                    stroke="rgba(167,139,250,0.45)"
-                    strokeWidth={5}
-                  />
-                  {/* Fill arc — grows as user holds */}
-                  {(holding || promised) && (
-                    <circle
-                      cx={SZ / 2} cy={SZ / 2} r={R}
-                      fill="none"
-                      stroke={promised ? "#FFD700" : "#A78BFA"}
-                      strokeWidth={5}
-                      strokeLinecap="round"
-                      strokeDasharray={C}
-                      strokeDashoffset={C * (1 - holdProgress / 100)}
-                      transform={`rotate(-90 ${SZ / 2} ${SZ / 2})`}
-                      style={{ transition: "stroke-dashoffset 0.03s linear, stroke 0.4s ease", filter: "drop-shadow(0 0 10px rgba(255,215,0,0.85))" }}
-                    />
-                  )}
-                </svg>
-
-                {/* Star — wrapper div handles centering, motion.div handles animation only */}
-                <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 3 }}>
-                  <motion.div
-                    animate={
-                      promised ? { scale: [1, 1.22, 1], rotate: [0, -8, 8, 0], y: 0 } :
-                      holding  ? { scale: 1.10, y: -4 } :
-                      { scale: 1, y: 0 }
-                    }
-                    transition={
-                      promised ? { duration: 0.55 } :
-                      holding  ? { duration: 0.18 } :
-                      { duration: 0.2 }
-                    }
-                  >
-                    <StarShape size={112} glow={promised} holding={holding} />
-                  </motion.div>
-                </div>
-
-                {/* Floating gold stars */}
-                {[
-                  { top: 10, right: 22, size: 16, delay: 0    },
-                  { bottom: 32, right: 14, size: 13, delay: 0.9 },
-                  { top: 42, right: 10, size:  9, delay: 1.4  },
-                  { bottom: 44, right: 40, size: 11, delay: 0.3 },
-                ].map((s, i) => (
-                  <motion.span
-                    key={i}
-                    animate={{ opacity: [0.45, 1, 0.45], scale: [0.85, 1.12, 0.85] }}
-                    transition={{ duration: 2.2 + i * 0.35, repeat: Infinity, ease: "easeInOut", delay: s.delay }}
-                    style={{
-                      position: "absolute", color: "#FFD700",
-                      fontSize: s.size, pointerEvents: "none", lineHeight: 1,
-                      top:    "top"    in s ? (s as { top: number }).top       : undefined,
-                      bottom: "bottom" in s ? (s as { bottom: number }).bottom : undefined,
-                      left:   "left"   in s ? (s as { left: number }).left     : undefined,
-                      right:  "right"  in s ? (s as { right: number }).right   : undefined,
-                    }}
-                  >★</motion.span>
-                ))}
-              </div>
-
-              {/* Tap hint — centered below the star, pulsing pointer + press & hold */}
-              <div style={{
-                display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                marginTop: 10, pointerEvents: "none",
-              }}>
-                <div style={{ position: "relative", width: 29, height: 29, flexShrink: 0 }}>
-                  <motion.div
-                    animate={{ scale: [1, 1.9], opacity: [0.55, 0] }}
-                    transition={{ duration: 1.4, repeat: Infinity, ease: "easeOut" }}
-                    style={{
-                      position: "absolute", inset: 0, borderRadius: "50%",
-                      border: "2px solid #A78BFA",
-                    }}
-                  />
-                  <div style={{
-                    position: "absolute", inset: 5, borderRadius: "50%",
-                    background: "linear-gradient(180deg, #C4B5FD, #7C3AED)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 13, boxShadow: "0 2px 8px rgba(124,58,237,0.6)",
-                  }}>👆</div>
-                </div>
-                <p style={{ fontFamily: F, fontSize: 11.5, fontWeight: 700, color: "#fff", margin: 0, lineHeight: 1.25 }}>
-                  Press &amp; hold for <span style={{ color: "#C4B5FD", fontWeight: 900 }}>2 seconds</span>
-                </p>
-              </div>
-
-              <motion.p
-                animate={{ opacity: [0.7, 1, 0.7] }}
-                transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-                style={{ fontFamily: F, fontSize: 11, fontWeight: 700, color: "#FBBF24", textAlign: "center", margin: "6px 0 0" }}
-              >
-                ✨ Keep holding to begin ✨
-              </motion.p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* 6 — Privacy/safety card */}
-        <AnimatePresence>
-          {revealStep >= 6 && (
-            <motion.div key="safety" {...slideUp} style={{
-              background: "rgba(18,12,50,0.90)", borderRadius: 18,
-              padding: "12px 14px",
-              display: "flex", alignItems: "center", gap: 12,
-              boxShadow: "0 4px 16px rgba(0,0,0,0.35)",
-            }}>
-              <span style={{ fontSize: 36, flexShrink: 0 }}>🛡️</span>
-              <p style={{ fontFamily: F, fontSize: 12.5, fontWeight: 600, color: "rgba(255,255,255,0.82)", margin: 0, lineHeight: 1.4, flex: 1 }}>
-                I&apos;ll always keep your family&apos;s information safe, private, and treat your child with care.
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
+
+      {/* Pinned footer — slide-to-begin bar always sits at the bottom of
+          the screen, independent of how far the content above is scrolled. */}
+      <AnimatePresence>
+        {revealStep >= 3 && (
+          <motion.div
+            key="slide-section"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: "spring", stiffness: 230, damping: 26 }}
+            style={{ position: "relative", zIndex: 5, flexShrink: 0, padding: "10px 14px 22px" }}
+          >
+            <p style={{ fontFamily: F, fontSize: 19, fontWeight: 800, color: "#A78BFA", textAlign: "center", margin: "0 0 18px" }}>
+              Slide to begin our adventure
+            </p>
+
+            <div style={{ position: "relative" }}>
+              <motion.span
+                aria-hidden
+                animate={{ opacity: [0.4, 1, 0.4], scale: [0.9, 1.15, 0.9] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                style={{ position: "absolute", top: -14, right: 6, fontSize: 18, color: "#FBBF24", pointerEvents: "none" }}
+              >✨</motion.span>
+              <motion.span
+                aria-hidden
+                animate={{ opacity: [0.4, 1, 0.4], scale: [0.9, 1.15, 0.9] }}
+                transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut", delay: 0.7 }}
+                style={{ position: "absolute", bottom: -12, left: 0, fontSize: 14, color: "#A78BFA", pointerEvents: "none" }}
+              >✨</motion.span>
+
+              <div
+                ref={trackRef}
+                style={{
+                  position: "relative", height: 78, borderRadius: 999,
+                  background: "linear-gradient(90deg, #4C3A9E 0%, #6D3FD6 55%, #8B5CF6 100%)",
+                  border: "2px solid #FBBF24",
+                  boxShadow: promised
+                    ? "0 0 28px rgba(255,215,0,0.9), 0 8px 20px rgba(124,58,237,0.5)"
+                    : "0 0 16px rgba(251,191,36,0.55), 0 8px 20px rgba(124,58,237,0.5)",
+                  display: "flex", alignItems: "center",
+                  padding: `0 ${TRACK_PAD}px`, overflow: "hidden",
+                  transition: "box-shadow 0.3s ease",
+                }}
+              >
+                {/* Glossy top highlight — soft sheen along the upper edge */}
+                <div style={{
+                  position: "absolute", inset: 0, borderRadius: 999,
+                  background: "linear-gradient(180deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0) 55%)",
+                  pointerEvents: "none",
+                }} />
+                {/* Static glossy track — decorative, always faintly visible */}
+                <div style={{
+                  position: "absolute", left: 16, right: 16, bottom: 12, height: 14,
+                  borderRadius: 999, background: "rgba(255,255,255,0.16)",
+                }} />
+                {/* Progress fill — trails the thumb as it's dragged */}
+                <motion.div style={{
+                  position: "absolute", left: 0, top: 0, bottom: 0,
+                  width: fillWidth,
+                  background: "rgba(255,255,255,0.24)",
+                }} />
+                {/* Label — sits centered in the track, covered as the thumb slides over it */}
+                <div style={{
+                  position: "absolute", inset: 0,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  pointerEvents: "none",
+                }}>
+                  <span style={{
+                    fontFamily: F, fontSize: 21, fontWeight: 900, color: "#fff",
+                  }}>
+                    {promised ? "Promise Made!" : "Slide to Begin"}
+                  </span>
+                </div>
+                {/* Draggable thumb */}
+                <motion.div
+                  drag={promised ? false : "x"}
+                  dragConstraints={trackRef}
+                  dragElastic={0}
+                  dragMomentum={false}
+                  onDragEnd={handleDragEnd}
+                  style={{
+                    x: dragX,
+                    position: "relative", zIndex: 1, flexShrink: 0,
+                    width: THUMB, height: THUMB, borderRadius: "50%",
+                    background: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+                    cursor: promised ? "default" : "grab", touchAction: "none",
+                  }}
+                ><PawIcon size={32} /></motion.div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Full-screen bloom flash */}
       <AnimatePresence>
@@ -598,7 +466,7 @@ export function ParentBenefits({
                   initial={{ opacity: 1, x: 0, y: 0, scale: 0 }}
                   animate={{ opacity: [1, 1, 0], x: Math.cos(rad) * dist, y: Math.sin(rad) * dist, scale: [0, 1.4, 0] }}
                   transition={{ duration: 0.75, ease: "easeOut", delay: i * 0.04 }}
-                  style={{ position: "absolute", top: "55%", left: "50%", zIndex: 55, pointerEvents: "none", fontSize: 18 + (i % 3) * 4, color: i % 2 === 0 ? "#FFD700" : "#fff" }}
+                  style={{ position: "absolute", top: "70%", left: "50%", zIndex: 55, pointerEvents: "none", fontSize: 18 + (i % 3) * 4, color: i % 2 === 0 ? "#FFD700" : "#fff" }}
                 >✦</motion.div>
               );
             })}
