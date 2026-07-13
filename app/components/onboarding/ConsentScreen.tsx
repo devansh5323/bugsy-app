@@ -6,13 +6,13 @@ import { Bobo } from "../Mascot";
 import { NightRoomBackdrop } from "./WhoAreYou";
 
 const F = "var(--font-nunito), system-ui, sans-serif";
-const BUBBLE = "Before we start, here's my promise to your family.";
+const BUBBLE = "Before we start, here's my promise to your child.";
 const CHAR_MS = 38;
 
 const PROMISES = [
   { icon: "🔒", title: "Your data stays yours",        desc: "Encrypted, never sold, never shared" },
   { icon: "👤", title: "You're always in control",     desc: "View or delete your child's data anytime" },
-  { icon: "🤍", title: "Every mission is child-safe",  desc: "Designed for children, reviewed by experts" },
+  { icon: "🤍", title: "Every mission is child-safe",  desc: "Designed for children, curated by experts" },
 ];
 
 function fadeIn(show: boolean): React.CSSProperties {
@@ -213,9 +213,7 @@ export function ConsentScreen({
                 <h1 style={{ fontFamily: F, fontSize: 22, fontWeight: 900, color: "#fff", margin: "0 0 5px", lineHeight: 1.2 }}>
                   Your family&apos;s privacy matters
                 </h1>
-                <p style={{ fontFamily: F, fontSize: 13, fontWeight: 600, color: "#A78BFA", margin: 0 }}>
-                  Three things Fumi promises, always
-                </p>
+              
               </div>
 
               {/* Promise cards — one by one */}

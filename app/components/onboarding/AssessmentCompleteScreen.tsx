@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { NightRoomBackdrop } from "./WhoAreYou";
 import { Bobo } from "../Mascot";
@@ -8,13 +9,7 @@ const F       = "var(--font-nunito), system-ui, sans-serif";
 const W       = 344;
 const CAT_TINT = 220; // sky-blue — matches app-wide TINT
 
-const centered = (extra?: React.CSSProperties): React.CSSProperties => ({
-  position: "absolute",
-  left: "50%",
-  transform: "translateX(-50%)",
-  width: W,
-  ...extra,
-});
+const MESSAGE = "Your child's Growth plan is unlocked! Sign in to view their personalized recommendations.";
 
 // ── Confetti — fixed positions so layout is deterministic ──────────────
 const CONFETTI = [
@@ -48,9 +43,19 @@ export function AssessmentCompleteScreen({
   onNext: () => void;
   onBack: () => void;
 }) {
+  const [typedMsg, setTypedMsg] = useState("");
+
+  useEffect(() => {
+    const ts: ReturnType<typeof setTimeout>[] = [];
+    const start = 700;
+    MESSAGE.split("").forEach((_, i) =>
+      ts.push(setTimeout(() => setTypedMsg(MESSAGE.slice(0, i + 1)), start + i * 28))
+    );
+    return () => ts.forEach(clearTimeout);
+  }, []);
 
   return (
-    <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
       <NightRoomBackdrop minimal hideRug hideFloor />
 
       {/* ── confetti ──────────────────────────────────────────────── */}
@@ -116,37 +121,37 @@ export function AssessmentCompleteScreen({
         }}
       >🎵</motion.button>
 
-      {/* ── checkmark badge (in moonlight cone) ── */}
-      <div
-        style={{
-          ...centered({ top: 153, zIndex: 4 }),
-          display: "flex", justifyContent: "center", alignItems: "flex-start",
-          height: 60,
-        }}
-      >
-        {/* sparkle left of badge */}
-        <motion.span
-          animate={{ scale: [1, 1.45, 1], opacity: [0.65, 1, 0.65] }}
-          transition={{ duration: 1.9, repeat: Infinity, ease: "easeInOut", delay: 0.25 }}
-          style={{
-            position: "absolute", fontSize: 13, color: "#FCD34D",
-            top: 2, left: "50%", marginLeft: -44,
-            pointerEvents: "none",
-          }}
-        >✦</motion.span>
-        {/* sparkle right of badge */}
-        <motion.span
-          animate={{ scale: [1, 1.55, 1], opacity: [0.65, 1, 0.65] }}
-          transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", delay: 0.7 }}
-          style={{
-            position: "absolute", fontSize: 11, color: "#FCD34D",
-            top: 9, left: "50%", marginLeft: 30,
-            pointerEvents: "none",
-          }}
-        >✦</motion.span>
+      {/* ── Scrollable content — flex-flow instead of fixed pixel offsets,
+          so it adapts to any viewport height instead of the mascot
+          clipping behind the CTA on shorter screens. ── */}
+      <div style={{
+        flex: 1, minHeight: 0, overflowY: "auto", position: "relative", zIndex: 4,
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+        padding: "92px 16px 16px",
+      }}>
+        {/* checkmark badge (in moonlight cone) */}
+        <div style={{ position: "relative", display: "flex", justifyContent: "center", height: 60, width: W, flexShrink: 0 }}>
+          {/* sparkle left of badge */}
+          <motion.span
+            animate={{ scale: [1, 1.45, 1], opacity: [0.65, 1, 0.65] }}
+            transition={{ duration: 1.9, repeat: Infinity, ease: "easeInOut", delay: 0.25 }}
+            style={{
+              position: "absolute", fontSize: 13, color: "#FCD34D",
+              top: 2, left: "50%", marginLeft: -44,
+              pointerEvents: "none",
+            }}
+          >✦</motion.span>
+          {/* sparkle right of badge */}
+          <motion.span
+            animate={{ scale: [1, 1.55, 1], opacity: [0.65, 1, 0.65] }}
+            transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", delay: 0.7 }}
+            style={{
+              position: "absolute", fontSize: 11, color: "#FCD34D",
+              top: 9, left: "50%", marginLeft: 30,
+              pointerEvents: "none",
+            }}
+          >✦</motion.span>
 
-        {/* plain wrapper — no CSS transform on motion element */}
-        <div style={{ display: "flex", justifyContent: "center" }}>
           <motion.div
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -161,61 +166,41 @@ export function AssessmentCompleteScreen({
             <span style={{ color: "#fff", fontSize: 26, lineHeight: 1, fontWeight: 900 }}>✓</span>
           </motion.div>
         </div>
-      </div>
 
-      {/* ── heading "Assessment Complete!" ── */}
-      <div style={centered({ top: 220, zIndex: 4 })}>
-        <motion.p
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          style={{
-            fontFamily: F, fontSize: 42, fontWeight: 900,
-            color: "#fff", textAlign: "center",
-            lineHeight: 1.18, margin: 0,
-            whiteSpace: "pre-line",
-            textShadow: "0 3px 28px rgba(0,0,0,0.45)",
-          }}
-        >
-          {"Assessment\nComplete!"}
-        </motion.p>
-      </div>
-
-      {/* ── subtitle ── */}
-      <div style={centered({ top: 346, zIndex: 4 })}>
+        {/* message — same entrance/typing style as BugsyIntro's bubble, no box */}
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.48, duration: 0.45 }}
+          initial={{ opacity: 0, scale: 0.72 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: "spring", stiffness: 300, damping: 26, delay: 0.35 }}
+          style={{ flexShrink: 0, marginTop: 20, maxWidth: W }}
         >
           <p style={{
-            fontFamily: F, fontSize: 17, fontWeight: 700,
+            fontFamily: F, fontSize: 19, fontWeight: 700,
             color: "#fff", textAlign: "center",
-            margin: 0,
+            margin: 0, lineHeight: 1.3,
           }}>
-            Thank you! You&apos;ve helped us understand your child better.
+            {typedMsg}
           </p>
         </motion.div>
-      </div>
 
-{/* ── Bobo mascot ── */}
-      {/* outer plain div: CSS centering — inner motion.div: entrance animation */}
-      <div style={{
-        position: "absolute", left: "50%", transform: "translateX(-50%)",
-        top: 438, zIndex: 5,
-      }}>
+        {/* Bobo mascot — same entrance/float animation as BugsyIntro's Fumi */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.65, y: 32 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ type: "spring", stiffness: 250, damping: 20, delay: 0.52 }}
-          style={{ display: "flex", justifyContent: "center" }}
+          initial={{ y: 60, opacity: 0, scale: 0.65 }}
+          animate={{ y: 0, opacity: 1, scale: 1 }}
+          transition={{ type: "spring", stiffness: 200, damping: 18, delay: 0.55 }}
+          style={{ display: "flex", justifyContent: "center", flexShrink: 0, marginTop: 12 }}
         >
-          <Bobo mood="excited" tint={CAT_TINT} size={225} animate tailWag armsUp />
+          <motion.div
+            animate={{ y: [0, -12, 0] }}
+            transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut", delay: 1.4 }}
+          >
+            <Bobo mood="excited" tint={CAT_TINT} size={200} animate tailWag armsUp />
+          </motion.div>
         </motion.div>
       </div>
 
-      {/* ── CTA ── */}
-      <div style={{ position: "absolute", bottom: 36, left: 16, right: 16, zIndex: 7 }}>
+      {/* ── CTA — pinned footer, never overlapped by content above ── */}
+      <div style={{ flexShrink: 0, padding: "12px 16px 32px", zIndex: 7, position: "relative" }}>
         <button
           onClick={onNext}
           style={{

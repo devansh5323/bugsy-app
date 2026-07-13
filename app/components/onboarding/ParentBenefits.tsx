@@ -15,23 +15,25 @@ type BuildItem = {
   desc: string;
 };
 
-// Glossy gradient-shaded star — reads crisply at small sizes regardless
-// of the platform's emoji font, unlike a plain text "⭐".
-function StarGlyph({ size = 34 }: { size?: number }) {
+// Glossy gradient-shaded target/crosshair — reads crisply at small sizes
+// regardless of the platform's emoji font.
+function TargetGlyph({ size = 34 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 34 34" style={{ display: "block" }}>
       <defs>
-        <linearGradient id="pbStarFill" x1="0.25" y1="0" x2="0.75" y2="1">
-          <stop offset="0%" stopColor="#FFF3B0" />
-          <stop offset="45%" stopColor="#FFC940" />
-          <stop offset="100%" stopColor="#E8880E" />
+        <linearGradient id="pbTargetFill" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#FFE49A" />
+          <stop offset="50%" stopColor="#FBBF24" />
+          <stop offset="100%" stopColor="#D97706" />
         </linearGradient>
       </defs>
-      <path
-        d="M17,1 L20.8,11.5 L32,11.9 L23.1,18.9 L26.2,29.6 L17,23.2 L7.8,29.6 L10.9,18.9 L2,11.9 L13.2,11.5 Z"
-        fill="url(#pbStarFill)" stroke="#B85E00" strokeWidth="0.6" strokeLinejoin="round"
-      />
-      <ellipse cx="12" cy="9" rx="4.3" ry="2.4" fill="#fff" opacity="0.55" transform="rotate(-18 12 9)" />
+      <circle cx="17" cy="17" r="10" fill="none" stroke="url(#pbTargetFill)" strokeWidth="3.2" />
+      <circle cx="17" cy="17" r="3" fill="url(#pbTargetFill)" />
+      <line x1="17" y1="0" x2="17" y2="6" stroke="url(#pbTargetFill)" strokeWidth="3" strokeLinecap="round" />
+      <line x1="17" y1="28" x2="17" y2="34" stroke="url(#pbTargetFill)" strokeWidth="3" strokeLinecap="round" />
+      <line x1="0" y1="17" x2="6" y2="17" stroke="url(#pbTargetFill)" strokeWidth="3" strokeLinecap="round" />
+      <line x1="28" y1="17" x2="34" y2="17" stroke="url(#pbTargetFill)" strokeWidth="3" strokeLinecap="round" />
+      <ellipse cx="13" cy="12" rx="2.6" ry="1.4" fill="#fff" opacity="0.55" transform="rotate(-30 13 12)" />
     </svg>
   );
 }
@@ -56,20 +58,21 @@ function HeartGlyph({ size = 34 }: { size?: number }) {
   );
 }
 
-// Glossy gradient-shaded sprout.
-function SproutGlyph({ size = 34 }: { size?: number }) {
+// Glossy gradient-shaded calendar with a checkmark.
+function CalendarCheckGlyph({ size = 34 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 34 34" style={{ display: "block" }}>
       <defs>
-        <linearGradient id="pbSproutFill" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id="pbCalFill" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#8CE87A" />
           <stop offset="100%" stopColor="#2F9E44" />
         </linearGradient>
       </defs>
-      <path d="M17 31 V17" stroke="#4C8C2E" strokeWidth="2.4" strokeLinecap="round" />
-      <path d="M17 19 C17 12 10 11 6 12 C6 19 12 21 17 19 Z" fill="url(#pbSproutFill)" />
-      <path d="M17 15 C17 9 24 8 28 9 C28 16 21 18 17 15 Z" fill="url(#pbSproutFill)" />
-      <ellipse cx="10" cy="14" rx="2.2" ry="1.1" fill="#fff" opacity="0.4" transform="rotate(-30 10 14)" />
+      <rect x="4" y="6" width="26" height="24" rx="4" fill="none" stroke="url(#pbCalFill)" strokeWidth="2.4" />
+      <line x1="4" y1="13" x2="30" y2="13" stroke="url(#pbCalFill)" strokeWidth="2.4" />
+      <line x1="10" y1="3" x2="10" y2="9" stroke="url(#pbCalFill)" strokeWidth="2.4" strokeLinecap="round" />
+      <line x1="24" y1="3" x2="24" y2="9" stroke="url(#pbCalFill)" strokeWidth="2.4" strokeLinecap="round" />
+      <path d="M11 21 L15.5 25.5 L24 16" stroke="url(#pbCalFill)" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -103,7 +106,6 @@ function BuildRow({ item }: { item: BuildItem }) {
           {item.desc}
         </p>
       </div>
-      <span style={{ flexShrink: 0, fontSize: 22, fontWeight: 900, color: "rgba(167,139,250,0.75)" }}>›</span>
     </div>
   );
 }
@@ -131,25 +133,25 @@ export function ParentBenefits({
   tint: number; onNext: () => void; onBack?: () => void;
 }) {
   const BUBBLE_TEXT = useMemo(
-    () => "Here's my promise to you and your child",
+    () => "You’ll see the small wins as your child grows with me.",
     []
   );
 
   const BUILD_ITEMS: BuildItem[] = [
     {
-      Icon: StarGlyph,
+      Icon: TargetGlyph,
       iconBg: "rgba(251,191,36,0.22)", iconGlow: "rgba(251,191,36,0.5)",
-      title: "Better Focus", desc: "Helps your child grow Attention by 2x",
+      title: "2x Attention Growth", desc: "Stay focused longer during tasks.",
     },
     {
       Icon: HeartGlyph,
       iconBg: "rgba(216,70,239,0.22)", iconGlow: "rgba(216,70,239,0.5)",
-      title: "Confidence", desc: "Helps your child feel braver every day.",
+      title: "Less Homework Frustration", desc: "Handle challenges with fewer meltdowns.",
     },
     {
-      Icon: SproutGlyph,
+      Icon: CalendarCheckGlyph,
       iconBg: "rgba(74,222,128,0.22)", iconGlow: "rgba(74,222,128,0.5)",
-      title: "Healthy Habits", desc: "Helps your child build positive habits that last.",
+      title: "Fewer Task Reminders", desc: "Follow routines more independently.",
     },
   ];
 
@@ -353,10 +355,7 @@ export function ParentBenefits({
             transition={{ type: "spring", stiffness: 230, damping: 26 }}
             style={{ position: "relative", zIndex: 5, flexShrink: 0, padding: "10px 14px 22px" }}
           >
-            <p style={{ fontFamily: F, fontSize: 19, fontWeight: 800, color: "#A78BFA", textAlign: "center", margin: "0 0 18px" }}>
-              Slide to begin our adventure
-            </p>
-
+          
             <div style={{ position: "relative" }}>
               <motion.span
                 aria-hidden

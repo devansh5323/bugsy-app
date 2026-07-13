@@ -11,6 +11,67 @@ const GOLD   = "#FBBF24";
 const GREEN  = "#4ADE80";
 const BLUE   = "#60A5FA";
 
+// ── Card theme icons — one glossy gradient-shaded glyph per milestone,
+// shown inside each step's card (separate from the growing mascot). ──
+
+function ShieldHeartGlyph({ size = 54 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 56 56" style={{ display: "block" }}>
+      <defs>
+        <linearGradient id="gjShieldFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#A78BFA" />
+          <stop offset="100%" stopColor="#6D5BD0" />
+        </linearGradient>
+      </defs>
+      <path d="M28 2 L50 10 V26 C50 40 40 49 28 54 C16 49 6 40 6 26 V10 Z" fill="url(#gjShieldFill)" stroke="#4C3A9E" strokeWidth="1" strokeLinejoin="round" />
+      <path d="M28 6 L46 12.5 V26 C46 37 38 45 28 49.5 C18 45 10 37 10 26 V12.5 Z" fill="rgba(255,255,255,0.14)" />
+      <path d="M28 20 C28 17 25 15 22 15 C18.5 15 16 18 16 21.5 C16 27 22 32 28 36 C34 32 40 27 40 21.5 C40 18 37.5 15 34 15 C31 15 28 17 28 20 Z" fill="#fff" />
+    </svg>
+  );
+}
+
+function TargetArrowGlyph({ size = 54 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 56 56" style={{ display: "block" }}>
+      <circle cx="26" cy="30" r="22" fill="#4C3A9E" />
+      <circle cx="26" cy="30" r="22" fill="none" stroke="#A78BFA" strokeWidth="1.5" />
+      <circle cx="26" cy="30" r="15.5" fill="#EDE9FE" />
+      <circle cx="26" cy="30" r="9" fill="#4C3A9E" />
+      <circle cx="26" cy="30" r="3" fill="#EDE9FE" />
+      <path d="M48 6 L30 24" stroke="#F59E0B" strokeWidth="3" strokeLinecap="round" />
+      <path d="M25 25 L32 22 L28 30 Z" fill="#B45309" />
+      <path d="M44 4 L52 2 L50 10 L42 12 Z" fill="#FCD34D" stroke="#B45309" strokeWidth="1" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function CalendarCheckGlyph({ size = 54 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 56 56" style={{ display: "block" }}>
+      <rect x="8" y="10" width="40" height="36" rx="5" fill="#EDE9FE" stroke="#A78BFA" strokeWidth="1.5" />
+      <rect x="8" y="10" width="40" height="10" rx="5" fill="#6D5BD0" />
+      <rect x="16" y="4" width="4" height="10" rx="2" fill="#6D5BD0" />
+      <rect x="36" y="4" width="4" height="10" rx="2" fill="#6D5BD0" />
+      <line x1="16" y1="28" x2="26" y2="28" stroke="#A78BFA" strokeWidth="2" strokeLinecap="round" />
+      <line x1="16" y1="36" x2="24" y2="36" stroke="#A78BFA" strokeWidth="2" strokeLinecap="round" />
+      <circle cx="40" cy="38" r="12" fill="#4ADE80" stroke="#1F7A32" strokeWidth="1" />
+      <path d="M34 38 L38 42 L46 33" stroke="#fff" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function MountainFlagGlyph({ size = 54 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 56 56" style={{ display: "block" }}>
+      <path d="M4 44 L20 18 L28 30 L34 22 L52 44 Z" fill="#93C5FD" stroke="#3B82F6" strokeWidth="1" strokeLinejoin="round" />
+      <path d="M20 18 L26 28 L14 44 L4 44 Z" fill="#DBEAFE" opacity="0.7" />
+      <path d="M34 22 L38 28 L28 44 L20 44 L28 30 Z" fill="#60A5FA" opacity="0.4" />
+      <path d="M20 8 L20 24" stroke="#1D4ED8" strokeWidth="2.4" strokeLinecap="round" />
+      <path d="M20 8 L32 12 L20 16 Z" fill="#3B82F6" />
+    </svg>
+  );
+}
+
 // ── Growth-stage mascot illustrations — one consistent blue-cat style,
 // growing in size and maturity across the four stages. ──────────────
 
@@ -173,24 +234,24 @@ function AdultCatGlyph({ size = 138 }: { size?: number }) {
 
 const STEPS = [
   {
-    num: 1, title: "Tiny Kitten", tagIcon: "💜", tag: "Builds Trust",
-    desc: "Your child forms an emotional bond, building trust and connection.",
-    accent: PURPLE, Icon: TinyKittenGlyph, avatarSize: 70, side: "left" as const,
+    num: 1, title: "Build Trust",
+    desc: "Your child starts the journey with Fumi by their side.",
+    accent: PURPLE, Icon: TinyKittenGlyph, CardIcon: ShieldHeartGlyph, avatarSize: 70, side: "left" as const,
   },
   {
-    num: 2, title: "Playful Kitten", tagIcon: "🎯", tag: "Builds Focus",
-    desc: "Through daily missions, your child develops focus and problem-solving skills.",
-    accent: GOLD, Icon: PlayfulKittenGlyph, avatarSize: 92, side: "right" as const,
+    num: 2, title: "Grow Focus",
+    desc: " Daily missions build attention and problem-solving.",
+    accent: GOLD, Icon: PlayfulKittenGlyph, CardIcon: TargetArrowGlyph, avatarSize: 92, side: "right" as const,
   },
   {
-    num: 3, title: "Confident Kitten", tagIcon: "🌱", tag: "Builds Healthy Habits",
-    desc: "Skills strengthen and your child begins practicing healthy routines and self-control.",
-    accent: GREEN, Icon: ConfidentKittenGlyph, avatarSize: 112, side: "left" as const,
+    num: 3, title: "Build Daily Habits",
+    desc: "Small routines build self-control and consistency.",
+    accent: GREEN, Icon: ConfidentKittenGlyph, CardIcon: CalendarCheckGlyph, avatarSize: 112, side: "left" as const,
   },
   {
-    num: 4, title: "Adult Cat", tagIcon: "⭐", tag: "Builds Independence",
-    desc: "Your child is ready to take on new challenges, growing independent with Fumi by their side.",
-    accent: BLUE, Icon: AdultCatGlyph, avatarSize: 128, side: "right" as const,
+    num: 4, title: "Gain Independence",
+    desc: "Your child takes on challenges with more confidence.",
+    accent: BLUE, Icon: AdultCatGlyph, CardIcon: MountainFlagGlyph, avatarSize: 128, side: "right" as const,
   },
 ];
 
@@ -369,18 +430,26 @@ export function GrowthJourney({
                                 initial={{ opacity: 0, y: 16 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                                style={{ display: "flex", alignItems: "center", gap: 14 }}
                               >
-                                <p style={{ fontFamily: F, fontSize: 17, fontWeight: 800, color: "#fff", margin: 0, lineHeight: 1.25 }}>
-                                  {step.title}
-                                </p>
-                                <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 5 }}>
-                                  <span style={{ fontSize: 13 }}>{step.tagIcon}</span>
-                                  <span style={{ fontFamily: F, fontSize: 12.5, fontWeight: 700, color: step.accent }}>{step.tag}</span>
+                                <div style={{
+                                  flexShrink: 0, width: 76, height: 76, borderRadius: "50%",
+                                  border: `2px solid ${step.accent}88`,
+                                  background: "rgba(30,20,60,0.6)",
+                                  display: "flex", alignItems: "center", justifyContent: "center",
+                                  boxShadow: `0 0 14px ${step.accent}40`,
+                                }}>
+                                  <step.CardIcon size={46} />
                                 </div>
-                                <div style={{ height: 1, background: "rgba(255,255,255,0.1)", margin: "10px 0" }} />
-                                <p style={{ fontFamily: F, fontSize: 12.5, fontWeight: 500, color: "rgba(220,210,255,0.78)", margin: 0, lineHeight: 1.4 }}>
-                                  {step.desc}
-                                </p>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <p style={{ fontFamily: F, fontSize: 17, fontWeight: 800, color: "#fff", margin: 0, lineHeight: 1.25 }}>
+                                    {step.title}
+                                  </p>
+                                  <div style={{ borderTop: `1px dashed ${step.accent}66`, margin: "8px 0" }} />
+                                  <p style={{ fontFamily: F, fontSize: 12.5, fontWeight: 500, color: "rgba(220,210,255,0.78)", margin: 0, lineHeight: 1.4 }}>
+                                    {step.desc}
+                                  </p>
+                                </div>
                               </motion.div>
                             )}
                           </AnimatePresence>

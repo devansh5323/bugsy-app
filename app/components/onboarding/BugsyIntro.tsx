@@ -7,9 +7,10 @@ import { NightRoomBackdrop } from "./WhoAreYou";
 
 const F = "var(--font-nunito), system-ui, sans-serif";
 
-const LINE1 = "Awesome! I'm Fumi!";
-const LINE2 = "I am a kitten who grows with attention and care.";
-const FUMI_IDX = "Awesome! I'm ".length;
+const LINE1 = "Hi, I'm Fumi - your child's pet companion.";
+const LINE2 = "Together we grow, mastering one skill at a time.";
+const FUMI_START = "Hi, I'm ".length;
+const FUMI_END = FUMI_START + "Fumi".length;
 
 export function BugsyIntro({
   tint,
@@ -87,18 +88,19 @@ export function BugsyIntro({
                 textAlign: "center",
               }}
             >
-              {/* Line 1: types out, Fumi! in purple */}
+              {/* Line 1: types out, "Fumi" in purple */}
               <p style={{
                 fontFamily: F, fontSize: 20, fontWeight: 800,
                 color: "#1a0f40", margin: 0,
-                whiteSpace: "nowrap", lineHeight: 1.3,
+                lineHeight: 1.3, maxWidth: "100%",
               }}>
-                {typedLine1.slice(0, FUMI_IDX)}
-                {typedLine1.length > FUMI_IDX && (
+                {typedLine1.slice(0, FUMI_START)}
+                {typedLine1.length > FUMI_START && (
                   <span style={{ color: "#7C3AED" }}>
-                    {typedLine1.slice(FUMI_IDX)}
+                    {typedLine1.slice(FUMI_START, Math.min(typedLine1.length, FUMI_END))}
                   </span>
                 )}
+                {typedLine1.length > FUMI_END && typedLine1.slice(FUMI_END)}
               </p>
 
               {/* Line 2: fades in then types */}

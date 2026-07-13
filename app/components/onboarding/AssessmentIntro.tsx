@@ -100,10 +100,9 @@ export function AssessmentIntro({
               textAlign: "center", color: "#fff", margin: "0 0 10px",
             }}
           >
-            Now it&apos;s time to
+            Let&apos;s get to know
             <br />
-            get to know{" "}
-            <span style={{ color: "#FBBF24" }}>your child.</span>
+            <span style={{ color: "#FBBF24" }}>your child better.</span>
           </motion.h1>
 
           <motion.p
@@ -114,9 +113,7 @@ export function AssessmentIntro({
               textAlign: "center", lineHeight: 1.55, margin: 0,
             }}
           >
-            Complete a quick assessment so we can
-            <br />
-            personalize their first mission. 💜
+            A few quick answers help me choose their first mission.
           </motion.p>
         </div>
 

@@ -34,7 +34,6 @@ import {
 import { LoginScreen } from "./components/onboarding/LoginScreen";
 import { WhoAreYou } from "./components/onboarding/WhoAreYou";
 import { ParentIntro } from "./components/onboarding/ParentIntro";
-import { ParentJourney } from "./components/onboarding/ParentJourney";
 import { GrowthJourney } from "./components/onboarding/GrowthJourney";
 import { NeuralBrain } from "./components/onboarding/NeuralBrain";
 import { ParentBenefits } from "./components/onboarding/ParentBenefits";
@@ -505,8 +504,9 @@ export default function Home() {
             setParentName(name);
             setRelationship(rel);
             setPrevStep(0);
-            setStage(t === "parent" ? { kind: "parent", step: 1 } : { kind: "child", step: 0 });
+            setStage(t === "parent" ? { kind: "parent", step: 5 } : { kind: "child", step: 0 });
           }}
+          onBack={() => setStage({ kind: "parent", step: 4 })}
         />
       );
     }
@@ -529,14 +529,14 @@ export default function Home() {
       return (
         <BugsyIntro
           tint={TINT}
-          onNext={() => setStage({ kind: "who" })}
+          onNext={() => setStage({ kind: "parent", step: 2 })}
           onBack={() => setStage({ kind: "who-joining" })}
         />
       );
     }
 
     if (stage.kind === "parent") {
-      const back = stage.step <= 1 ? () => setStage({ kind: "who" }) : backParent;
+      const back = stage.step <= 2 ? () => setStage({ kind: "bugsy-intro" }) : backParent;
       switch (stage.step) {
         // ── Meet Bugsy: greeting + pet, then who he is ──
         case 0:
@@ -547,15 +547,6 @@ export default function Home() {
               setParentName={setParentName}
               relationship={relationship}
               setRelationship={setRelationship}
-              onNext={advanceParent}
-              onBack={back}
-            />
-          );
-        case 1:
-          return (
-            <ParentJourney
-              tint={TINT}
-              childName={childName}
               onNext={advanceParent}
               onBack={back}
             />
@@ -579,7 +570,7 @@ export default function Home() {
           return (
             <ParentBenefits
               tint={TINT}
-              onNext={advanceParent}
+              onNext={() => setStage({ kind: "who" })}
               onBack={back}
             />
           );

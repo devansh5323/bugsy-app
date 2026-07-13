@@ -8,8 +8,8 @@ import { NightRoomBackdrop } from "./WhoAreYou";
 const F = "var(--font-nunito), system-ui, sans-serif";
 
 const WORDS = [
-  "Daily","missions","build","lasting","skills","and",
-  "stronger","neural","pathways.",
+  "My","missions","help","your","child","build","skills",
+  "they","use","everyday.",
 ];
 const SKILLS = [
   { id: 1, name: "Attention",          desc: "Stay focused longer",               Icon: StarFaceGlyph, color: "#FFD700", glowColor: "rgba(255,215,0,0.65)",   outer: { x: 72, y: 57 }, inner: { x: 93, y: 69 }, side: "left"  as const },
@@ -290,13 +290,14 @@ export function NeuralBrain({
               >
                 <div style={{ position: "absolute", left: -10, top: "50%", transform: "translateY(-50%)", width: 0, height: 0, borderTop: "10px solid transparent", borderBottom: "10px solid transparent", borderRight: "10px solid #fff" }} />
                 <p style={{ fontFamily: F, fontSize: 14.5, fontWeight: 600, color: "#000", lineHeight: 1.45, margin: 0 }}>
-                  Daily missions build lasting skills and stronger neural pathways.
+                  My missions help your child build skills they use every day.
                 </p>
               </motion.div>
             </motion.div>
  
-            {/* ── Brain section: heading + cards ── */}
-            <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", alignItems: "center" }}>
+            {/* ── Brain section: heading + cards. Scrolls instead of
+                overlapping the CTA when it doesn't fit a short viewport. ── */}
+            <div style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden", display: "flex", flexDirection: "column", alignItems: "center" }}>
 
               {/* Title */}
               {showHeading && (
@@ -311,27 +312,12 @@ export function NeuralBrain({
                     color: "#fff",
                     textShadow: "0 2px 16px rgba(147,51,234,0.55)",
                   }}>
-                    Skills They Build
+                    Skills We Practice
                   </div>
                 </motion.div>
               )}
 
-              {/* Subtitle */}
-              {showSubtitle && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.38 }}
-                  style={{ flexShrink: 0, textAlign: "center", paddingTop: 4, paddingBottom: 36, paddingLeft: 16, paddingRight: 16 }}
-                >
-                  <div style={{
-                    fontFamily: F, fontSize: 14, fontWeight: 400, color: "rgba(240,235,255,0.88)",
-                    lineHeight: 1.4,
-                  }}>
-                    Targeted skill development supports long-term brain health.
-                  </div>
-                </motion.div>
-              )}
+    
 
               {/* Brain + corner cards */}
               {showBrainArea && (

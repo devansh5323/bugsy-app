@@ -69,15 +69,15 @@ export function TellMeAboutChild({
             fontFamily: F, fontSize: 32, fontWeight: 900, lineHeight: 1.2,
             color: "#fff", margin: "0 0 10px",
           }}>
-            Help me get to know{" "}
+            Let’s understand{" "}
             <span style={{ color: "#A78BFA" }}>your child</span>
           </h1>
           <p style={{
             fontFamily: F, fontSize: 15, fontWeight: 500,
             color: "rgba(220,210,255,0.80)", margin: 0, lineHeight: 1.55,
           }}>
-            Every child is unique.<br />
-            Help us understand yours better. 💜
+            Answer a few quick questions so<br />
+            Fumi can personalize their first mission.💜
           </p>
         </motion.div>
 

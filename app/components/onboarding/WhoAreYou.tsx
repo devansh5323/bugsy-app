@@ -364,8 +364,7 @@ export function NightRoomBackdrop({ minimal = false, hideRug = false, hideFloor 
 
 // ── Speech bubble lines ──────────────────────────────────────────
 const F = "var(--font-nunito), system-ui, sans-serif";
-const LINE1 = "WELCOME PARENT!";
-const LINE2 = "Let's get to know each other";
+const LINE1 = "Before we start, tell me a little about you.";
 const LINE3 = "";
 
 const RELATIONS: { key: string; label: string; emoji: string; value: Relationship }[] = [
@@ -378,13 +377,14 @@ const RELATIONS: { key: string; label: string; emoji: string; value: Relationshi
 export function WhoAreYou({
   tint,
   onPick,
+  onBack,
 }: {
   tint: number;
   onPick: (t: UserType, name: string, relationship: Relationship) => void;
+  onBack?: () => void;
 }) {
   const [catVisible,       setCatVisible]       = useState(false);
   const [typedLine1,       setTypedLine1]       = useState("");
-  const [typedLine2,       setTypedLine2]       = useState("");
   const [typedLine3,       setTypedLine3]       = useState("");
   const [showForm,         setShowForm]         = useState(false);
   const [name,             setName]             = useState("");
@@ -401,11 +401,7 @@ export function WhoAreYou({
     LINE1.split("").forEach((_, i) =>
       ts.push(setTimeout(() => setTypedLine1(LINE1.slice(0, i + 1)), l1S + i * 28))
     );
-    const l2S = l1S + LINE1.length * 28 + 300;
-    LINE2.split("").forEach((_, i) =>
-      ts.push(setTimeout(() => setTypedLine2(LINE2.slice(0, i + 1)), l2S + i * 28))
-    );
-    const l3S = l2S + LINE2.length * 28 + 260;
+    const l3S = l1S + LINE1.length * 28 + 300;
     LINE3.split("").forEach((_, i) =>
       ts.push(setTimeout(() => setTypedLine3(LINE3.slice(0, i + 1)), l3S + i * 28))
     );
@@ -439,6 +435,21 @@ export function WhoAreYou({
     }}>
       <NightRoomBackdrop minimal hideRug hideFloor />
 
+      {onBack && (
+        <button
+          onClick={onBack}
+          style={{
+            position: "absolute", top: 52, left: 16, zIndex: 10,
+            width: 46, height: 46, borderRadius: 14,
+            background: "rgba(59,31,140,0.82)", border: "none", cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            color: "#fff", fontSize: 20, fontWeight: 400,
+            boxShadow: "0 2px 10px rgba(0,0,0,0.28)",
+            touchAction: "manipulation",
+          }}
+        >‹</button>
+      )}
+
       {/* ── Cat + bubble zone ── */}
       <div style={{ height: "44vh", position: "relative", flexShrink: 0, zIndex: 2 }}>
 
@@ -471,22 +482,6 @@ export function WhoAreYou({
                 }}>
                   {typedLine1}
                 </p>
-
-                {/* Line 2 */}
-                {typedLine2.length > 0 && (
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.2 }}
-                    style={{
-                      fontFamily: F, fontSize: 16, fontWeight: 700,
-                      color: "#1a0f40", margin: "6px 0 0", lineHeight: 1.4,
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {typedLine2}
-                  </motion.p>
-                )}
 
                 {/* Line 3 */}
                 {typedLine3.length > 0 && (
