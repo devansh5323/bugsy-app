@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useId } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { NightRoomBackdrop } from "./WhoAreYou";
+import { Bobo } from "../Mascot";
 
 const F = "var(--font-nunito), system-ui, sans-serif";
 
@@ -42,7 +43,7 @@ function TargetArrowGlyph({ size = 54 }: { size?: number }) {
       <path d="M25 25 L32 22 L28 30 Z" fill="#B45309" />
       <path d="M44 4 L52 2 L50 10 L42 12 Z" fill="#FCD34D" stroke="#B45309" strokeWidth="1" strokeLinejoin="round" />
     </svg>
-  );
+  );   
 }
 
 function CalendarCheckGlyph({ size = 54 }: { size?: number }) {
@@ -75,41 +76,10 @@ function MountainFlagGlyph({ size = 54 }: { size?: number }) {
 // ── Growth-stage mascot illustrations — one consistent blue-cat style,
 // growing in size and maturity across the four stages. ──────────────
 
-function TinyKittenGlyph({ size = 70 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 130 130" style={{ display: "block", overflow: "visible" }}>
-      <defs>
-        <linearGradient id="gjTinyBody" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#CFEFFF" />
-          <stop offset="55%" stopColor="#7BC9F0" />
-          <stop offset="100%" stopColor="#3E93D1" />
-        </linearGradient>
-      </defs>
-      <path d="M 95 95 Q 115 90 112 68" stroke="#5BB2E8" strokeWidth="10" fill="none" strokeLinecap="round" />
-      <ellipse cx="65" cy="92" rx="34" ry="26" fill="url(#gjTinyBody)" />
-      <ellipse cx="65" cy="100" rx="17" ry="10" fill="#EAF8FF" opacity="0.7" />
-      <ellipse cx="50" cy="114" rx="9" ry="7" fill="#A9DDF7" />
-      <ellipse cx="80" cy="114" rx="9" ry="7" fill="#A9DDF7" />
-      <path d="M 40 42 L 28 16 L 56 32 Z" fill="url(#gjTinyBody)" />
-      <path d="M 90 42 L 102 16 L 74 32 Z" fill="url(#gjTinyBody)" />
-      <path d="M 40 38 L 33 22 L 50 31 Z" fill="#F4BFD4" opacity="0.85" />
-      <path d="M 90 38 L 97 22 L 80 31 Z" fill="#F4BFD4" opacity="0.85" />
-      <circle cx="65" cy="58" r="38" fill="url(#gjTinyBody)" />
-      <circle cx="52" cy="60" r="11" fill="#1A2340" />
-      <circle cx="78" cy="60" r="11" fill="#1A2340" />
-      <circle cx="48.5" cy="55.5" r="3.8" fill="#fff" />
-      <circle cx="74.5" cy="55.5" r="3.8" fill="#fff" />
-      <ellipse cx="38" cy="66" rx="6" ry="4" fill="#F4BFD4" opacity="0.5" />
-      <ellipse cx="92" cy="66" rx="6" ry="4" fill="#F4BFD4" opacity="0.5" />
-      <path d="M 61 70 L 69 70 L 65 75 Z" fill="#F2879C" />
-      <path d="M 65 75 Q 65 80 59 81" stroke="#1A2340" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-      <path d="M 65 75 Q 65 80 71 81" stroke="#1A2340" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-      <line x1="18" y1="64" x2="38" y2="67" stroke="#fff" strokeWidth="1.4" opacity="0.7" strokeLinecap="round" />
-      <line x1="18" y1="74" x2="39" y2="74" stroke="#fff" strokeWidth="1.4" opacity="0.7" strokeLinecap="round" />
-      <line x1="112" y1="64" x2="92" y2="67" stroke="#fff" strokeWidth="1.4" opacity="0.7" strokeLinecap="round" />
-      <line x1="112" y1="74" x2="91" y2="74" stroke="#fff" strokeWidth="1.4" opacity="0.7" strokeLinecap="round" />
-    </svg>
-  );
+// Step 1 uses the app's actual Bobo mascot (not a hand-drawn glyph) so
+// it matches the reference art exactly, with both paws resting down.
+function TinyKittenBobo({ size = 70 }: { size?: number }) {
+  return <Bobo mood="happy" tint={220} size={size} animate={false} armsDown noSparkles />;
 }
 
 function PlayfulKittenGlyph({ size = 92 }: { size?: number }) {
@@ -117,9 +87,9 @@ function PlayfulKittenGlyph({ size = 92 }: { size?: number }) {
     <svg width={size} height={size} viewBox="0 0 130 130" style={{ display: "block", overflow: "visible" }}>
       <defs>
         <linearGradient id="gjPlayBody" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#CFEFFF" />
-          <stop offset="55%" stopColor="#7BC9F0" />
-          <stop offset="100%" stopColor="#3E93D1" />
+          <stop offset="0%" stopColor="#8FE7FF" />
+          <stop offset="55%" stopColor="#00C2F0" />
+          <stop offset="100%" stopColor="#0089BC" />
         </linearGradient>
       </defs>
       <path d="M 92 100 Q 112 95 108 72" stroke="#5BB2E8" strokeWidth="10" fill="none" strokeLinecap="round" />
@@ -144,10 +114,10 @@ function PlayfulKittenGlyph({ size = 92 }: { size?: number }) {
       <path d="M 56 68 L 64 68 L 60 73 Z" fill="#F2879C" />
       <path d="M 48 76 Q 60 92 72 76 Q 60 84 48 76 Z" fill="#3C2A4A" />
       <path d="M 55 78 Q 60 83 65 78" fill="#F2879C" opacity="0.9" />
-      <line x1="12" y1="62" x2="34" y2="65" stroke="#fff" strokeWidth="1.4" opacity="0.7" strokeLinecap="round" />
-      <line x1="12" y1="72" x2="35" y2="72" stroke="#fff" strokeWidth="1.4" opacity="0.7" strokeLinecap="round" />
-      <line x1="108" y1="62" x2="86" y2="65" stroke="#fff" strokeWidth="1.4" opacity="0.7" strokeLinecap="round" />
-      <line x1="108" y1="72" x2="85" y2="72" stroke="#fff" strokeWidth="1.4" opacity="0.7" strokeLinecap="round" />
+      <line x1="12" y1="62" x2="34" y2="65" stroke="#000" strokeWidth="1.4" opacity="0.8" strokeLinecap="round" />
+      <line x1="12" y1="72" x2="35" y2="72" stroke="#000" strokeWidth="1.4" opacity="0.8" strokeLinecap="round" />
+      <line x1="108" y1="62" x2="86" y2="65" stroke="#000" strokeWidth="1.4" opacity="0.8" strokeLinecap="round" />
+      <line x1="108" y1="72" x2="85" y2="72" stroke="#000" strokeWidth="1.4" opacity="0.8" strokeLinecap="round" />
     </svg>
   );
 }
@@ -157,9 +127,9 @@ function ConfidentKittenGlyph({ size = 116 }: { size?: number }) {
     <svg width={size} height={size} viewBox="0 0 130 130" style={{ display: "block", overflow: "visible" }}>
       <defs>
         <linearGradient id="gjConfBody" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#CFEFFF" />
-          <stop offset="55%" stopColor="#7BC9F0" />
-          <stop offset="100%" stopColor="#3E93D1" />
+          <stop offset="0%" stopColor="#8FE7FF" />
+          <stop offset="55%" stopColor="#00C2F0" />
+          <stop offset="100%" stopColor="#0089BC" />
         </linearGradient>
       </defs>
       <path d="M 94 102 Q 114 96 110 74" stroke="#5BB2E8" strokeWidth="10" fill="none" strokeLinecap="round" />
@@ -179,17 +149,19 @@ function ConfidentKittenGlyph({ size = 116 }: { size?: number }) {
       <path d="M 38 38 L 30 20 L 48 31 Z" fill="#F4BFD4" opacity="0.85" />
       <path d="M 86 38 L 94 20 L 76 31 Z" fill="#F4BFD4" opacity="0.85" />
       <circle cx="62" cy="58" r="38" fill="url(#gjConfBody)" />
-      <path d="M 42 58 Q 49 51 56 58" stroke="#1A2340" strokeWidth="2.6" fill="none" strokeLinecap="round" />
-      <path d="M 68 58 Q 75 51 82 58" stroke="#1A2340" strokeWidth="2.6" fill="none" strokeLinecap="round" />
+      <circle cx="49" cy="60" r="11" fill="#1A2340" />
+      <circle cx="75" cy="60" r="11" fill="#1A2340" />
+      <circle cx="45.5" cy="55.5" r="4" fill="#fff" />
+      <circle cx="71.5" cy="55.5" r="4" fill="#fff" />
       <ellipse cx="35" cy="66" rx="6" ry="4" fill="#F4BFD4" opacity="0.5" />
       <ellipse cx="89" cy="66" rx="6" ry="4" fill="#F4BFD4" opacity="0.5" />
       <path d="M 58 68 L 66 68 L 62 73 Z" fill="#F2879C" />
-      <path d="M 62 73 Q 62 78 56 79" stroke="#1A2340" strokeWidth="1.8" fill="none" strokeLinecap="round" />
-      <path d="M 62 73 Q 62 78 68 79" stroke="#1A2340" strokeWidth="1.8" fill="none" strokeLinecap="round" />
-      <line x1="14" y1="64" x2="36" y2="67" stroke="#fff" strokeWidth="1.4" opacity="0.7" strokeLinecap="round" />
-      <line x1="14" y1="74" x2="37" y2="74" stroke="#fff" strokeWidth="1.4" opacity="0.7" strokeLinecap="round" />
-      <line x1="110" y1="64" x2="88" y2="67" stroke="#fff" strokeWidth="1.4" opacity="0.7" strokeLinecap="round" />
-      <line x1="110" y1="74" x2="87" y2="74" stroke="#fff" strokeWidth="1.4" opacity="0.7" strokeLinecap="round" />
+      <path d="M 50 76 Q 62 92 74 76 Q 62 84 50 76 Z" fill="#3C2A4A" />
+      <path d="M 57 78 Q 62 83 67 78" fill="#F2879C" opacity="0.9" />
+      <line x1="14" y1="64" x2="36" y2="67" stroke="#000" strokeWidth="1.4" opacity="0.8" strokeLinecap="round" />
+      <line x1="14" y1="74" x2="37" y2="74" stroke="#000" strokeWidth="1.4" opacity="0.8" strokeLinecap="round" />
+      <line x1="110" y1="64" x2="88" y2="67" stroke="#000" strokeWidth="1.4" opacity="0.8" strokeLinecap="round" />
+      <line x1="110" y1="74" x2="87" y2="74" stroke="#000" strokeWidth="1.4" opacity="0.8" strokeLinecap="round" />
     </svg>
   );
 }
@@ -199,9 +171,9 @@ function AdultCatGlyph({ size = 138 }: { size?: number }) {
     <svg width={size} height={size * 160 / 150} viewBox="0 0 150 160" style={{ display: "block", overflow: "visible" }}>
       <defs>
         <linearGradient id="gjAdultBody" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#CFEFFF" />
-          <stop offset="55%" stopColor="#7BC9F0" />
-          <stop offset="100%" stopColor="#3E93D1" />
+          <stop offset="0%" stopColor="#8FE7FF" />
+          <stop offset="55%" stopColor="#00C2F0" />
+          <stop offset="100%" stopColor="#0089BC" />
         </linearGradient>
       </defs>
       <path d="M 108 130 Q 138 128 140 100 Q 141 82 122 80" stroke="#5BB2E8" strokeWidth="11" fill="none" strokeLinecap="round" />
@@ -214,20 +186,22 @@ function AdultCatGlyph({ size = 138 }: { size?: number }) {
       <path d="M 44 41 L 35 22 L 55 33 Z" fill="#F4BFD4" opacity="0.85" />
       <path d="M 100 41 L 109 22 L 89 33 Z" fill="#F4BFD4" opacity="0.85" />
       <circle cx="72" cy="62" r="40" fill="url(#gjAdultBody)" />
-      <path d="M 50 62 Q 58 54 66 62" stroke="#1A2340" strokeWidth="2.8" fill="none" strokeLinecap="round" />
-      <path d="M 78 62 Q 86 54 94 62" stroke="#1A2340" strokeWidth="2.8" fill="none" strokeLinecap="round" />
+      <circle cx="58" cy="64" r="12" fill="#1A2340" />
+      <circle cx="86" cy="64" r="12" fill="#1A2340" />
+      <circle cx="54.5" cy="59.5" r="4.2" fill="#fff" />
+      <circle cx="82.5" cy="59.5" r="4.2" fill="#fff" />
       <ellipse cx="44" cy="71" rx="6.5" ry="4.4" fill="#F4BFD4" opacity="0.5" />
       <ellipse cx="100" cy="71" rx="6.5" ry="4.4" fill="#F4BFD4" opacity="0.5" />
       <path d="M 67 73 L 77 73 L 72 79 Z" fill="#F2879C" />
-      <path d="M 72 79 Q 72 84 65 85" stroke="#1A2340" strokeWidth="1.8" fill="none" strokeLinecap="round" />
-      <path d="M 72 79 Q 72 84 79 85" stroke="#1A2340" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+      <path d="M 60 82 Q 72 98 84 82 Q 72 90 60 82 Z" fill="#3C2A4A" />
+      <path d="M 67 84 Q 72 89 77 84" fill="#F2879C" opacity="0.9" />
       <path d="M 46 92 Q 72 104 98 92" stroke="#5B7EB0" strokeWidth="3" fill="none" strokeLinecap="round" />
       <circle cx="72" cy="100" r="7.5" fill="#F5C542" stroke="#C88A1A" strokeWidth="1.3" />
       <circle cx="69.5" cy="97.5" r="2.4" fill="#FFEBAE" opacity="0.9" />
-      <line x1="20" y1="68" x2="44" y2="71" stroke="#fff" strokeWidth="1.5" opacity="0.7" strokeLinecap="round" />
-      <line x1="20" y1="78" x2="45" y2="78" stroke="#fff" strokeWidth="1.5" opacity="0.7" strokeLinecap="round" />
-      <line x1="124" y1="68" x2="100" y2="71" stroke="#fff" strokeWidth="1.5" opacity="0.7" strokeLinecap="round" />
-      <line x1="124" y1="78" x2="99" y2="78" stroke="#fff" strokeWidth="1.5" opacity="0.7" strokeLinecap="round" />
+      <line x1="20" y1="68" x2="44" y2="71" stroke="#000" strokeWidth="1.5" opacity="0.8" strokeLinecap="round" />
+      <line x1="20" y1="78" x2="45" y2="78" stroke="#000" strokeWidth="1.5" opacity="0.8" strokeLinecap="round" />
+      <line x1="124" y1="68" x2="100" y2="71" stroke="#000" strokeWidth="1.5" opacity="0.8" strokeLinecap="round" />
+      <line x1="124" y1="78" x2="99" y2="78" stroke="#000" strokeWidth="1.5" opacity="0.8" strokeLinecap="round" />
     </svg>
   );
 }
@@ -236,16 +210,16 @@ const STEPS = [
   {
     num: 1, title: "Build Trust",
     desc: "Your child starts the journey with Fumi by their side.",
-    accent: PURPLE, Icon: TinyKittenGlyph, CardIcon: ShieldHeartGlyph, avatarSize: 70, side: "left" as const,
+    accent: PURPLE, Icon: TinyKittenBobo, CardIcon: ShieldHeartGlyph, avatarSize: 70, side: "left" as const,
   },
   {
     num: 2, title: "Grow Focus",
-    desc: " Daily missions build attention and problem-solving.",
+    desc: " As your child completes daily games, they develop focus, impulse control, and problem-solving skills.",
     accent: GOLD, Icon: PlayfulKittenGlyph, CardIcon: TargetArrowGlyph, avatarSize: 92, side: "right" as const,
   },
   {
     num: 3, title: "Build Daily Habits",
-    desc: "Small routines build self-control and consistency.",
+    desc: "Skills strengthen and your child begins practicing consistent routines at home.",
     accent: GREEN, Icon: ConfidentKittenGlyph, CardIcon: CalendarCheckGlyph, avatarSize: 112, side: "left" as const,
   },
   {
@@ -255,10 +229,14 @@ const STEPS = [
   },
 ];
 
-// Curved dashed connector between two consecutive avatars — fades in
-// only once triggered (no future segment ever visible ahead of time),
-// with a small solid dot at the start (previous step's accent) and a
-// hollow ring at the end (next step's accent).
+// Curved dotted connector between two consecutive avatars — actually
+// draws itself from start to end rather than just fading in fully-formed,
+// so it reads as a trail of dots tracing its way from the previous step
+// to the next. Reveal is done via an animated clip mask (NOT framer's
+// `pathLength`, which silently overrides any custom strokeDasharray —
+// it drives its own dash pattern to fake the draw, so our dot pattern
+// never actually rendered). A solid dot marks the start immediately;
+// the hollow ring at the end pops in once the trail finishes drawing.
 function GrowthConnector({
   fromSide, fromSize, toSide, toSize, fromColor, toColor, on,
 }: {
@@ -269,27 +247,56 @@ function GrowthConnector({
   const W = 358;
   const MARGIN = 22;
   const H = 66;
+  const DRAW_S = 0.75;
+  const clipId = useId();
   const fromX = fromSide === "left" ? MARGIN + fromSize / 2 : W - MARGIN - fromSize / 2;
   const toX   = toSide   === "left" ? MARGIN + toSize / 2   : W - MARGIN - toSize / 2;
   const path = `M ${fromX},0 C ${fromX},${H * 0.55} ${toX},${H * 0.45} ${toX},${H}`;
   if (!on) return null;
+
+  const leftToRight = fromX <= toX;
+  const clipMinX = Math.min(fromX, toX) - 16;
+  const clipMaxX = Math.max(fromX, toX) + 16;
+  const fullW = clipMaxX - clipMinX;
+  const clipInitial = leftToRight ? { x: clipMinX, width: 0 } : { x: clipMaxX, width: 0 };
+  const clipAnimate = leftToRight ? { x: clipMinX, width: fullW } : { x: clipMinX, width: fullW };
+
   return (
     <div style={{ position: "absolute", left: 0, right: 0, top: -H, height: H, zIndex: 0, pointerEvents: "none" }}>
       <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ display: "block", overflow: "visible" }}>
-        <motion.path
-          d={path} fill="none" stroke="#8B7FE0" strokeWidth={2.6} strokeDasharray="7 7" strokeLinecap="round"
-          vectorEffect="non-scaling-stroke"
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, ease: "easeOut" }}
-        />
+        <defs>
+          <clipPath id={clipId}>
+            <motion.rect
+              y={-6} height={H + 12}
+              initial={clipInitial}
+              animate={clipAnimate}
+              transition={{ duration: DRAW_S, ease: "easeInOut" }}
+            />
+          </clipPath>
+        </defs>
+        <g clipPath={`url(#${clipId})`}>
+          {/* soft blurred glow twin, sitting beneath the crisp dotted line */}
+          <path
+            d={path} fill="none" stroke="#9D8FFF" strokeWidth={7} strokeDasharray="0.1 12" strokeLinecap="round"
+            vectorEffect="non-scaling-stroke" opacity={0.55}
+            style={{ filter: "blur(3px)" }}
+          />
+          <path
+            d={path} fill="none" stroke="#B8AEFF" strokeWidth={4} strokeDasharray="0.1 12" strokeLinecap="round"
+            vectorEffect="non-scaling-stroke"
+            style={{ filter: "drop-shadow(0 0 3px #8B7FE0)" }}
+          />
+        </g>
         <motion.circle
           cx={fromX} cy={6} r={5} fill={fromColor}
-          initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
+          initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }}
+          style={{ filter: `drop-shadow(0 0 4px ${fromColor})` }}
         />
         <motion.circle
           cx={toX} cy={H - 6} r={8} fill="none" stroke={toColor} strokeWidth={3}
           initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: [0.5, 1.3, 1] }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          style={{ transformOrigin: `${toX}px ${H - 6}px` }}
+          transition={{ duration: 0.5, delay: DRAW_S }}
+          style={{ transformOrigin: `${toX}px ${H - 6}px`, filter: `drop-shadow(0 0 5px ${toColor})` }}
         />
       </svg>
     </div>
@@ -303,9 +310,14 @@ export function GrowthJourney({
   onNext: () => void;
   onBack?: () => void;
 }) {
-  const [nodeOn,  setNodeOn]  = useState<boolean[]>(() => STEPS.map(() => false));
-  const [cardOn,  setCardOn]  = useState<boolean[]>(() => STEPS.map(() => false));
-  const [pathOn,  setPathOn]  = useState<boolean[]>(() => STEPS.map(() => false));
+  // Each step reveals in four distinct beats — mascot, then the card
+  // "shell" (badge + box), then the data inside it — and every beat
+  // waits for the previous one to visually settle before starting, so
+  // nothing pops in mid-motion or arrives out of order.
+  const [mascotOn,  setMascotOn]  = useState<boolean[]>(() => STEPS.map(() => false));
+  const [shellOn,   setShellOn]   = useState<boolean[]>(() => STEPS.map(() => false));
+  const [contentOn, setContentOn] = useState<boolean[]>(() => STEPS.map(() => false));
+  const [connectorOn, setConnectorOn] = useState<boolean[]>(() => STEPS.map(() => false));
   const [showButton, setShowButton] = useState(false);
 
   // The zig-zag reveal starts immediately on mount — no intro dialogue,
@@ -314,19 +326,30 @@ export function GrowthJourney({
     const ts: ReturnType<typeof setTimeout>[] = [];
     const flipOn = (setter: React.Dispatch<React.SetStateAction<boolean[]>>, i: number) =>
       setter((prev) => prev.map((v, idx) => (idx === i ? true : v)));
-    const NODE_MS = 500, CARD_MS = 550, SETTLE_MS = 250, PATH_MS = 650;
-    let cursor = 500;
+
+    const MASCOT_SETTLE  = 800; // mascot's spring entrance fully settling
+    const SHELL_GAP      = 250; // breathing pause before the shell begins
+    const SHELL_ANIM     = 600; // card shell's own slide/fade in
+    const CONTENT_GAP    = 200;
+    const CONTENT_ANIM   = 500; // card data's own fade in
+    const STEP_SETTLE    = 350; // pause before the next connector starts
+    const CONNECTOR_DRAW = 750; // matches GrowthConnector's DRAW_S
+    const CONNECTOR_GAP  = 200;
+
+    let cursor = 400;
     STEPS.forEach((_, i) => {
-      ts.push(setTimeout(() => flipOn(setNodeOn, i), cursor));
-      cursor += NODE_MS;
-      ts.push(setTimeout(() => flipOn(setCardOn, i), cursor));
-      cursor += CARD_MS + SETTLE_MS;
-      if (i < STEPS.length - 1) {
-        ts.push(setTimeout(() => flipOn(setPathOn, i + 1), cursor));
-        cursor += PATH_MS + 200;
+      if (i > 0) {
+        ts.push(setTimeout(() => flipOn(setConnectorOn, i), cursor));
+        cursor += CONNECTOR_DRAW + CONNECTOR_GAP;
       }
+      ts.push(setTimeout(() => flipOn(setMascotOn, i), cursor));
+      cursor += MASCOT_SETTLE + SHELL_GAP;
+      ts.push(setTimeout(() => flipOn(setShellOn, i), cursor));
+      cursor += SHELL_ANIM + CONTENT_GAP;
+      ts.push(setTimeout(() => flipOn(setContentOn, i), cursor));
+      cursor += CONTENT_ANIM + STEP_SETTLE;
     });
-    ts.push(setTimeout(() => setShowButton(true), cursor + 500));
+    ts.push(setTimeout(() => setShowButton(true), cursor + 300));
     return () => ts.forEach(clearTimeout);
   }, []);
 
@@ -359,15 +382,27 @@ export function GrowthJourney({
               <div style={{ padding: "0 16px", position: "relative" }}>
                 {STEPS.map((step, i) => {
                   const isRight = step.side === "right";
+                  const isLast = i === STEPS.length - 1;
                   const prevStep = i > 0 ? STEPS[i - 1] : null;
+                  // Keep the whole row — badge, card shell, connector — out of
+                  // the DOM until its turn, so the screen starts truly blank
+                  // instead of showing every step's empty outline up front.
+                  const revealed = i === 0 ? mascotOn[i] : connectorOn[i];
+                  if (!revealed) return null;
                   return (
-                    <div key={i} style={{ position: "relative", zIndex: 1 }}>
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                      style={{ position: "relative", zIndex: 1 }}
+                    >
                       {i > 0 && prevStep && (
                         <GrowthConnector
                           fromSide={prevStep.side} fromSize={prevStep.avatarSize}
                           toSide={step.side} toSize={step.avatarSize}
                           fromColor={prevStep.accent} toColor={step.accent}
-                          on={pathOn[i]}
+                          on={connectorOn[i]}
                         />
                       )}
 
@@ -379,7 +414,7 @@ export function GrowthJourney({
                         {/* Avatar column */}
                         <div style={{ flexShrink: 0, width: step.avatarSize + 12, display: "flex", justifyContent: "center", position: "relative" }}>
                           <AnimatePresence>
-                            {nodeOn[i] && (
+                            {mascotOn[i] && (
                               <motion.div
                                 key={`avatar-${i}`}
                                 initial={{ opacity: 0, scale: 0.6, y: 16 }}
@@ -398,6 +433,32 @@ export function GrowthJourney({
                                   transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
                                   style={{ position: "relative", zIndex: 1 }}
                                 >
+                                  {isLast && (
+                                    <>
+                                      {/* one-shot flash ring — marks the final, "grown up" stage */}
+                                      <motion.div
+                                        initial={{ opacity: 0.9, scale: 0.5 }}
+                                        animate={{ opacity: 0, scale: 2.2 }}
+                                        transition={{ duration: 0.9, ease: "easeOut" }}
+                                        style={{
+                                          position: "absolute", inset: 0, borderRadius: "50%",
+                                          border: `3px solid ${step.accent}`,
+                                          zIndex: -1, pointerEvents: "none",
+                                        }}
+                                      />
+                                      {/* soft persistent pulsing aura */}
+                                      <motion.div
+                                        animate={{ opacity: [0.35, 0.75, 0.35], scale: [1, 1.08, 1] }}
+                                        transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", delay: 0.9 }}
+                                        style={{
+                                          position: "absolute", inset: -18, borderRadius: "50%",
+                                          background: `radial-gradient(circle, ${step.accent}66 0%, transparent 70%)`,
+                                          filter: "blur(6px)",
+                                          zIndex: -1, pointerEvents: "none",
+                                        }}
+                                      />
+                                    </>
+                                  )}
                                   <step.Icon size={step.avatarSize} />
                                 </motion.div>
                               </motion.div>
@@ -405,57 +466,71 @@ export function GrowthJourney({
                           </AnimatePresence>
                         </div>
 
-                        {/* Card */}
-                        <div style={{
-                          flex: 1, minWidth: 0, position: "relative",
-                          background: "rgba(20,14,44,0.78)",
-                          border: "1.5px solid rgba(124,58,237,0.4)",
-                          borderRadius: 18, padding: "16px 16px 14px",
-                          boxShadow: "0 4px 18px rgba(0,0,0,0.28)",
-                        }}>
-                          <div style={{
-                            position: "absolute", top: -14, left: -14,
-                            width: 30, height: 30, borderRadius: "50%",
-                            background: step.accent,
-                            display: "flex", alignItems: "center", justifyContent: "center",
-                            fontFamily: F, fontWeight: 900, fontSize: 14, color: "#1a0f2e",
-                            boxShadow: `0 0 12px ${step.accent}aa`,
-                          }}>
-                            {step.num}
-                          </div>
+                        {/* Card — shell (badge + box) slides gently in from
+                            the mascot's side, well after it has landed; the
+                            data inside it follows once the shell settles. */}
+                        <div style={{ flex: 1, minWidth: 0, position: "relative" }}>
                           <AnimatePresence>
-                            {cardOn[i] && (
+                            {shellOn[i] && (
                               <motion.div
-                                key={`card-${i}`}
-                                initial={{ opacity: 0, y: 16 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                                style={{ display: "flex", alignItems: "center", gap: 14 }}
+                                key={`shell-${i}`}
+                                initial={{ opacity: 0, scale: 0.94, x: isRight ? 26 : -26 }}
+                                animate={{ opacity: 1, scale: 1, x: 0 }}
+                                transition={{ type: "spring", stiffness: 170, damping: 22 }}
+                                style={{
+                                  position: "relative",
+                                  background: "rgba(20,14,44,0.78)",
+                                  border: "1.5px solid rgba(124,58,237,0.4)",
+                                  borderRadius: 18, padding: "16px 16px 14px",
+                                  boxShadow: "0 4px 18px rgba(0,0,0,0.28)",
+                                }}
                               >
                                 <div style={{
-                                  flexShrink: 0, width: 76, height: 76, borderRadius: "50%",
-                                  border: `2px solid ${step.accent}88`,
-                                  background: "rgba(30,20,60,0.6)",
+                                  position: "absolute", top: -14, left: -14,
+                                  width: 30, height: 30, borderRadius: "50%",
+                                  background: step.accent,
                                   display: "flex", alignItems: "center", justifyContent: "center",
-                                  boxShadow: `0 0 14px ${step.accent}40`,
+                                  fontFamily: F, fontWeight: 900, fontSize: 14, color: "#1a0f2e",
+                                  boxShadow: `0 0 12px ${step.accent}aa`,
                                 }}>
-                                  <step.CardIcon size={46} />
+                                  {step.num}
                                 </div>
-                                <div style={{ flex: 1, minWidth: 0 }}>
-                                  <p style={{ fontFamily: F, fontSize: 17, fontWeight: 800, color: "#fff", margin: 0, lineHeight: 1.25 }}>
-                                    {step.title}
-                                  </p>
-                                  <div style={{ borderTop: `1px dashed ${step.accent}66`, margin: "8px 0" }} />
-                                  <p style={{ fontFamily: F, fontSize: 12.5, fontWeight: 500, color: "rgba(220,210,255,0.78)", margin: 0, lineHeight: 1.4 }}>
-                                    {step.desc}
-                                  </p>
-                                </div>
+                                <AnimatePresence>
+                                  {contentOn[i] && (
+                                    <motion.div
+                                      key={`content-${i}`}
+                                      initial={{ opacity: 0, y: 16 }}
+                                      animate={{ opacity: 1, y: 0 }}
+                                      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                                      style={{ display: "flex", alignItems: "center", gap: 14 }}
+                                    >
+                                      <div style={{
+                                        flexShrink: 0, width: 76, height: 76, borderRadius: "50%",
+                                        border: `2px solid ${step.accent}88`,
+                                        background: "rgba(30,20,60,0.6)",
+                                        display: "flex", alignItems: "center", justifyContent: "center",
+                                        boxShadow: `0 0 14px ${step.accent}40`,
+                                      }}>
+                                        <step.CardIcon size={46} />
+                                      </div>
+                                      <div style={{ flex: 1, minWidth: 0 }}>
+                                        <p style={{ fontFamily: F, fontSize: 17, fontWeight: 800, color: "#fff", margin: 0, lineHeight: 1.25 }}>
+                                          {step.title}
+                                        </p>
+                                        <div style={{ borderTop: `1px dashed ${step.accent}66`, margin: "8px 0" }} />
+                                        <p style={{ fontFamily: F, fontSize: 12.5, fontWeight: 500, color: "rgba(220,210,255,0.78)", margin: 0, lineHeight: 1.4 }}>
+                                          {step.desc}
+                                        </p>
+                                      </div>
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
                               </motion.div>
                             )}
                           </AnimatePresence>
                         </div>
                       </div>
-                    </div>
+                    </motion.div>
                   );
                 })}
               </div>

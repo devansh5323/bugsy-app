@@ -76,8 +76,7 @@ export function TellMeAboutChild({
             fontFamily: F, fontSize: 15, fontWeight: 500,
             color: "rgba(220,210,255,0.80)", margin: 0, lineHeight: 1.55,
           }}>
-            Answer a few quick questions so<br />
-            Fumi can personalize their first mission.💜
+          
           </p>
         </motion.div>
 

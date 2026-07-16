@@ -70,6 +70,12 @@ export function NightRoomBackdrop({ minimal = false, hideRug = false, hideFloor 
             <stop offset="0%"   stopColor="#FFFAE0" />
             <stop offset="100%" stopColor="#EDD850" />
           </radialGradient>
+          {/* Realistic crescent shading — lit limb fading to a warm terminator */}
+          <linearGradient id="nr-moon-shade" x1="15%" y1="10%" x2="85%" y2="95%">
+            <stop offset="0%"   stopColor="#FFFDF3" />
+            <stop offset="55%"  stopColor="#FDE9A8" />
+            <stop offset="100%" stopColor="#D9B65C" />
+          </linearGradient>
           {/* Rug rings */}
           <radialGradient id="nr-rug" cx="50%" cy="50%" r="50%">
             <stop offset="0%"   stopColor="#C89EF0" />
@@ -132,9 +138,14 @@ export function NightRoomBackdrop({ minimal = false, hideRug = false, hideFloor 
         <rect x="275" y="161" width="124" height="13" rx="6" fill="#4a3280" />
         {/* Moon glow halo */}
         <circle cx="347" cy="114" r="32" fill="rgba(255,240,140,0.14)" filter="url(#nr-glow-md)" />
-        {/* Crescent moon */}
-        <circle cx="345" cy="116" r="22" fill="url(#nr-moon)" />
-        <circle cx="358" cy="110" r="19" fill="url(#nr-sky)" />
+        {/* Crescent moon — true lune silhouette (no overlapping shadow disc) */}
+        <path
+          d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"
+          fill="url(#nr-moon-shade)"
+          transform="translate(316.67,86.67) scale(2.444)"
+        />
+        <circle cx="341" cy="108" r="2" fill="rgba(200,175,110,0.35)" />
+        <circle cx="337" cy="119" r="1.3" fill="rgba(200,175,110,0.3)" />
         {/* Curtains */}
         <path d="M281 27 Q268 96 281 165 L296 165 Q281 96 296 27 Z" fill="#7048B8" opacity="0.52" />
         <path d="M393 27 Q406 96 393 165 L378 165 Q393 96 378 27 Z" fill="#7048B8" opacity="0.52" />
@@ -177,12 +188,16 @@ export function NightRoomBackdrop({ minimal = false, hideRug = false, hideFloor 
         {/* Moon outer halo */}
         <circle cx="200" cy="55" r="85" fill="rgba(180,220,255,0.09)" filter="url(#nr-glow-md)" />
         <circle cx="200" cy="55" r="52" fill="rgba(210,235,255,0.07)" filter="url(#nr-glow-md)" />
-        {/* Crescent moon */}
-        <circle cx="200" cy="55" r="34" fill="#FFF6D8" />
-        <circle cx="218" cy="48" r="29" fill="#16103a" />
+        {/* Crescent moon — true lune silhouette (no overlapping shadow disc) */}
+        <path
+          d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"
+          fill="url(#nr-moon-shade)"
+          transform="translate(154.67,9.67) scale(3.778)"
+        />
         {/* Moon surface craters */}
-        <circle cx="188" cy="46" r="4.5" fill="rgba(210,195,155,0.30)" />
-        <circle cx="196" cy="63" r="3"   fill="rgba(210,195,155,0.24)" />
+        <circle cx="187" cy="38" r="3.2" fill="rgba(200,175,110,0.32)" />
+        <circle cx="180" cy="58" r="2.2" fill="rgba(200,175,110,0.26)" />
+        <circle cx="192" cy="70" r="1.6" fill="rgba(200,175,110,0.22)" />
         {/* Background stars scattered across sky */}
         {[
           {x: 18,y: 82,r:1.5,d:7.2,dl:0.2},{x: 52,y: 38,r:1.1,d:8.8,dl:1.5},

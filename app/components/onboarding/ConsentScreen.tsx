@@ -6,13 +6,55 @@ import { Bobo } from "../Mascot";
 import { NightRoomBackdrop } from "./WhoAreYou";
 
 const F = "var(--font-nunito), system-ui, sans-serif";
-const BUBBLE = "Before we start, here's my promise to your child.";
+const BUBBLE = "Here's my promise to your child.";
 const CHAR_MS = 38;
 
+function BadgeSparkle({ size = 14, style }: { size?: number; style?: React.CSSProperties }) {
+  return (
+    <span style={{ position: "absolute", fontSize: size, color: "#FBBF24", lineHeight: 1, ...style }}>✦</span>
+  );
+}
+
+function LockShieldIcon({ size = 40 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
+      <path d="M20 3 33 8v10c0 9-5.5 15.5-13 19-7.5-3.5-13-10-13-19V8Z" fill="none" stroke="#8B7FE0" strokeWidth="2" />
+      <rect x="13.5" y="17" width="13" height="11" rx="2.5" fill="#FBBF24" />
+      <path d="M16.5 17v-3a3.5 3.5 0 0 1 7 0v3" stroke="#B8860B" strokeWidth="2" fill="none" strokeLinecap="round" />
+      <circle cx="20" cy="21.5" r="1.8" fill="#8A5A06" />
+    </svg>
+  );
+}
+
+function PersonShieldIcon({ size = 40 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
+      <circle cx="18" cy="14" r="6" fill="#7DD3FC" />
+      <path d="M6 32c0-7 5.4-12 12-12s12 5 12 12" fill="#7DD3FC" />
+      <circle cx="29" cy="28" r="8" fill="#1A1040" stroke="#7DD3FC" strokeWidth="1.5" />
+      <path d="M25.5 28l2.4 2.4 4.6-5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+    </svg>
+  );
+}
+
+function GlowHeartIcon({ size = 40 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
+      <defs>
+        <radialGradient id="cs-heart-grad" cx="40%" cy="30%" r="70%">
+          <stop offset="0%" stopColor="#FDA4E8" />
+          <stop offset="100%" stopColor="#E84FC9" />
+        </radialGradient>
+      </defs>
+      <path d="M20 33s-12-7.3-12-16.3C8 11.4 11.6 8 16 8c1.9 0 3.7.9 4 2.3.3-1.4 2.1-2.3 4-2.3 4.4 0 8 3.4 8 8.7C32 25.7 20 33 20 33Z" fill="url(#cs-heart-grad)" />
+    </svg>
+  );
+}
+
 const PROMISES = [
-  { icon: "🔒", title: "Your data stays yours",        desc: "Encrypted, never sold, never shared" },
-  { icon: "👤", title: "You're always in control",     desc: "View or delete your child's data anytime" },
-  { icon: "🤍", title: "Every mission is child-safe",  desc: "Designed for children, curated by experts" },
+  { Icon: LockShieldIcon, sparkles: true, title: "Your data stays yours",        desc: "Encrypted, never sold, never shared" },
+  { Icon: PersonShieldIcon, sparkles: false, title: "You're always in control",     desc: "View or delete your child's data anytime" },
+  { Icon: GlowHeartIcon, sparkles: false, title: "Every mission is child-safe",  desc: "Designed for children, curated by experts" },
 ];
 
 function fadeIn(show: boolean): React.CSSProperties {
@@ -210,80 +252,116 @@ export function ConsentScreen({
 
               {/* Heading */}
               <div style={{ textAlign: "center", marginBottom: 16, padding: "0 16px", ...fadeIn(showHeading) }}>
-                <h1 style={{ fontFamily: F, fontSize: 22, fontWeight: 900, color: "#fff", margin: "0 0 5px", lineHeight: 1.2 }}>
+                <h1 style={{ fontFamily: F, fontSize: 22, fontWeight: 900, color: "#fff", margin: 0, lineHeight: 1.2 }}>
                   Your family&apos;s privacy matters
                 </h1>
-              
               </div>
 
               {/* Promise cards — one by one */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 18, padding: "0 12px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 18, padding: "0 14px" }}>
                 {PROMISES.map((p, i) => (
                   <div
                     key={i}
                     style={{
                       background: "rgba(15,8,55,0.72)",
                       border: "1px solid rgba(110,70,210,0.30)",
-                      borderRadius: 14, padding: "13px 14px",
-                      display: "flex", alignItems: "center", gap: 12,
+                      borderRadius: 18, padding: "16px 16px",
+                      display: "flex", alignItems: "center", gap: 14,
                       ...fadeIn(cardCount > i),
                     }}
                   >
-                    {/* Icon container */}
+                    {/* Icon badge */}
                     <div style={{
-                      width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-                      background: "rgba(90,50,190,0.38)",
+                      width: 66, height: 66, borderRadius: "50%", flexShrink: 0, position: "relative",
+                      background: "radial-gradient(circle at 35% 30%, #4C3A9E, #1A1040 78%)",
+                      boxShadow: "inset 0 2px 4px rgba(255,255,255,0.18), inset 0 -4px 8px rgba(0,0,0,0.45), 0 4px 10px rgba(0,0,0,0.4)",
                       display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 20,
                     }}>
-                      {p.icon}
+                      {p.sparkles && (
+                        <>
+                          <BadgeSparkle size={13} style={{ top: 2, right: 4 }} />
+                          <BadgeSparkle size={10} style={{ bottom: 8, left: 2 }} />
+                        </>
+                      )}
+                      <p.Icon size={38} />
                     </div>
 
                     {/* Title + description */}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontFamily: F, fontSize: 14, fontWeight: 800, color: "#fff", margin: "0 0 2px", lineHeight: 1.25 }}>
+                      <p style={{ fontFamily: F, fontSize: 15, fontWeight: 800, color: "#fff", margin: "0 0 3px", lineHeight: 1.25 }}>
                         {p.title}
                       </p>
-                      <p style={{ fontFamily: F, fontSize: 11.5, fontWeight: 500, color: "rgba(255,255,255,0.55)", margin: 0, lineHeight: 1.35 }}>
+                      <p style={{ fontFamily: F, fontSize: 12, fontWeight: 500, color: "rgba(255,255,255,0.55)", margin: 0, lineHeight: 1.35 }}>
                         {p.desc}
                       </p>
                     </div>
 
-                    {/* Checkmark */}
-                    <span style={{ flexShrink: 0, fontSize: 16, color: "rgba(167,139,250,0.85)", fontWeight: 700 }}>✓</span>
+                    {/* Divider */}
+                    <div style={{ flexShrink: 0, width: 1, alignSelf: "stretch", background: "rgba(255,255,255,0.14)" }} />
+
+                    {/* Checkmark badge */}
+                    <div style={{
+                      flexShrink: 0, width: 38, height: 38, borderRadius: "50%",
+                      background: "linear-gradient(180deg, #9D6FE8, #6D28D9)",
+                      boxShadow: "0 3px 8px rgba(109,40,217,0.5)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      <span style={{ color: "#fff", fontSize: 16, fontWeight: 900 }}>✓</span>
+                    </div>
                   </div>
                 ))}
               </div>
 
               {/* Checkboxes */}
               <div style={{
-                display: "flex", flexDirection: "column", gap: 12, padding: "0 12px",
+                display: "flex", flexDirection: "column", padding: "0 14px",
                 ...fadeIn(showCheckboxes),
               }}>
-                <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer" }}>
+                <label style={{ position: "relative", display: "flex", alignItems: "flex-start", gap: 12, cursor: "pointer", padding: "6px 0" }}>
+                  <div style={{
+                    marginTop: 2, flexShrink: 0, width: 24, height: 24, borderRadius: 7,
+                    background: confirmed ? "linear-gradient(180deg, #9D6FE8, #6D28D9)" : "transparent",
+                    border: confirmed ? "none" : "2px solid rgba(167,139,250,0.5)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    boxShadow: confirmed ? "0 2px 6px rgba(109,40,217,0.5)" : "none",
+                  }}>
+                    {confirmed && <span style={{ color: "#fff", fontSize: 13, fontWeight: 900 }}>✓</span>}
+                  </div>
                   <input
                     type="checkbox"
                     checked={confirmed}
                     onChange={e => setConfirmed(e.target.checked)}
-                    style={{ marginTop: 2, width: 18, height: 18, cursor: "pointer", accentColor: "#7C3AED", flexShrink: 0 }}
+                    style={{ position: "absolute", opacity: 0, width: 0, height: 0 }}
                   />
-                  <span style={{ fontFamily: F, fontSize: 12.5, fontWeight: 600, color: "rgba(255,255,255,0.85)", lineHeight: 1.45 }}>
+                  <span style={{ fontFamily: F, fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.9)", lineHeight: 1.45 }}>
                     I confirm I am the child&apos;s parent or legal guardian.
                   </span>
                 </label>
 
-                <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer" }}>
+                <div style={{ borderTop: "1px dashed rgba(255,255,255,0.18)", margin: "4px 0" }} />
+
+                <label style={{ position: "relative", display: "flex", alignItems: "flex-start", gap: 12, cursor: "pointer", padding: "6px 0" }}>
+                  <div style={{
+                    marginTop: 2, flexShrink: 0, width: 24, height: 24, borderRadius: 7,
+                    background: agreed ? "linear-gradient(180deg, #9D6FE8, #6D28D9)" : "transparent",
+                    border: agreed ? "none" : "2px solid rgba(167,139,250,0.5)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    boxShadow: agreed ? "0 2px 6px rgba(109,40,217,0.5)" : "none",
+                  }}>
+                    {agreed && <span style={{ color: "#fff", fontSize: 13, fontWeight: 900 }}>✓</span>}
+                  </div>
                   <input
                     type="checkbox"
                     checked={agreed}
                     onChange={e => setAgreed(e.target.checked)}
-                    style={{ marginTop: 2, width: 18, height: 18, cursor: "pointer", accentColor: "#7C3AED", flexShrink: 0 }}
+                    style={{ position: "absolute", opacity: 0, width: 0, height: 0 }}
                   />
-                  <span style={{ fontFamily: F, fontSize: 12.5, fontWeight: 600, color: "rgba(255,255,255,0.85)", lineHeight: 1.45 }}>
+                  <span style={{ fontFamily: F, fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.9)", lineHeight: 1.45 }}>
                     I agree to the{" "}
                     <span style={{ color: "#A78BFA", textDecoration: "underline", cursor: "pointer" }}>Privacy Policy</span>
                     {" "}and{" "}
                     <span style={{ color: "#A78BFA", textDecoration: "underline", cursor: "pointer" }}>Terms of Use</span>
+                    .
                   </span>
                 </label>
               </div>
@@ -300,14 +378,14 @@ export function ConsentScreen({
                 onClick={onNext}
                 disabled={!canContinue}
                 style={{
-                  width: "100%", height: 60, borderRadius: 30,
+                  width: "100%", height: 58, borderRadius: 29,
                   background: canContinue
-                    ? "linear-gradient(180deg, #9D6FE8 0%, #7C3AED 100%)"
+                    ? "linear-gradient(180deg, #A78BFA 0%, #7C3AED 100%)"
                     : "rgba(124,58,237,0.28)",
                   border: "none",
                   cursor: canContinue ? "pointer" : "not-allowed",
                   fontFamily: F, fontSize: 18, fontWeight: 900, color: "#fff",
-                  boxShadow: canContinue ? "0 6px 0 #5B21B6, 0 10px 28px rgba(109,40,217,0.50)" : "none",
+                  boxShadow: canContinue ? "0 6px 20px rgba(139,92,246,0.55)" : "none",
                   touchAction: "manipulation",
                   transition: "background 0.25s, box-shadow 0.25s",
                 }}

@@ -35,19 +35,22 @@ import { LoginScreen } from "./components/onboarding/LoginScreen";
 import { WhoAreYou } from "./components/onboarding/WhoAreYou";
 import { ParentIntro } from "./components/onboarding/ParentIntro";
 import { GrowthJourney } from "./components/onboarding/GrowthJourney";
-import { NeuralBrain } from "./components/onboarding/NeuralBrain";
-import { ParentBenefits } from "./components/onboarding/ParentBenefits";
 import { AssessmentIntro } from "./components/onboarding/AssessmentIntro";
 import { ConsentScreen } from "./components/onboarding/ConsentScreen";
+import { InviteChildScreen } from "./components/onboarding/InviteChildScreen";
 import { HandoverScreen } from "./components/onboarding/HandoverScreen";
 import { ParentDashboard } from "./components/onboarding/ParentDashboard";
+import { AttentionReportScreen } from "./components/onboarding/AttentionReportScreen";
+import { ProfileScreen } from "./components/onboarding/ProfileScreen";
 import { TellMeAboutChild } from "./components/onboarding/TellMeAboutChild";
 import { QuestionnaireScreen } from "./components/onboarding/QuestionnaireScreen";
-import { AssessmentCompleteScreen } from "./components/onboarding/AssessmentCompleteScreen";
+import { PaymentScreen } from "./components/onboarding/PaymentScreen";
+import { SignUpScreen } from "./components/onboarding/SignUpScreen";
 import { JourneyCreatedScreen } from "./components/onboarding/JourneyCreatedScreen";
 import { BondWithBugsy } from "./components/onboarding/BondWithBugsy";
 import { BugsyIntro } from "./components/onboarding/BugsyIntro";
 import { WhoJoining } from "./components/onboarding/WhoJoining";
+import { ImagineFocusScreen } from "./components/onboarding/ImagineFocusScreen";
 import { Splash, Welcome } from "./components/onboarding/Welcome";
 import {
   ChildAlmostDone,
@@ -80,6 +83,7 @@ type Stage =
   | { kind: "welcome" }
   | { kind: "who-joining" }
   | { kind: "who" }
+  | { kind: "imagine-focus" }
   | { kind: "bugsy-intro" }
   | { kind: "login" } // "I already have an account" path from welcome
   | { kind: "parent"; step: number }
@@ -480,8 +484,14 @@ export default function Home() {
             setPrevStep(0);
             setStage({ kind: "child", step: 0 });
           }}
-          onParent={() => setStage({ kind: "bugsy-intro" })}
+          onParent={() => setStage({ kind: "imagine-focus" })}
         />
+      );
+    }
+
+    if (stage.kind === "imagine-focus") {
+      return (
+        <ImagineFocusScreen onNext={() => setStage({ kind: "bugsy-intro" })} />
       );
     }
 
@@ -504,9 +514,9 @@ export default function Home() {
             setParentName(name);
             setRelationship(rel);
             setPrevStep(0);
-            setStage(t === "parent" ? { kind: "parent", step: 5 } : { kind: "child", step: 0 });
+            setStage(t === "parent" ? { kind: "parent", step: 1 } : { kind: "child", step: 0 });
           }}
-          onBack={() => setStage({ kind: "parent", step: 4 })}
+          onBack={() => setStage({ kind: "parent", step: 2 })}
         />
       );
     }
@@ -530,7 +540,7 @@ export default function Home() {
         <BugsyIntro
           tint={TINT}
           onNext={() => setStage({ kind: "parent", step: 2 })}
-          onBack={() => setStage({ kind: "who-joining" })}
+          onBack={() => setStage({ kind: "imagine-focus" })}
         />
       );
     }
@@ -554,22 +564,6 @@ export default function Home() {
         case 2:
           return (
             <GrowthJourney
-              onNext={advanceParent}
-              onBack={back}
-            />
-          );
-        case 3:
-          return (
-            <NeuralBrain
-              tint={TINT}
-              onNext={advanceParent}
-              onBack={back}
-            />
-          );
-        case 4:
-          return (
-            <ParentBenefits
-              tint={TINT}
               onNext={() => setStage({ kind: "who" })}
               onBack={back}
             />
@@ -579,16 +573,23 @@ export default function Home() {
             <AssessmentIntro
               tint={TINT}
               onNext={() => setStage({ kind: "parent", step: 7 })}
-              onSkip={() => setStage({ kind: "parent", step: 11 })}
-              onBack={back}
+              onSkip={() => setStage({ kind: "parent", step: 6 })}
+              onBack={() => setStage({ kind: "parent", step: 23 })}
             />
           );
-        case 11:
+        case 1:
           return (
             <ConsentScreen
               tint={TINT}
-              onNext={() => setStage({ kind: "parent", step: 6 })}
-              onBack={() => setStage({ kind: "parent", step: 5 })}
+              onNext={() => setStage({ kind: "parent", step: 23 })}
+              onBack={() => setStage({ kind: "who" })}
+            />
+          );
+        case 23:
+          return (
+            <InviteChildScreen
+              onNext={() => setStage({ kind: "parent", step: 5 })}
+              onBack={() => setStage({ kind: "parent", step: 1 })}
             />
           );
         case 6:
@@ -623,14 +624,44 @@ export default function Home() {
             <ParentDashboard
               tint={TINT}
               parentName={parentName}
+              childName={childName}
               onNext={advanceParent}
+              onReports={() => setStage({ kind: "parent", step: 20 })}
+              onProfile={() => setStage({ kind: "parent", step: 21 })}
+            />
+          );
+        case 20:
+          return (
+            <AttentionReportScreen
+              childName={childName}
+              childAge={childAge}
+              onHome={() => setStage({ kind: "parent", step: 9 })}
+              onProfile={() => setStage({ kind: "parent", step: 21 })}
+            />
+          );
+        case 21:
+          return (
+            <ProfileScreen
+              parentName={parentName}
+              childName={childName}
+              childAge={childAge}
+              onHome={() => setStage({ kind: "parent", step: 9 })}
+              onReports={() => setStage({ kind: "parent", step: 20 })}
             />
           );
         case 10:
           return (
-            <AssessmentCompleteScreen
-              onNext={advanceParent}
+            <PaymentScreen
+              onNext={() => setStage({ kind: "parent", step: 22 })}
               onBack={back}
+            />
+          );
+        case 22:
+          return (
+            <SignUpScreen
+              childName={childName}
+              onNext={() => setStage({ kind: "parent", step: 9 })}
+              onBack={() => setStage({ kind: "parent", step: 10 })}
             />
           );
         case 12:
@@ -1081,6 +1112,8 @@ export default function Home() {
       ? "who-joining"
       : stage.kind === "who"
       ? "who"
+      : stage.kind === "imagine-focus"
+      ? "imagine-focus"
       : stage.kind === "login"
       ? "login"
       : stage.kind === "parent"
