@@ -7,7 +7,7 @@ import { NightRoomBackdrop } from "./WhoAreYou";
 import { Typewriter } from "../Typewriter";
 
 // ── Ambient music via Web Audio API ─────────────────────────────
-function useAmbientMusic() {
+export function useAmbientMusic() {
   const ctxRef     = useRef<AudioContext | null>(null);
   const masterRef  = useRef<GainNode | null>(null);
   const startedRef = useRef(false);
@@ -99,6 +99,28 @@ function Cloud({ size = 1, opacity = 1 }: { size?: number; opacity?: number }) {
   );
 }
 
+// ── Comic "whoosh" speed lines — fan of 3 dashes ─────────────────
+function SpeedLines({ flip = false, color = "#FCD34D", scale = 1 }: { flip?: boolean; color?: string; scale?: number }) {
+  const dashes = [
+    { rotate: -20, top: 0,            length: 20 * scale },
+    { rotate: 0,   top: 8 * scale,    length: 28 * scale },
+    { rotate: 20,  top: 16 * scale,   length: 20 * scale },
+  ];
+  return (
+    <div style={{ position: "relative", width: 34 * scale, height: 32 * scale, transform: flip ? "scaleX(-1)" : undefined }}>
+      {dashes.map((d, i) => (
+        <div key={i} style={{
+          position: "absolute", top: d.top, left: 0,
+          width: d.length, height: 3.2 * scale, borderRadius: 2,
+          background: color,
+          transform: `rotate(${d.rotate}deg)`,
+          transformOrigin: "left center",
+        }} />
+      ))}
+    </div>
+  );
+}
+
 // ── Splash / teaser screen (shown before Welcome) ────────────────
 export function Splash({ onEnter }: { onEnter: () => void }) {
   const { on: musicOn, toggle: toggleMusic } = useAmbientMusic();
@@ -140,6 +162,22 @@ export function Splash({ onEnter }: { onEnter: () => void }) {
       </div>
       <div style={{ position: "absolute", bottom: 190, left: -44, zIndex: 3 }}>
         <Cloud size={1.05} opacity={0.60} />
+      </div>
+
+      {/* ── Back button ── */}
+      <div
+        aria-hidden
+        style={{
+          position: "absolute", top: 52, left: 20, zIndex: 10,
+          width: 46, height: 46, borderRadius: 16,
+          background: "rgba(109,40,217,0.55)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+          stroke="white" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M15 5 L8 12 L15 19" />
+        </svg>
       </div>
 
       {/* ── Music toggle ── */}
@@ -217,6 +255,20 @@ export function Splash({ onEnter }: { onEnter: () => void }) {
         ))}
       </motion.div>
 
+      {/* ── Whoosh burst lines flanking FUMI ── */}
+      <motion.div
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 0.4 }}
+        style={{ position: "absolute", top: 205, left: "9%", zIndex: 6, pointerEvents: "none" }}
+      >
+        <SpeedLines flip />
+      </motion.div>
+      <motion.div
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 0.4 }}
+        style={{ position: "absolute", top: 205, right: "9%", zIndex: 6, pointerEvents: "none" }}
+      >
+        <SpeedLines />
+      </motion.div>
+
       {/* ── Scattered gold / purple stars ── */}
       {STARS.map((s, i) => (
         <motion.span
@@ -233,24 +285,13 @@ export function Splash({ onEnter }: { onEnter: () => void }) {
         >✦</motion.span>
       ))}
 
-      {/* ── Purple star divider ── */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.55, type: "spring", stiffness: 280, damping: 18 }}
-        style={{
-          position: "absolute", top: 278, left: 0, right: 0, zIndex: 5,
-          textAlign: "center", color: "#A78BFA", fontSize: 22, lineHeight: 1,
-        }}
-      >★</motion.div>
-
       {/* ── Tagline ── */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.44, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         style={{
-          position: "absolute", top: 308, left: 16, right: 16, zIndex: 5,
+          position: "absolute", top: 282, left: 16, right: 16, zIndex: 5,
           textAlign: "center", fontFamily: FF,
         }}
       >
@@ -264,22 +305,28 @@ export function Splash({ onEnter }: { onEnter: () => void }) {
         </div>
       </motion.div>
 
-      {/* ── Gold star between tagline and cat ── */}
+      {/* ── Winner-of award badge ── */}
       <motion.div
-        initial={{ opacity: 0, scale: 0 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.6, type: "spring", stiffness: 260, damping: 18 }}
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         style={{
-          position: "absolute", top: 388, left: 0, right: 0, zIndex: 5,
-          textAlign: "center", fontSize: 26, lineHeight: 1,
+          position: "absolute", top: 410, left: 0, right: 0, zIndex: 5,
+          display: "flex", justifyContent: "center",
         }}
-      >⭐</motion.div>
+      >
+        <img
+          src="/awards/aegis-graham-bell-badge.png"
+          alt="Winner of AEGIS Graham Bell Awards"
+          style={{ width: 220, height: "auto", display: "block" }}
+        />
+      </motion.div>
 
       {/* ── Ground glow (moonbeam pool) ── */}
       <div style={{
         position: "absolute", bottom: 136, left: "50%",
         transform: "translateX(-50%)",
-        width: 240, height: 64, borderRadius: "50%",
+        width: 210, height: 56, borderRadius: "50%",
         background: "radial-gradient(ellipse, rgba(185,165,255,0.38) 0%, rgba(160,140,240,0.14) 55%, transparent 100%)",
         filter: "blur(12px)",
         zIndex: 4, pointerEvents: "none",
@@ -318,7 +365,7 @@ export function Splash({ onEnter }: { onEnter: () => void }) {
               filter: "drop-shadow(0 14px 22px rgba(0,0,0,0.68)) drop-shadow(0 0 18px rgba(167,139,250,0.48))",
             }}
           >
-            <Bobo mood="happy" tint={210} size={220} animate tailWag />
+            <Bobo mood="cheer" tint={250} size={190} animate tailWag eyeOpen={1} />
           </motion.div>
         </motion.div>
       </div>

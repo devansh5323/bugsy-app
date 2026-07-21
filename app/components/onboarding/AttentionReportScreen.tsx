@@ -340,7 +340,7 @@ function AttentionProfileContent({ name }: { name: string }) {
 
   return (
     <>
-      <p style={{ margin: "0 0 6px", fontFamily: F, fontSize: 22, fontWeight: 800, color: "#0F2419" }}>
+      <p style={{ margin: "0 0 6px", maxWidth: "82%", fontFamily: F, fontSize: 22, fontWeight: 800, color: "#0F2419" }}>
         How is {name}&apos;s focus shaping up?
       </p>
       <p style={{ margin: "0 0 22px", fontFamily: F, fontSize: 13, fontWeight: 500, color: "#7B7F8C" }}>
@@ -777,13 +777,12 @@ export function AttentionReportScreen({
               fontFamily: F, fontSize: 16, fontWeight: 800, lineHeight: 1.3,
               color: "#fff", display: "flex", alignItems: "center", gap: 6,
             }}>
-              Growing with focus, every day
-              <StarIcon size={15} color="#FBBF24" />
+          
             </p>
 
             <p style={{
               margin: "6px 0 0",
-              fontFamily: F, fontSize: 13, fontWeight: 500, lineHeight: 1.45,
+              fontFamily: F, fontSize: 15, fontWeight: 500, lineHeight: 1.45,
               color: "rgba(222,218,248,0.8)",
             }}>
               Discover how {name}&apos;s attention<br />supports learning and daily life.

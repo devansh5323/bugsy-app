@@ -7,7 +7,7 @@ import { Bobo } from "../Mascot";
 
 const F      = "var(--font-nunito), system-ui, sans-serif";
 const PURPLE = "#7C3AED";
-const CAT_TINT = 220;
+const CAT_TINT = 250;
 const INVITE_LINK = "https://app.fumi.world/join/ABC123";
 
 function WhatsAppIcon({ size = 30 }: { size?: number }) {
@@ -124,13 +124,13 @@ export function InviteChildScreen({
             fontFamily: F, fontSize: 30, fontWeight: 900, color: "#fff",
             textAlign: "center", margin: 0, lineHeight: 1.25,
           }}>
-            Invite your child
+            Send invite to your 
           </p>
           <p style={{
             fontFamily: F, fontSize: 30, fontWeight: 900, color: "#fff",
             textAlign: "center", margin: 0, lineHeight: 1.25,
           }}>
-            to <span style={{ color: "#8B7FE8" }}>Fumi&apos;s world</span>
+            to <span style={{ color: "#8B7FE8" }}>child&apos;s device</span>
           </p>
         </motion.div>
 
@@ -143,7 +143,7 @@ export function InviteChildScreen({
             textAlign: "center", margin: "14px 0 0", lineHeight: 1.5, maxWidth: 300,
           }}
         >
-          Send a secure link to your child&apos;s device to start their missions.
+          Share a secure link to start their missions.
         </motion.p>
 
         {/* mascot + glowing envelope — the centerpiece of the screen */}

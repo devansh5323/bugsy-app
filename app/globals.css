@@ -885,6 +885,37 @@ textarea {
   animation: screen-adventure-in 0.70s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Big reveal into the child's first insight report — a warm flash of
+   light plus a slow zoom-settle, so it reads as "here's something
+   great about your child" rather than a plain screen swap. */
+@keyframes screen-insight-in {
+  0%   { opacity: 0;   transform: scale(1.10); filter: brightness(1.85) saturate(1.35) blur(2px); }
+  35%  { opacity: 1;   filter: brightness(1.35) saturate(1.15) blur(0px); }
+  100% { opacity: 1;   transform: scale(1);     filter: brightness(1) saturate(1); }
+}
+@keyframes screen-insight-flash {
+  0%   { opacity: 0.65; }
+  100% { opacity: 0;    }
+}
+.screen-insight-wrap {
+  position: relative;
+}
+.screen-insight-wrap::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 38%,
+    rgba(255,214,120,0.95) 0%,
+    rgba(196,150,255,0.45) 38%,
+    transparent 72%);
+  animation: screen-insight-flash 0.7s ease-out forwards;
+}
+.screen-insight-wrap > * {
+  animation: screen-insight-in 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 /* Range slider thumb — coral primary */
 .range-input {
   -webkit-appearance: none;

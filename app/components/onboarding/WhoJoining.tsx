@@ -91,6 +91,9 @@ export function WhoJoining({
               <div style={{ fontFamily: F, fontSize: 20, fontWeight: 800, color: "#fff", lineHeight: 1.25 }}>
                 It's Me
               </div>
+              <div style={{ fontFamily: F, fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.55)", lineHeight: 1.3, marginTop: 2 }}>
+                I&apos;m under 18 years.
+              </div>
             </div>
             <div style={{ position: "relative", flexShrink: 0, marginRight: 2 }}>
               <Sparkle style={{ top: -10, right: 0,  fontSize: 12, color: "rgba(200,178,255,0.95)" }} />

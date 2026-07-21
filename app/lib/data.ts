@@ -106,7 +106,7 @@ export const PARENT_GOAL_OPTIONS: ChipOption[] = [
 // land first; clan competition is a reward, not a starting point.
 export const CLAN_UNLOCK_THRESHOLD = 3;
 
-export const TINT = 220; // sky-blue cat
+export const TINT = 250; // periwinkle-blue cat
 export const ACCENT_HUE = 295; // violet
 export const ACCENT_CHROMA = 0.16;
 // Baseline clan points (other members' contributions). User's points add on top.

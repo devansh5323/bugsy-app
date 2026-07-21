@@ -79,7 +79,7 @@ function MountainFlagGlyph({ size = 54 }: { size?: number }) {
 // Step 1 uses the app's actual Bobo mascot (not a hand-drawn glyph) so
 // it matches the reference art exactly, with both paws resting down.
 function TinyKittenBobo({ size = 70 }: { size?: number }) {
-  return <Bobo mood="happy" tint={220} size={size} animate={false} armsDown noSparkles />;
+  return <Bobo mood="happy" tint={250} size={size} animate={false} armsDown noSparkles />;
 }
 
 function PlayfulKittenGlyph({ size = 92 }: { size?: number }) {

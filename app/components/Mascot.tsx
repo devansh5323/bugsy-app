@@ -51,6 +51,16 @@ type BoboProps = {
   // When true, both arms raise into the greeting pose (mirrored left +
   // right) for a two-paw "hooray" celebration. Ignored if armsDown is set.
   armsUp?: boolean;
+  // When true, renders thin arched eyebrows above the eyes. Opt-in and
+  // independent of mood so existing callers are unaffected.
+  eyebrows?: boolean;
+  // Overrides the inner-ear hue (defaults to a tint-relative shade).
+  // Lets a caller give the ears a distinct pink without changing the
+  // shared body-tint formula used everywhere else.
+  earInnerTint?: number;
+  // When true, closes just the right eye in a playful wink — layered on
+  // top of whatever mood/eye style is already showing, independent of it.
+  wink?: boolean;
 };
 
 // Hats sit above the ears — y centred around -120
@@ -120,7 +130,7 @@ function Hat({ kind }: { kind: string }) {
   }
 }
 
-export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, hat, angerLevel, eyeOpen, tailWag, walking, mouthOpen, frazzled, glowRightPaw, noSparkles, armsDown, armsUp }: BoboProps) {
+export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, hat, angerLevel, eyeOpen, tailWag, walking, mouthOpen, frazzled, glowRightPaw, noSparkles, armsDown, armsUp, eyebrows = true, earInnerTint = 345, wink }: BoboProps) {
   const lidControlled = eyeOpen !== undefined;
   const eyeOpenClamped = Math.max(0, Math.min(1, eyeOpen ?? 1));
   // Continuous anger 0..1. mood="angry" implies 1 when angerLevel
@@ -141,7 +151,7 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
   const bodyTop = `oklch(${lerp(88, 82)}% ${lerp(0.10, 0.13)} ${h})`;
   const bodyMid = `oklch(${lerp(76, 68)}% ${lerp(0.15, 0.21)} ${h})`;
   const bodyBottom = `oklch(${lerp(58, 50)}% ${lerp(0.17, 0.22)} ${h})`;
-  const earInner = `oklch(78% 0.14 ${(h + 20) % 360})`;
+  const earInner = `oklch(78% 0.14 ${earInnerTint})`;
   const cheek = `oklch(72% 0.17 ${(h + 12) % 360})`;
   const highlight = `oklch(97% 0.03 ${h})`;
   const shadow = `oklch(28% 0.08 ${h} / 0.3)`;
@@ -656,6 +666,25 @@ export function Bobo({ mood = "happy", tint = 18, size = 220, animate = true, ha
             </>
           )}
           </g>
+
+          {/* Playful wink — masks just the right eye with a closed lash,
+              layered on top regardless of mood/eyelid state. */}
+          {wink && !lidControlled && (
+            <>
+              <ellipse cx={eyes.rx} cy={eyes.y} rx={eyes.r + 5} ry={eyes.r + 6} fill={bodyTop} />
+              <path d={`M ${eyes.rx - eyes.r - 2} ${eyes.y} Q ${eyes.rx} ${eyes.y + 7} ${eyes.rx + eyes.r + 2} ${eyes.y}`} stroke="#1a1420" strokeWidth="3" fill="none" strokeLinecap="round"/>
+            </>
+          )}
+
+          {/* Thin arched eyebrows — default on, but skipped for moods that
+              already draw their own semantically-meaningful brows (sad's
+              raised-outer brow, worried's raised-inner brow, angry's V-brow) */}
+          {eyebrows && !eyes.sad && !eyes.worried && safeAnger <= 0.01 && (
+            <>
+              <path d={`M ${eyes.lx - 10} ${eyes.y - 15} Q ${eyes.lx} ${eyes.y - 21} ${eyes.lx + 10} ${eyes.y - 16}`} stroke="#2a1028" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.5"/>
+              <path d={`M ${eyes.rx - 10} ${eyes.y - 16} Q ${eyes.rx} ${eyes.y - 21} ${eyes.rx + 10} ${eyes.y - 15}`} stroke="#2a1028" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.5"/>
+            </>
+          )}
 
           <path d="M 0 12 L -6 18 Q 0 22 6 18 Z" fill={nose} stroke="#2a1028" strokeWidth="1.2" strokeLinejoin="round"/>
           <path d="M 0 19 L 0 21" stroke="#2a1028" strokeWidth="2" strokeLinecap="round"/>

@@ -6,7 +6,7 @@ import { Bobo } from "../Mascot";
 
 const F        = "var(--font-nunito), system-ui, sans-serif";
 const W        = 344;
-const CAT_TINT = 220;
+const CAT_TINT = 250;
 
 const centered = (extra?: React.CSSProperties): React.CSSProperties => ({
   position: "absolute",

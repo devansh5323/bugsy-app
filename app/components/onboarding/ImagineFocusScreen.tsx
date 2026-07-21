@@ -58,9 +58,9 @@ function SmileyIconGlyph({ size = 48 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
       <circle cx="24" cy="24" r="16" fill="rgba(255,255,255,0.94)" />
-      <circle cx="18" cy="21" r="2.2" fill="#C77A28" />
-      <circle cx="30" cy="21" r="2.2" fill="#C77A28" />
-      <path d="M16 28c2 3.5 5 5.5 8 5.5s6-2 8-5.5" stroke="#C77A28" strokeWidth="2.4" strokeLinecap="round" fill="none" />
+      <circle cx="18" cy="21" r="2.2" fill="#2E5F8F" />
+      <circle cx="30" cy="21" r="2.2" fill="#2E5F8F" />
+      <path d="M16 28c2 3.5 5 5.5 8 5.5s6-2 8-5.5" stroke="#2E5F8F" strokeWidth="2.4" strokeLinecap="round" fill="none" />
     </svg>
   );
 }
@@ -69,7 +69,7 @@ const CARDS = [
   { label: "Better Focus", gradient: "linear-gradient(160deg, #F3B45C 0%, #E2903A 100%)", Icon: BrainIcon },
   { label: "Less Frustration", gradient: "linear-gradient(160deg, #EC7B8A 0%, #D8495B 100%)", Icon: HeartIconGlyph },
   { label: "Independent Routines", gradient: "linear-gradient(160deg, #6FBB61 0%, #4C9142 100%)", Icon: LeafIcon },
-  { label: "Fewer Reminders", gradient: "linear-gradient(160deg, #F0A840 0%, #DC8730 100%)", Icon: SmileyIconGlyph },
+  { label: "Fewer Reminders", gradient: "linear-gradient(160deg, #5FA8E0 0%, #3A7FC2 100%)", Icon: SmileyIconGlyph },
 ];
 
 export function ImagineFocusScreen({ onNext }: { onNext: () => void }) {

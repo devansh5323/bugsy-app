@@ -7,7 +7,7 @@ import { Bobo } from "../Mascot";
 
 const F = "var(--font-nunito), system-ui, sans-serif";
 const GOLD = "#FBBF24";
-const CAT_TINT = 220;
+const CAT_TINT = 250;
 
 function tileGradient(id: string, from: string, to: string) {
   return (
@@ -298,7 +298,7 @@ export function PaymentScreen({
             }}
           >
             <span>✨</span>
-            Just sign up and start journey!
+            Start your 14days free journey!
             <motion.span
               aria-hidden
               animate={{ x: [0, 5, 0] }}

@@ -10,7 +10,7 @@ const WORD_STEP_MS = 150;
 
 const F        = "var(--font-nunito), system-ui, sans-serif";
 const W        = 344;
-const CAT_TINT = 220; // sky-blue — matches app-wide TINT
+const CAT_TINT = 250; // periwinkle-blue — matches app-wide TINT
 const PURPLE   = "#7C3AED";
 
 function GoogleIcon() {
@@ -49,12 +49,47 @@ function ShieldIcon({ size = 16, color = "#fff" }: { size?: number; color?: stri
   );
 }
 
-function LockIcon({ size = 13, color = "rgba(216,206,255,0.85)" }: { size?: number; color?: string }) {
+function PersonIcon({ size = 20, color = "#fff" }: { size?: number; color?: string }) {
   return (
     <svg viewBox="0 0 24 24" width={size} height={size} fill="none">
-      <rect x="5" y="10.5" width="14" height="10" rx="2.4" fill={color}/>
-      <path d="M8 10.5V7.8a4 4 0 0 1 8 0v2.7" stroke={color} strokeWidth="2" fill="none"/>
+      <circle cx="12" cy="8.5" r="4" fill={color} />
+      <path d="M4 21c0-4.4 3.6-7.5 8-7.5s8 3.1 8 7.5" fill={color} />
     </svg>
+  );
+}
+
+function HeartMiniIcon({ size = 18, color = PURPLE }: { size?: number; color?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} fill="none">
+      <path d="M12 20.5s-8-4.9-8-11A4.8 4.8 0 0 1 12 6.2 4.8 4.8 0 0 1 20 9.5c0 6.1-8 11-8 11Z" fill={color} />
+    </svg>
+  );
+}
+
+// Small sparkle diamond used to flank badges/headings
+function Sparkle({ size = 10, color = "#fff", style }: { size?: number; color?: string; style?: React.CSSProperties }) {
+  return <span style={{ fontSize: size, color, lineHeight: 1, ...style }}>✦</span>;
+}
+
+// Thin "whoosh" burst lines flanking the heading
+function Burst({ flip = false, color = "rgba(167,139,250,0.65)" }: { flip?: boolean; color?: string }) {
+  const dashes = [
+    { rotate: -20, top: 0,  length: 16 },
+    { rotate: 0,   top: 7,  length: 22 },
+    { rotate: 20,  top: 14, length: 16 },
+  ];
+  return (
+    <div style={{ position: "relative", width: 26, height: 24, transform: flip ? "scaleX(-1)" : undefined }}>
+      {dashes.map((d, i) => (
+        <div key={i} style={{
+          position: "absolute", top: d.top, left: 0,
+          width: d.length, height: 2.6, borderRadius: 2,
+          background: color,
+          transform: `rotate(${d.rotate}deg)`,
+          transformOrigin: "left center",
+        }} />
+      ))}
+    </div>
   );
 }
 
@@ -67,9 +102,10 @@ export function SignUpScreen({
   onNext: () => void;
   onBack: () => void;
 }) {
-  const name = childName?.trim() || "your child";
-  const MESSAGE = "Thanks! Your child's missions are waiting...";
+  void childName;
+  const MESSAGE = "Hi there! Before you introduce your little one to me, let's secure your account.";
   const WORDS = MESSAGE.split(" ");
+  const COLORED = new Set<number>();
   const [wordCount, setWordCount] = useState(0);
 
   useEffect(() => {
@@ -79,7 +115,7 @@ export function SignUpScreen({
     );
     return () => ts.forEach(clearTimeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [name]);
+  }, []);
 
   const cardDelay = (WORD_START_MS + WORDS.length * WORD_STEP_MS + 300) / 1000;
 
@@ -112,7 +148,7 @@ export function SignUpScreen({
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: "spring", stiffness: 300, damping: 26, delay: 0.35 }}
           style={{
-            maxWidth: W - 20,
+            maxWidth: W + 60,
             background: "#fff", borderRadius: 18,
             padding: "14px 20px 16px",
             boxShadow: "0 6px 28px rgba(0,0,0,0.22)",
@@ -124,7 +160,11 @@ export function SignUpScreen({
             color: "#1a0f40", textAlign: "center",
             margin: 0, lineHeight: 1.4,
           }}>
-            {WORDS.slice(0, wordCount).join(" ")}
+            {WORDS.slice(0, wordCount).map((w, i) => (
+              <span key={i} style={{ color: COLORED.has(i) ? PURPLE : undefined }}>
+                {w}{i < wordCount - 1 ? " " : ""}
+              </span>
+            ))}
           </p>
 
           {/* bubble tail pointing down at the mascot */}
@@ -141,13 +181,22 @@ export function SignUpScreen({
           initial={{ y: 50, opacity: 0, scale: 0.7 }}
           animate={{ y: 0, opacity: 1, scale: 1 }}
           transition={{ type: "spring", stiffness: 220, damping: 18, delay: 0.1 }}
-          style={{ marginTop: 18 }}
+          style={{ marginTop: 18, position: "relative" }}
         >
+          {/* Soft ground glow under the cat */}
+          <div style={{
+            position: "absolute", bottom: 4, left: "50%",
+            transform: "translateX(-50%)",
+            width: 150, height: 40, borderRadius: "50%",
+            background: "radial-gradient(ellipse, rgba(139,92,246,0.55) 0%, rgba(109,40,217,0.18) 60%, transparent 100%)",
+            filter: "blur(6px)", zIndex: 0, pointerEvents: "none",
+          }} />
           <motion.div
             animate={{ y: [0, -10, 0] }}
             transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
+            style={{ position: "relative", zIndex: 1 }}
           >
-            <Bobo mood="happy" tint={CAT_TINT} size={160} animate tailWag armsDown />
+            <Bobo mood="cheer" tint={CAT_TINT} size={160} animate tailWag eyeOpen={1} armsDown />
           </motion.div>
         </motion.div>
       </div>
@@ -167,28 +216,40 @@ export function SignUpScreen({
           display: "flex", flexDirection: "column", alignItems: "center",
         }}
       >
-        {/* star */}
-        <div style={{
-          fontSize: 46, lineHeight: 1, flexShrink: 0,
-          filter: "drop-shadow(0 0 18px rgba(124,58,237,0.65))",
-        }}>
-          ⭐
+        {/* parent-account badge, flanked by sparkles */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+          <Sparkle size={10} color="#C4B5FD" />
+          <div style={{
+            width: 56, height: 56, borderRadius: "50%",
+            background: "linear-gradient(180deg, #8B5CF6 0%, #6D28D9 100%)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 0 20px rgba(124,58,237,0.65)",
+          }}>
+            <PersonIcon size={26} />
+          </div>
+          <Sparkle size={10} color="#C4B5FD" />
         </div>
 
-        <p style={{
-          margin: "20px 0 0", maxWidth: W,
-          fontFamily: F, fontSize: 27, fontWeight: 900, color: "#fff",
-          textAlign: "center", lineHeight: 1.2,
-        }}>
-          You&apos;re just one step away!
-        </p>
+        {/* heading, flanked by whoosh bursts */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 18 }}>
+          <Burst flip />
+          <p style={{
+            margin: 0, maxWidth: W,
+            fontFamily: F, fontSize: 27, fontWeight: 900,
+            textAlign: "center", lineHeight: 1.2,
+          }}>
+            <span style={{ color: "#fff" }}>Create your</span><br />
+            <span style={{ color: "#FBBF24" }}>account</span>
+          </p>
+          <Burst />
+        </div>
 
         <p style={{
           margin: "14px 0 0", maxWidth: W,
           fontFamily: F, fontSize: 14, fontWeight: 600, color: "rgba(216,206,255,0.85)",
           textAlign: "center", lineHeight: 1.55,
         }}>
-          Create your account to securely save your child&apos;s progress and continue
+          Save your child&apos;s progress, unlock personalized guidance, and let Fumi remember every milestone as your child grows.
         </p>
 
         {/* auth buttons */}
@@ -241,27 +302,35 @@ export function SignUpScreen({
         {/* divider */}
         <div style={{ width: "100%", maxWidth: W, display: "flex", alignItems: "center", gap: 12, marginTop: 22 }}>
           <div style={{ flex: 1, height: 1, background: "rgba(167,139,250,0.28)" }} />
-          <div style={{
-            width: 30, height: 30, borderRadius: "50%",
-            background: "rgba(124,58,237,0.25)", border: "1px solid rgba(167,139,250,0.4)",
-            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-          }}>
-            <ShieldIcon size={14} />
-          </div>
+          <HeartMiniIcon size={18} color={PURPLE} />
           <div style={{ flex: 1, height: 1, background: "rgba(167,139,250,0.28)" }} />
         </div>
 
         {/* footer */}
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 16 }}>
-          <LockIcon />
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, marginTop: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{
+              width: 22, height: 22, borderRadius: "50%",
+              background: "#6D28D9",
+              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+            }}>
+              <ShieldIcon size={13} />
+            </div>
+            <span style={{
+              fontFamily: F, fontSize: 13, fontWeight: 600,
+              color: "rgba(216,206,255,0.85)", textAlign: "center",
+            }}>
+              COPPA &bull; GDPR &bull; DPDP Compliant
+            </span>
+          </div>
           <span style={{
             fontFamily: F, fontSize: 12, fontWeight: 600,
-            color: "rgba(216,206,255,0.85)", textAlign: "center",
+            color: "rgba(216,206,255,0.7)", textAlign: "center",
           }}>
-            Your family&apos;s information is private and secure.
+            Your child&apos;s privacy is protected from day one.
           </span>
         </div>
       </motion.div>
     </div>
   );
-}
+} 

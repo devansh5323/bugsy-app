@@ -6,8 +6,16 @@ import { Bobo } from "../Mascot";
 import { NightRoomBackdrop } from "./WhoAreYou";
 
 const F = "var(--font-nunito), system-ui, sans-serif";
-const BUBBLE = "Here's my promise to your child.";
 const CHAR_MS = 38;
+
+function LockIcon({ size = 14, color = "rgba(255,255,255,0.55)" }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <rect x="5" y="11" width="14" height="10" rx="2" fill="none" stroke={color} strokeWidth="1.8" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" stroke={color} strokeWidth="1.8" fill="none" strokeLinecap="round" />
+    </svg>
+  );
+}
 
 function BadgeSparkle({ size = 14, style }: { size?: number; style?: React.CSSProperties }) {
   return (
@@ -67,13 +75,18 @@ function fadeIn(show: boolean): React.CSSProperties {
 
 export function ConsentScreen({
   tint,
+  parentName,
   onNext,
   onBack,
 }: {
   tint: number;
+  parentName?: string;
   onNext: () => void;
   onBack?: () => void;
 }) {
+  const PName = parentName?.trim() || "Parent";
+  const BUBBLE = `Woohoo, Welcome ${PName}! Here is my promise to your family.`;
+
   const [confirmed,      setConfirmed]      = useState(false);
   const [agreed,         setAgreed]         = useState(false);
   const canContinue = confirmed && agreed;
@@ -167,7 +180,7 @@ export function ConsentScreen({
                 background: "#fff", borderRadius: 20,
                 padding: "16px 22px",
                 boxShadow: "0 8px 28px rgba(0,0,0,0.22)",
-                maxWidth: 300, textAlign: "center", position: "relative",
+                maxWidth: 340, textAlign: "center", position: "relative",
               }}>
                 <p style={{ fontFamily: F, fontSize: 17, fontWeight: 700, color: "#1a0f40", margin: 0, lineHeight: 1.4, minHeight: "2.8em" }}>
                   {typedPhase1}
@@ -229,7 +242,7 @@ export function ConsentScreen({
                   padding: "12px 20px",
                   boxShadow: "0 6px 24px rgba(0,0,0,0.22)",
                   position: "relative", marginBottom: 14,
-                  textAlign: "center", whiteSpace: "nowrap",
+                  textAlign: "center", maxWidth: 280,
                 }}>
                   <p style={{ fontFamily: F, fontSize: 15, fontWeight: 700, color: "#1a0f40", margin: 0, lineHeight: 1.4 }}>
                     {BUBBLE}
@@ -392,6 +405,18 @@ export function ConsentScreen({
               >
                 I Agree &amp; Continue
               </button>
+
+              <div style={{ marginTop: 14, textAlign: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                  <LockIcon />
+                  <span style={{ fontFamily: F, fontSize: 12.5, fontWeight: 600, color: "rgba(255,255,255,0.55)" }}>
+                    COPPA &bull; GDPR &bull; DPDP Compliant
+                  </span>
+                </div>
+                <p style={{ margin: "4px 0 0", fontFamily: F, fontSize: 12.5, fontWeight: 600, color: "rgba(255,255,255,0.55)" }}>
+                  Children&apos;s Privacy Protected
+                </p>
+              </div>
             </div>
 
             <style>{`@keyframes cs-blink { 0%,100%{opacity:0.45} 50%{opacity:0} }`}</style>

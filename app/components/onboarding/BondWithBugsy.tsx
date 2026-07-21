@@ -152,7 +152,7 @@ export function BondWithBugsy({
           transition={{ type: "spring", stiffness: 240, damping: 18, delay: 0.28 }}
           style={{ display: "flex", justifyContent: "center" }}
         >
-          <Bobo mood="happy" tint={220} size={158} animate tailWag />
+          <Bobo mood="happy" tint={250} size={158} animate tailWag />
         </motion.div>
       </div>
 

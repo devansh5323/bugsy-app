@@ -929,7 +929,7 @@ export function FumiRiverCatch({
         >
           <Bobo
             mood={mascotMood}
-            tint={210}
+            tint={250}
             size={128}
             animate={!reducedMotion}
             armsDown
@@ -1040,7 +1040,7 @@ export function FumiRiverCatch({
           <div style={{ animation: "bubble-pop 0.4s cubic-bezier(0.22,1.5,0.36,1)" }}>
             <IntroBubble text="Help me catch fish for dinner! Tap only the fish the rule card asks for." />
           </div>
-          <Bobo mood="happy" tint={210} size={150} animate={!reducedMotion} armsDown tailWag />
+          <Bobo mood="happy" tint={250} size={150} animate={!reducedMotion} armsDown tailWag />
           <button className="rc-btn" onClick={startGame} style={{ ...ctaStyle("#3d8f5b", "#276b3f"), width: "100%", maxWidth: 320 }}>
             Let&apos;s go fishing →
           </button>
@@ -1959,7 +1959,7 @@ function EndScreen({
       }}
     >
       <div style={{ ...cardStyle, maxHeight: "88vh", overflowY: "auto", width: "100%", maxWidth: 340 }}>
-        <Bobo mood={summary.starsEarned >= 2 ? "cheer" : "happy"} tint={210} size={100} armsDown tailWag />
+        <Bobo mood={summary.starsEarned >= 2 ? "cheer" : "happy"} tint={250} size={100} armsDown tailWag />
         <div style={{ fontWeight: 900, fontSize: 22, color: INK, marginTop: 4 }}>
           {basketsFilled > 0 ? "Dinner is served!" : "Nice fishing!"}
         </div>

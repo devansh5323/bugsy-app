@@ -34,10 +34,11 @@ import {
 import { LoginScreen } from "./components/onboarding/LoginScreen";
 import { WhoAreYou } from "./components/onboarding/WhoAreYou";
 import { ParentIntro } from "./components/onboarding/ParentIntro";
-import { GrowthJourney } from "./components/onboarding/GrowthJourney";
 import { AssessmentIntro } from "./components/onboarding/AssessmentIntro";
 import { ConsentScreen } from "./components/onboarding/ConsentScreen";
 import { InviteChildScreen } from "./components/onboarding/InviteChildScreen";
+import { InviteChoiceScreen } from "./components/onboarding/InviteChoiceScreen";
+import { InviteSentScreen } from "./components/onboarding/InviteSentScreen";
 import { HandoverScreen } from "./components/onboarding/HandoverScreen";
 import { ParentDashboard } from "./components/onboarding/ParentDashboard";
 import { AttentionReportScreen } from "./components/onboarding/AttentionReportScreen";
@@ -83,9 +84,10 @@ type Stage =
   | { kind: "welcome" }
   | { kind: "who-joining" }
   | { kind: "who" }
-  | { kind: "imagine-focus" }
   | { kind: "bugsy-intro" }
   | { kind: "login" } // "I already have an account" path from welcome
+  | { kind: "onboarding-signup" } // sign-up step between who-joining and imagine-focus
+  | { kind: "imagine-focus" } // sits between onboarding-signup and bugsy-intro
   | { kind: "parent"; step: number }
   | { kind: "child"; step: number }
   | { kind: "handover"; step: number }
@@ -451,6 +453,10 @@ export default function Home() {
     if (stage.kind === "parent" && stage.step === 1 && prevStep === 0) {
       return "screen-adventure-wrap";
     }
+    // Big reveal into the child's first insight report, right after payment
+    if (stage.kind === "parent" && stage.step === 20 && prevStep === 10) {
+      return "screen-insight-wrap";
+    }
     if (
       (stage.kind === "parent"  && stage.step < prevStep) ||
       (stage.kind === "child"   && stage.step < prevStep) ||
@@ -484,7 +490,17 @@ export default function Home() {
             setPrevStep(0);
             setStage({ kind: "child", step: 0 });
           }}
-          onParent={() => setStage({ kind: "imagine-focus" })}
+          onParent={() => setStage({ kind: "onboarding-signup" })}
+        />
+      );
+    }
+
+    if (stage.kind === "onboarding-signup") {
+      return (
+        <SignUpScreen
+          childName={childName}
+          onNext={() => setStage({ kind: "imagine-focus" })}
+          onBack={() => setStage({ kind: "who-joining" })}
         />
       );
     }
@@ -516,7 +532,7 @@ export default function Home() {
             setPrevStep(0);
             setStage(t === "parent" ? { kind: "parent", step: 1 } : { kind: "child", step: 0 });
           }}
-          onBack={() => setStage({ kind: "parent", step: 2 })}
+          onBack={() => setStage({ kind: "bugsy-intro" })}
         />
       );
     }
@@ -539,7 +555,7 @@ export default function Home() {
       return (
         <BugsyIntro
           tint={TINT}
-          onNext={() => setStage({ kind: "parent", step: 2 })}
+          onNext={() => setStage({ kind: "who" })}
           onBack={() => setStage({ kind: "imagine-focus" })}
         />
       );
@@ -561,17 +577,11 @@ export default function Home() {
               onBack={back}
             />
           );
-        case 2:
-          return (
-            <GrowthJourney
-              onNext={() => setStage({ kind: "who" })}
-              onBack={back}
-            />
-          );
         case 5:
           return (
             <AssessmentIntro
               tint={TINT}
+              parentName={parentName}
               onNext={() => setStage({ kind: "parent", step: 7 })}
               onSkip={() => setStage({ kind: "parent", step: 6 })}
               onBack={() => setStage({ kind: "parent", step: 23 })}
@@ -581,15 +591,31 @@ export default function Home() {
           return (
             <ConsentScreen
               tint={TINT}
-              onNext={() => setStage({ kind: "parent", step: 23 })}
+              parentName={parentName}
+              onNext={() => setStage({ kind: "parent", step: 25 })}
               onBack={() => setStage({ kind: "who" })}
+            />
+          );
+        case 25:
+          return (
+            <InviteChoiceScreen
+              onSendInvite={() => setStage({ kind: "parent", step: 23 })}
+              onUseThisDevice={() => setStage({ kind: "parent", step: 5 })}
+              onBack={() => setStage({ kind: "parent", step: 1 })}
             />
           );
         case 23:
           return (
             <InviteChildScreen
+              onNext={() => setStage({ kind: "parent", step: 24 })}
+              onBack={() => setStage({ kind: "parent", step: 25 })}
+            />
+          );
+        case 24:
+          return (
+            <InviteSentScreen
               onNext={() => setStage({ kind: "parent", step: 5 })}
-              onBack={() => setStage({ kind: "parent", step: 1 })}
+              onBack={() => setStage({ kind: "parent", step: 23 })}
             />
           );
         case 6:
@@ -652,16 +678,11 @@ export default function Home() {
         case 10:
           return (
             <PaymentScreen
-              onNext={() => setStage({ kind: "parent", step: 22 })}
+              onNext={() => {
+                setPrevStep(10);
+                setStage({ kind: "parent", step: 20 });
+              }}
               onBack={back}
-            />
-          );
-        case 22:
-          return (
-            <SignUpScreen
-              childName={childName}
-              onNext={() => setStage({ kind: "parent", step: 9 })}
-              onBack={() => setStage({ kind: "parent", step: 10 })}
             />
           );
         case 12:
@@ -1112,10 +1133,12 @@ export default function Home() {
       ? "who-joining"
       : stage.kind === "who"
       ? "who"
-      : stage.kind === "imagine-focus"
-      ? "imagine-focus"
       : stage.kind === "login"
       ? "login"
+      : stage.kind === "onboarding-signup"
+      ? "onboarding-signup"
+      : stage.kind === "imagine-focus"
+      ? "imagine-focus"
       : stage.kind === "parent"
       ? `parent-${stage.step}`
       : stage.kind === "child"
