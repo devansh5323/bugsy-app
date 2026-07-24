@@ -35,6 +35,7 @@ import { LoginScreen } from "./components/onboarding/LoginScreen";
 import { WhoAreYou } from "./components/onboarding/WhoAreYou";
 import { ParentIntro } from "./components/onboarding/ParentIntro";
 import { AssessmentIntro } from "./components/onboarding/AssessmentIntro";
+import { WhyThisMatterScreen } from "./components/onboarding/WhyThisMatterScreen";
 import { ConsentScreen } from "./components/onboarding/ConsentScreen";
 import { InviteChildScreen } from "./components/onboarding/InviteChildScreen";
 import { InviteChoiceScreen } from "./components/onboarding/InviteChoiceScreen";
@@ -88,6 +89,7 @@ type Stage =
   | { kind: "login" } // "I already have an account" path from welcome
   | { kind: "onboarding-signup" } // sign-up step between who-joining and imagine-focus
   | { kind: "imagine-focus" } // sits between onboarding-signup and bugsy-intro
+  | { kind: "why-this-matters" } // sits between AssessmentIntro and TellMeAboutChild
   | { kind: "parent"; step: number }
   | { kind: "child"; step: number }
   | { kind: "handover"; step: number }
@@ -511,6 +513,17 @@ export default function Home() {
       );
     }
 
+    if (stage.kind === "why-this-matters") {
+      return (
+        <WhyThisMatterScreen
+          tint={TINT}
+          onNext={() => setStage({ kind: "parent", step: 7 })}
+          onSkip={() => setStage({ kind: "parent", step: 6 })}
+          onBack={() => setStage({ kind: "parent", step: 5 })}
+        />
+      );
+    }
+
     if (stage.kind === "welcome") {
       return (
         <Welcome
@@ -582,7 +595,7 @@ export default function Home() {
             <AssessmentIntro
               tint={TINT}
               parentName={parentName}
-              onNext={() => setStage({ kind: "parent", step: 7 })}
+              onNext={() => setStage({ kind: "why-this-matters" })}
               onSkip={() => setStage({ kind: "parent", step: 6 })}
               onBack={() => setStage({ kind: "parent", step: 23 })}
             />

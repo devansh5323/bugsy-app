@@ -71,7 +71,7 @@ function ShieldIcon({ size = 14, color = "rgba(216,206,255,0.85)" }: { size?: nu
 const STEPS = [
   { bg: "#5B4FCF", Icon: PhoneLinkIcon, title: "They tap the link", subtitle: "on their device." },
   { bg: "#3B82C4", Icon: MiniCatFaceIcon, title: "Create their profile", subtitle: "and meet Fumi!" },
-  { bg: "#3A2E63", Icon: StarIcon, title: "Start their personalized", subtitle: "adventure." },
+  { bg: "#3A2E63", Icon: StarIcon, title: "Start their adventure", subtitle: "personalized missions." },
 ];
 
 export function InviteSentScreen({

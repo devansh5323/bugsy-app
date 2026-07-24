@@ -54,7 +54,7 @@ function SproutIcon({ size = 22 }: { size?: number }) {
           <stop offset="100%" stopColor="#E8E3D8" />
         </linearGradient>
       </defs>
-      <path d="M12 20V12" stroke={`url(#${id}-sp)`} strokeWidth="2.2" strokeLinecap="round" />
+      <path d="M12 20V12" stroke="#F0EBDF" strokeWidth="2.2" strokeLinecap="round" />
       <rect x="9" y="20" width="6" height="2" rx="1" fill={`url(#${id}-sp)`} />
       <path d="M12 13C12 8.5 8.5 6.5 5 6.5c0 3.8 1.8 7.3 7 7.3Z" fill={`url(#${id}-sp)`} />
       <path d="M12 12.5c0-4 3-6 6.5-6 .2 3.5-1.4 7-6.5 7Z" fill={`url(#${id}-sp)`} opacity="0.9" />
@@ -72,7 +72,7 @@ const CARDS: { iconColor: string; iconBg: string; Icon: (p: { size?: number }) =
   },
   {
     iconColor: "#A78BFA", iconBg: "linear-gradient(160deg, #A78BFA 0%, #6D28D9 100%)", Icon: StarIcon,
-    text: <>Through caring for me, they&apos;ll build attention, confidence, responsibility, and life skills—<br /><span style={{ color: LAVENDER }}>one day at a time.</span></>,
+    text: <>Through caring for me, they&apos;ll build attention, confidence, responsibility, and life skills—<br /><span style={{ color: LAVENDER }}>one skill at a time.</span></>,
   },
   {
     iconColor: "#34D399", iconBg: "linear-gradient(160deg, #34D399 0%, #0D9463 100%)", Icon: SproutIcon,
@@ -237,7 +237,7 @@ export function BugsyIntro({
                 animate={{ y: [0, -12, 0] }}
                 transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut", delay: 1.0 }}
               >
-                <Bobo mood="happy" tint={tint} size={215} animate />
+                <Bobo mood="waving" tint={tint} size={215} animate />
               </motion.div>
             </motion.div>
           )}

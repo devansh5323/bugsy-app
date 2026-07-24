@@ -3,6 +3,7 @@
 import { motion, type Variants, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { NightRoomBackdrop } from "./WhoAreYou";
+import { GrowthProfileInsightScreen } from "./GrowthProfileInsightScreen";
 
 const F     = "var(--font-nunito), system-ui, sans-serif";
 const W     = 344;   // content width
@@ -65,10 +66,14 @@ export function QuestionnaireScreen({
 }) {
   const name = childName.trim() || "your child";
 
-  const [idx,         setIdx]         = useState(0);
-  const [answers,     setAnswers]     = useState<Record<number, string>>({});
-  const [dir,         setDir]         = useState(1);
-  const [celebrating, setCelebrating] = useState(false);
+  const [idx,             setIdx]             = useState(0);
+  const [answers,         setAnswers]         = useState<Record<number, string>>({});
+  const [dir,             setDir]             = useState(1);
+  const [celebrating,     setCelebrating]     = useState(false);
+  // Interstitial "Growth Profile is nearly ready" insight screen, shown
+  // once — right after question 7 (idx 6) is answered, before question 8.
+  const [showInsight,     setShowInsight]     = useState(false);
+  const [insightShownOnce, setInsightShownOnce] = useState(false);
 
   const isLast   = idx === TOTAL - 1;
   const barPct   = (idx + 1) / TOTAL;
@@ -84,6 +89,13 @@ export function QuestionnaireScreen({
   }, [celebrating, onNext]);
 
   const goNext = () => {
+    // Right after question 7 (idx 6) is answered, show the Growth Profile
+    // insight interstitial once instead of jumping straight to question 8.
+    if (idx === 6 && !insightShownOnce) {
+      setInsightShownOnce(true);
+      setShowInsight(true);
+      return;
+    }
     if (!isLast) { setDir(1);  setIdx((i) => i + 1); }
     else          setCelebrating(true);
   };
@@ -100,6 +112,19 @@ export function QuestionnaireScreen({
       }
       return { ...prev, [idx]: optId };
     });
+
+  if (showInsight) {
+    return (
+      <GrowthProfileInsightScreen
+        childName={childName}
+        onNext={() => {
+          setShowInsight(false);
+          setDir(1);
+          setIdx((i) => i + 1);
+        }}
+      />
+    );
+  }
 
   return (
     <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
