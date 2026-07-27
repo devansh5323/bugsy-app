@@ -83,6 +83,41 @@ function BellIcon({ size = 20, color = "#fff" }: { size?: number; color?: string
   );
 }
 
+function MiniSparkle({ cx, cy, r, color }: { cx: number; cy: number; r: number; color: string }) {
+  const k = r * 0.28;
+  return (
+    <path
+      d={`M${cx} ${cy - r} L${cx + k} ${cy - k} L${cx + r} ${cy} L${cx + k} ${cy + k} L${cx} ${cy + r} L${cx - k} ${cy + k} L${cx - r} ${cy} L${cx - k} ${cy - k} Z`}
+      fill={color}
+    />
+  );
+}
+
+// Brain-with-clipboard "assessment" badge — hexagon glow ring, two-lobe
+// pink/purple brain, small clipboard-and-pencil overlay bottom-right.
+function AssessmentBrainIcon({ size = 64 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
+      <path d="M32 3 57 17.5V46.5L32 61 7 46.5V17.5Z" fill="rgba(139,92,246,0.16)" stroke="rgba(167,139,250,0.35)" strokeWidth="1.5" />
+      <path d="M32 15c-7.5-4.5-17 0-17 9.5 0 3.2 1.1 5.5 3.2 7.5-2.1 2-3.2 4.3-3.2 7.5 0 9.5 9.5 14 17 9.5V15Z" fill="#F3D2F5" />
+      <path d="M32 15c7.5-4.5 17 0 17 9.5 0 3.2-1.1 5.5-3.2 7.5 2.1 2 3.2 4.3 3.2 7.5 0 9.5-9.5 14-17 9.5V15Z" fill="#E3A9E8" />
+      <path d="M23 23c2-1.2 4.2-1 5.4 1M20.5 31.5c2.2-1 4.3.1 5.2 2.2M41 23c-2-1.2-4.2-1-5.4 1M43.5 31.5c-2.2-1-4.3.1-5.2 2.2" stroke="#A855C4" strokeWidth="1.6" strokeLinecap="round" fill="none" />
+      <g transform="translate(33,38)">
+        <rect x="0" y="0" width="20" height="23" rx="3.2" fill="#fff" stroke="#DCE3F5" strokeWidth="1" />
+        <rect x="5" y="-2.5" width="10" height="5" rx="2" fill="#60A5FA" />
+        <path d="M3 8l1.6 1.6 2.8-3" stroke="#16A34A" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        <rect x="9" y="7" width="8" height="1.8" rx="0.9" fill="#E5E7F5" />
+        <path d="M3 14l1.6 1.6 2.8-3" stroke="#16A34A" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        <rect x="9" y="13" width="6" height="1.8" rx="0.9" fill="#E5E7F5" />
+        <path d="M4 19l8.5-8.5 3 3-8.5 8.5-3.3 1Z" fill="#FBBF24" stroke="#B8790A" strokeWidth="0.6" />
+      </g>
+      <MiniSparkle cx={10} cy={12} r={3.4} color="#C4B5FD" />
+      <MiniSparkle cx={55} cy={11} r={2.6} color="#C4B5FD" />
+      <MiniSparkle cx={6} cy={50} r={2.4} color="#C4B5FD" />
+    </svg>
+  );
+}
+
 export function ParentDashboard({
   tint,
   parentName,
@@ -90,6 +125,7 @@ export function ParentDashboard({
   onNext,
   onReports,
   onProfile,
+  onCompleteAssessment,
 }: {
   tint: number;
   parentName?: string;
@@ -97,6 +133,7 @@ export function ParentDashboard({
   onNext: () => void;
   onReports?: () => void;
   onProfile?: () => void;
+  onCompleteAssessment?: () => void;
 }) {
   const PName = parentName?.trim() || "Parent";
   const CName = childName?.trim() || "Your child";
@@ -126,29 +163,19 @@ export function ParentDashboard({
         background: "linear-gradient(135deg, #0B0A1F 0%, #241B5C 55%, #3B2E82 100%)",
         padding: "48px 16px 22px",
       }}>
-        {/* faint ringed-planet decoration */}
-        <div style={{
-          position: "absolute", top: 4, right: 64, width: 18, height: 18, borderRadius: "50%",
-          background: "rgba(139,124,246,0.14)", transform: "rotate(-20deg)",
-        }}>
-          <div style={{ position: "absolute", inset: "-4px -8px", border: "1.2px solid rgba(139,124,246,0.22)", borderRadius: "50%" }} />
-        </div>
-
-        {/* sparkles */}
-        <span style={{ position: "absolute", top: 20, left: "10%", color: "#fff", fontSize: 20 }}>✦</span>
-        <span style={{ position: "absolute", top: 58, left: "26%", color: "rgba(255,255,255,0.6)", fontSize: 9 }}>✦</span>
-        <span style={{ position: "absolute", top: 10, left: "60%", color: "rgba(255,255,255,0.55)", fontSize: 11 }}>✦</span>
-        <span style={{ position: "absolute", top: 96, left: "4%", color: "rgba(255,255,255,0.5)", fontSize: 10 }}>✦</span>
+        {/* purple sparkles around the mascot */}
+        <span style={{ position: "absolute", top: 84, left: "36%", color: "rgba(196,181,253,0.85)", fontSize: 15 }}>✦</span>
+        <span style={{ position: "absolute", top: 96, left: 8, color: "rgba(196,181,253,0.7)", fontSize: 12 }}>✦</span>
 
         {/* notification bell */}
         <div style={{
-          position: "absolute", top: 18, right: 18, width: 38, height: 38, borderRadius: "50%",
-          background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)",
+          position: "absolute", top: 18, right: 18, width: 42, height: 42, borderRadius: "50%",
+          background: "rgba(255,255,255,0.06)", border: "1.5px solid rgba(255,255,255,0.22)",
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>
-          <BellIcon size={17} />
+          <BellIcon size={18} />
           <span style={{
-            position: "absolute", top: 5, right: 6, width: 8, height: 8, borderRadius: "50%",
+            position: "absolute", top: 6, right: 7, width: 8, height: 8, borderRadius: "50%",
             background: "#A78BFA", border: "1.5px solid #14122B",
           }} />
         </div>
@@ -161,7 +188,7 @@ export function ParentDashboard({
 
         <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative", zIndex: 1 }}>
           <div style={{ flexShrink: 0 }}>
-            <Bobo mood="excited" tint={tint} size={118} animate tailWag armsDown />
+            <Bobo mood="waving" tint={tint} size={150} animate tailWag />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ margin: 0, color: "#fff", fontSize: 25, fontWeight: 900, lineHeight: 1.12 }}>
@@ -188,6 +215,41 @@ export function ParentDashboard({
             <span style={{ fontSize: 16 }}>👧</span>
             Switch to Child Dashboard
             <span style={{ fontSize: 15, opacity: 0.75 }}>›</span>
+          </button>
+        </div>
+
+        {/* ── Assessment nudge card ── */}
+        <div style={{
+          marginTop: 14, position: "relative", zIndex: 1, overflow: "hidden",
+          background: "linear-gradient(135deg, rgba(139,124,246,0.22) 0%, rgba(59,46,130,0.42) 100%), rgba(26,20,64,0.55)",
+          border: "1px solid rgba(160,150,255,0.28)",
+          borderRadius: 22, padding: "16px 16px 18px",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.25)",
+        }}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+            <div style={{ flexShrink: 0 }}>
+              <AssessmentBrainIcon size={62} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ margin: 0, color: "#fff", fontSize: 15.5, fontWeight: 800, lineHeight: 1.3 }}>
+                Unlock personalized insights for your child <span aria-hidden>✨</span>
+              </p>
+              <p style={{ margin: "6px 0 0", color: "rgba(222,218,248,0.75)", fontSize: 12, fontWeight: 500, lineHeight: 1.5 }}>
+                Complete the assessment to help us understand your child better and recommend the right activities.
+              </p>
+            </div>
+          </div>
+          <button onClick={onCompleteAssessment} style={{
+            width: "100%", marginTop: 14, cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+            fontFamily: F, fontSize: 14, fontWeight: 800, color: "#fff",
+            background: "linear-gradient(180deg, #9D6FE8 0%, #7C3AED 100%)",
+            border: "1.5px solid rgba(196,181,253,0.4)",
+            borderRadius: 999, padding: "13px 16px",
+            boxShadow: "0 4px 14px rgba(124,58,237,0.5)",
+          }}>
+            Complete Assessment
+            <span style={{ fontSize: 15, opacity: 0.85 }}>›</span>
           </button>
         </div>
       </div>

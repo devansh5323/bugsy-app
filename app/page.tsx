@@ -124,7 +124,7 @@ const TOUR_STEPS: TourStep[] = [
 ];
 
 export default function Home() {
-  const [stage, setStage] = useState<Stage>({ kind: "splash" });
+  const [stage, setStage] = useState<Stage>({ kind: "parent", step: 9 });
   const [prevStep, setPrevStep] = useState(0);
 
   // When the kid plays a real quest mid-onboarding (either inside
@@ -667,6 +667,7 @@ export default function Home() {
               onNext={advanceParent}
               onReports={() => setStage({ kind: "parent", step: 20 })}
               onProfile={() => setStage({ kind: "parent", step: 21 })}
+              onCompleteAssessment={() => setStage({ kind: "parent", step: 5 })}
             />
           );
         case 20:
