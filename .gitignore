@@ -10,6 +10,9 @@
 !.yarn/releases
 !.yarn/versions
 
+# this project standardizes on pnpm (pnpm-lock.yaml) — don't commit npm's lockfile
+package-lock.json
+
 # testing
 /coverage
 
