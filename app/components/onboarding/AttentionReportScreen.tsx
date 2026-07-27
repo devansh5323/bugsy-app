@@ -218,35 +218,6 @@ function BrainIcon({ size = 20, color = PURPLE }: { size?: number; color?: strin
   );
 }
 
-function SeedlingIcon({ size = 20, color = PURPLE }: { size?: number; color?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <path d="M12 20v-7" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M12 13c0-2.8-2-4.2-5-4.2 0 2.8 2 4.2 5 4.2Z" fill={color} />
-    </svg>
-  );
-}
-
-function PlantIcon({ size = 20, color = PURPLE }: { size?: number; color?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <path d="M12 21V9" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M12 9c0-3.5 3-5 6-5 0 3.5-3 5-6 5Z" fill={color} />
-      <path d="M12 13c0-3-2.6-4.5-6-4.5 0 3 2.6 4.5 6 4.5Z" fill={color} opacity="0.8" />
-      <path d="M12 17c0-2.4-2-3.6-4.6-3.6 0 2.4 2 3.6 4.6 3.6Z" fill={color} opacity="0.6" />
-    </svg>
-  );
-}
-
-function TreeIcon({ size = 20, color = PURPLE }: { size?: number; color?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <path d="M12 21v-6" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M12 4 6 12h3l-3.5 5h13L15 12h3Z" fill={color} />
-    </svg>
-  );
-}
-
 function InfoIcon({ size = 14, color = "#9CA3AF" }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -497,40 +468,17 @@ function AttentionDonutChart({ domains }: { domains: typeof ATTENTION_SUBDOMAINS
 
 function AttentionProfileContent({ name }: { name: string }) {
   const WORKING_ITEMS = [
-    { label: "Visual Attention", statusWord: "strong", manifestations: ["Notices details easily", "Spots patterns", "Follows visual cues", "Looks carefully before responding"], Icon: EyeGlyph },
-    { label: "Sustained Attention", statusWord: "developed", manifestations: ["Completes structured activities", "Creates clear goals", "Returns after distraction"], Icon: TargetRingIcon },
+    { label: "Visual Attention", impactedTag: "Impacted by Strong Visual Attention", manifestations: ["Notices details easily"], Icon: EyeGlyph },
   ];
   const SUPPORT_ITEMS = [
-    { label: "Attention Switching", statusWord: "emerging", manifestations: ["Takes time to shift tasks", "Does not adapt to new rules"], Icon: RefreshGlyph },
-    { label: "Emotional regulation", statusWord: "needs support", manifestations: ["Needs help calming", "Takes time to recover", "Reacts strongly to frustration"], Icon: FilledHeartIcon },
+    { label: "Divided Attention", impactedTag: "Impacted by emerging Divided Attention", manifestations: ["Takes time to transition between tasks"], Icon: GridGlyph },
+    { label: "Sustained Attention", impactedTag: "Impacted by emerging Sustained Attention", manifestations: ["Forgets multi-step instructions"], Icon: TargetRingIcon },
   ];
 
-  const pfiScore = Math.round(
-    ATTENTION_SUBDOMAINS.reduce((s, d) => s + d.score, 0) / ATTENTION_SUBDOMAINS.length
-  );
+  const [legendOpen, setLegendOpen] = useState(false);
 
   return (
     <>
-      <div style={{
-        display: "flex", alignItems: "center", gap: 14, marginBottom: 20,
-        background: "#F5F3FF", border: "1px solid #E4D9FC", borderRadius: 18, padding: "14px 16px",
-      }}>
-        <div style={{ position: "relative", width: 60, height: 60, flexShrink: 0 }}>
-          <BigRingGauge percent={pfiScore} colorFrom="#A78BFA" colorTo="#7C3AED" track="#E4D9FC" size={60} />
-          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ fontFamily: F, fontSize: 14, fontWeight: 900, color: "#1E1B3A" }}>{pfiScore}%</span>
-          </div>
-        </div>
-        <div>
-          <p style={{ margin: 0, fontFamily: F, fontSize: 12, fontWeight: 800, color: "#7C3AED", letterSpacing: 0.5 }}>
-            PFI SCORE
-          </p>
-          <p style={{ margin: "2px 0 0", fontFamily: F, fontSize: 12.5, fontWeight: 500, color: "#5B6472" }}>
-            Based on {ATTENTION_SUBDOMAINS.length} attention domains
-          </p>
-        </div>
-      </div>
-
       <p style={{ margin: "0 0 6px", maxWidth: "82%", fontFamily: F, fontSize: 22, fontWeight: 800, color: "#0F2419" }}>
         How is {name}&apos;s focus shaping up?
       </p>
@@ -553,15 +501,14 @@ function AttentionProfileContent({ name }: { name: string }) {
                   <item.Icon size={19} color="#16A34A" />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: "0 0 4px", fontFamily: F, fontSize: 14, fontWeight: 800, color: "#1E1B3A" }}>{item.label}</p>
                   <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
                     {item.manifestations.map((m, mi) => (
-                      <p key={mi} style={{ margin: 0, fontFamily: F, fontSize: 12, fontWeight: 500, color: "#5B6472", lineHeight: 1.5 }}>
-                        <span style={{ fontWeight: 800, color: "#1E1B3A" }}>Manifestation {mi + 1}:</span> {m}
+                      <p key={mi} style={{ margin: 0, fontFamily: F, fontSize: 14, fontWeight: 700, color: "#1E1B3A" }}>
+                        {m}
                       </p>
                     ))}
                     <p style={{ margin: "4px 0 0", fontFamily: F, fontSize: 12, fontWeight: 600, fontStyle: "italic", color: "#16A34A" }}>
-                      Impacted by {item.label} is {item.statusWord}
+                      {item.impactedTag}
                     </p>
                   </div>
                 </div>
@@ -584,15 +531,14 @@ function AttentionProfileContent({ name }: { name: string }) {
                   <item.Icon size={19} color="#EA580C" />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: "0 0 4px", fontFamily: F, fontSize: 14, fontWeight: 800, color: "#1E1B3A" }}>{item.label}</p>
                   <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
                     {item.manifestations.map((m, mi) => (
-                      <p key={mi} style={{ margin: 0, fontFamily: F, fontSize: 12, fontWeight: 500, color: "#5B6472", lineHeight: 1.5 }}>
-                        <span style={{ fontWeight: 800, color: "#1E1B3A" }}>Manifestation {mi + 1}:</span> {m}
+                      <p key={mi} style={{ margin: 0, fontFamily: F, fontSize: 14, fontWeight: 700, color: "#1E1B3A" }}>
+                        {m}
                       </p>
                     ))}
                     <p style={{ margin: "4px 0 0", fontFamily: F, fontSize: 12, fontWeight: 600, fontStyle: "italic", color: "#EA580C" }}>
-                      Impacted by {item.label} is {item.statusWord}
+                      {item.impactedTag}
                     </p>
                   </div>
                 </div>
@@ -611,9 +557,53 @@ function AttentionProfileContent({ name }: { name: string }) {
         </div>
       </div>
 
-      <p style={{ margin: "0 0 12px", fontFamily: F, fontSize: 16, fontWeight: 800, color: "#1E1B3A" }}>
-        Attention Profile
-      </p>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12, position: "relative" }}>
+        <p style={{ margin: 0, fontFamily: F, fontSize: 16, fontWeight: 800, color: "#1E1B3A" }}>
+          Attention Profile
+        </p>
+        <button
+          onClick={() => setLegendOpen((v) => !v)}
+          aria-label="What do these labels mean?"
+          style={{ display: "flex", alignItems: "center", gap: 1, background: "none", border: "none", padding: 4, cursor: "pointer", touchAction: "manipulation" }}
+        >
+          <InfoIcon size={13} />
+          <span style={{ color: "#B0AEC4", fontSize: 14, lineHeight: 1 }}>›</span>
+        </button>
+
+        <AnimatePresence>
+          {legendOpen && (
+            <>
+              <div onClick={() => setLegendOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 30 }} />
+              <motion.div
+                initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                transition={{ duration: 0.15 }}
+                style={{
+                  position: "absolute", top: "100%", left: 0, zIndex: 31, width: 260,
+                  background: "#fff", borderRadius: 14, padding: 8,
+                  border: "1px solid #EEF0F4", boxShadow: "0 12px 28px rgba(0,0,0,0.18)",
+                  display: "flex", flexWrap: "wrap", gap: 8,
+                }}
+              >
+                {(["Strong", "Developed", "Emerging", "Needs Support"] as const).map((s) => {
+                  const st = SUBDOMAIN_STATUS_STYLE[s];
+                  const range = s === "Strong" ? "80-100%" : s === "Developed" ? "60-79%" : s === "Emerging" ? "30-59%" : "0-29%";
+                  return (
+                    <div key={s} style={{ flex: "1 1 45%", border: "1px solid #EEF0F4", borderRadius: 14, padding: "10px 12px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
+                        <span style={{ flexShrink: 0, width: 8, height: 8, borderRadius: "50%", background: st.ring }} />
+                        <span style={{ fontFamily: F, fontSize: 12, fontWeight: 800, color: "#1E1B3A" }}>{s}</span>
+                      </div>
+                      <span style={{ fontFamily: F, fontSize: 11, fontWeight: 500, color: "#8A8FA3" }}>{range}</span>
+                    </div>
+                  );
+                })}
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+      </div>
 
       <div style={{ background: "#fff", border: "1px solid #EEF0F4", borderRadius: 18, padding: "16px 12px", marginBottom: 12 }}>
         <AttentionDonutChart domains={ATTENTION_SUBDOMAINS} />
@@ -632,22 +622,6 @@ function AttentionProfileContent({ name }: { name: string }) {
             );
           })}
         </div>
-      </div>
-
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-        {(["Strong", "Developed", "Emerging", "Needs Support"] as const).map((s) => {
-          const st = SUBDOMAIN_STATUS_STYLE[s];
-          const range = s === "Strong" ? "80-100%" : s === "Developed" ? "60-79%" : s === "Emerging" ? "30-59%" : "0-29%";
-          return (
-            <div key={s} style={{ flex: "1 1 45%", border: "1px solid #EEF0F4", borderRadius: 14, padding: "10px 12px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
-                <span style={{ flexShrink: 0, width: 8, height: 8, borderRadius: "50%", background: st.ring }} />
-                <span style={{ fontFamily: F, fontSize: 12, fontWeight: 800, color: "#1E1B3A" }}>{s}</span>
-              </div>
-              <span style={{ fontFamily: F, fontSize: 11, fontWeight: 500, color: "#8A8FA3" }}>{range}</span>
-            </div>
-          );
-        })}
       </div>
     </>
   );
@@ -1023,16 +997,13 @@ export function AttentionReportScreen({
   };
   const [heroRingFrom, heroRingTo] = RING_GRADIENTS[heroStatus];
 
-  // The four-stage growth journey shown under the score, matching the
-  // Label/Score legend shown from the info icon.
+  // Label/Score legend shown from the info icon beside the percentage.
   const JOURNEY_STAGES = [
-    { key: "needs-support", label: "Needs support", scoreRange: "Below 35%", Icon: SeedlingIcon },
-    { key: "emerging", label: "Emerging", scoreRange: "35-60", Icon: SproutIcon },
-    { key: "typical", label: "Growing Steadily", scoreRange: "60-79%", Icon: PlantIcon },
-    { key: "strong", label: "Thriving", scoreRange: "80-100%", Icon: TreeIcon },
+    { key: "needs-support", label: "Needs support", scoreRange: "Below 35%" },
+    { key: "emerging", label: "Emerging", scoreRange: "35-60" },
+    { key: "typical", label: "Growing Steadily", scoreRange: "60-79%" },
+    { key: "strong", label: "Thriving", scoreRange: "80-100%" },
   ];
-  const journeyActiveIdx =
-    heroScore >= 80 ? 3 : heroScore >= 60 ? 2 : heroScore >= 35 ? 1 : 0;
 
   const [viewMenuOpen, setViewMenuOpen] = useState(false);
   const [journeyInfoOpen, setJourneyInfoOpen] = useState(false);
@@ -1311,9 +1282,47 @@ export function AttentionReportScreen({
                       </div>
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8 }}>
-                      <div style={{ display: "flex", alignItems: "baseline", gap: 3 }}>
+                      <div style={{ display: "flex", alignItems: "baseline", gap: 3, position: "relative" }}>
                         <span style={{ fontFamily: F, fontSize: 36, fontWeight: 900, color: "#1E1B3A" }}>{heroScore}</span>
                         <span style={{ fontFamily: F, fontSize: 18, fontWeight: 800, color: "#1E1B3A" }}>%</span>
+                        <button
+                          onClick={() => setJourneyInfoOpen((v) => !v)}
+                          aria-label="What do these percentages mean?"
+                          style={{ display: "flex", alignItems: "center", gap: 1, background: "none", border: "none", padding: 4, marginLeft: 2, cursor: "pointer", touchAction: "manipulation" }}
+                        >
+                          <InfoIcon size={13} />
+                          <span style={{ color: "#B0AEC4", fontSize: 14, lineHeight: 1 }}>›</span>
+                        </button>
+
+                        <AnimatePresence>
+                          {journeyInfoOpen && (
+                            <>
+                              <div onClick={() => setJourneyInfoOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 30 }} />
+                              <motion.div
+                                initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                                transition={{ duration: 0.15 }}
+                                style={{
+                                  position: "absolute", top: "100%", right: 0, zIndex: 31, width: 220,
+                                  background: "#fff", borderRadius: 14, overflow: "hidden",
+                                  border: "1px solid #EEF0F4", boxShadow: "0 12px 28px rgba(0,0,0,0.18)",
+                                }}
+                              >
+                                <div style={{ display: "flex", background: "#F8F7FC", borderBottom: "1px solid #EEF0F4" }}>
+                                  <span style={{ flex: 1, fontFamily: F, fontSize: 12, fontWeight: 800, color: "#1E1B3A", padding: "10px 14px" }}>Label</span>
+                                  <span style={{ flex: 1, fontFamily: F, fontSize: 12, fontWeight: 800, color: "#1E1B3A", padding: "10px 14px" }}>Score</span>
+                                </div>
+                                {JOURNEY_STAGES.map((s, i) => (
+                                  <div key={s.key} style={{ display: "flex", borderTop: i > 0 ? "1px solid #EEF0F4" : "none" }}>
+                                    <span style={{ flex: 1, fontFamily: F, fontSize: 12.5, fontWeight: 600, color: "#1E1B3A", padding: "10px 14px" }}>{s.label}</span>
+                                    <span style={{ flex: 1, fontFamily: F, fontSize: 12.5, fontWeight: 500, color: "#5B6472", padding: "10px 14px" }}>{s.scoreRange}</span>
+                                  </div>
+                                ))}
+                              </motion.div>
+                            </>
+                          )}
+                        </AnimatePresence>
                       </div>
                       <span style={{
                         display: "inline-flex", alignItems: "center", gap: 4, whiteSpace: "nowrap",
@@ -1351,85 +1360,8 @@ export function AttentionReportScreen({
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ margin: 0, fontFamily: F, fontSize: 12, fontWeight: 500, color: "#5B6472", lineHeight: 1.55 }}>
-                        This profile shows how {name} is doing across learning, emotional regulation, thinking skills, and everyday behavior — shaping their daily routines, schoolwork, and relationships.
+                        This profile shows how {name} is doing across focus, learning and everyday behavior.
                       </p>
-                    </div>
-                  </div>
-
-                  <div style={{
-                    position: "relative",
-                    background: "linear-gradient(180deg, rgba(124,58,237,0.05) 0%, rgba(124,58,237,0.08) 100%)",
-                    borderRadius: 16, padding: "14px 14px 16px", marginBottom: 14,
-                    boxShadow: "0 1px 0 rgba(255,255,255,0.7) inset, 0 6px 14px rgba(76,41,168,0.10)",
-                  }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 16 }}>
-                      <span style={{ fontFamily: F, fontSize: 12, fontWeight: 800, color: "#1E1B3A", letterSpacing: 0.5 }}>
-                        GROWING JOURNEY
-                      </span>
-                      <button
-                        onClick={() => setJourneyInfoOpen((v) => !v)}
-                        aria-label="What do these stages mean?"
-                        style={{ display: "flex", alignItems: "center", gap: 2, background: "none", border: "none", padding: 2, cursor: "pointer", touchAction: "manipulation" }}
-                      >
-                        <InfoIcon size={13} />
-                        <span style={{ color: "#B0AEC4", fontSize: 14, lineHeight: 1, marginLeft: 2 }}>›</span>
-                      </button>
-                    </div>
-
-                    <AnimatePresence>
-                      {journeyInfoOpen && (
-                        <>
-                          <div onClick={() => setJourneyInfoOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 30 }} />
-                          <motion.div
-                            initial={{ opacity: 0, y: -6, scale: 0.97 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: -6, scale: 0.97 }}
-                            transition={{ duration: 0.15 }}
-                            style={{
-                              position: "absolute", top: 34, left: 14, right: 14, zIndex: 31,
-                              background: "#fff", borderRadius: 14, overflow: "hidden",
-                              border: "1px solid #EEF0F4", boxShadow: "0 12px 28px rgba(0,0,0,0.18)",
-                            }}
-                          >
-                            <div style={{ display: "flex", background: "#F8F7FC", borderBottom: "1px solid #EEF0F4" }}>
-                              <span style={{ flex: 1, fontFamily: F, fontSize: 12, fontWeight: 800, color: "#1E1B3A", padding: "10px 14px" }}>Label</span>
-                              <span style={{ flex: 1, fontFamily: F, fontSize: 12, fontWeight: 800, color: "#1E1B3A", padding: "10px 14px" }}>Score</span>
-                            </div>
-                            {JOURNEY_STAGES.map((s, i) => (
-                              <div key={s.key} style={{ display: "flex", borderTop: i > 0 ? "1px solid #EEF0F4" : "none" }}>
-                                <span style={{ flex: 1, fontFamily: F, fontSize: 12.5, fontWeight: 600, color: "#1E1B3A", padding: "10px 14px" }}>{s.label}</span>
-                                <span style={{ flex: 1, fontFamily: F, fontSize: 12.5, fontWeight: 500, color: "#5B6472", padding: "10px 14px" }}>{s.scoreRange}</span>
-                              </div>
-                            ))}
-                          </motion.div>
-                        </>
-                      )}
-                    </AnimatePresence>
-
-                    <div style={{ position: "relative" }}>
-                      <div style={{ position: "absolute", top: 21, left: "10%", right: "10%", borderTop: "2px dashed rgba(124,58,237,0.22)", zIndex: 0 }} />
-                      <div style={{ display: "flex", justifyContent: "space-between", position: "relative", zIndex: 1 }}>
-                        {JOURNEY_STAGES.map((s, i) => {
-                          const active = i === journeyActiveIdx;
-                          return (
-                            <div key={s.key} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, flex: 1 }}>
-                              <div style={{
-                                width: active ? 48 : 42, height: active ? 48 : 42, borderRadius: "50%",
-                                background: active ? "#fff" : "radial-gradient(circle at 35% 30%, #F3FBF6, #DFF0E6)",
-                                border: active ? "2px solid #22C55E" : "none",
-                                boxShadow: active ? "0 0 14px rgba(34,197,94,0.4)" : "inset 0 1px 2px rgba(255,255,255,0.8), inset 0 -2px 4px rgba(22,101,52,0.06)",
-                                display: "flex", alignItems: "center", justifyContent: "center",
-                              }}>
-                                <s.Icon size={active ? 22 : 18} color={active ? "#22C55E" : "#8FAE97"} />
-                              </div>
-                              <span style={{ fontFamily: F, fontSize: 10.5, fontWeight: 700, color: active ? "#16A34A" : "#41465B", textAlign: "center" }}>
-                                {s.label}
-                              </span>
-                              {active && <span style={{ width: 16, height: 3, borderRadius: 2, background: "#22C55E" }} />}
-                            </div>
-                          );
-                        })}
-                      </div>
                     </div>
                   </div>
 
@@ -1632,18 +1564,6 @@ export function AttentionReportScreen({
                           <span>{tier.pillIcon}</span>
                           {status}
                         </span>
-
-                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                          <div style={{ flex: 1, height: 6, borderRadius: 999, background: "rgba(0,0,0,0.07)", overflow: "hidden" }}>
-                            <div style={{
-                              width: `${score}%`, height: "100%", borderRadius: 999,
-                              background: `linear-gradient(90deg, ${tier.color}99, ${tier.color})`,
-                            }} />
-                          </div>
-                          <span style={{ flexShrink: 0, fontFamily: F, fontSize: 12.5, fontWeight: 800, color: "#1E1B3A" }}>
-                            {score}%
-                          </span>
-                        </div>
                       </motion.button>
                     );
                   })}
