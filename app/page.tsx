@@ -124,7 +124,7 @@ const TOUR_STEPS: TourStep[] = [
 ];
 
 export default function Home() {
-  const [stage, setStage] = useState<Stage>({ kind: "parent", step: 9 });
+  const [stage, setStage] = useState<Stage>({ kind: "splash" });
   const [prevStep, setPrevStep] = useState(0);
 
   // When the kid plays a real quest mid-onboarding (either inside
