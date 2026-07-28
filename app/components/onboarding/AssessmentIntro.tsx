@@ -10,7 +10,7 @@ const F = "var(--font-nunito), system-ui, sans-serif";
 const PURPLE = "#A78BFA";
 const PINK   = "#EC4899";
 const GOLD   = "#FBBF24";
-
+   
 // The "Did you know..." line, grouped the same way as its visual line
 // breaks, revealed one word at a time.
 const DYK_LINES: { words: string[]; gold?: boolean }[] = [

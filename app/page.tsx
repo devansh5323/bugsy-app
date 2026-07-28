@@ -667,7 +667,6 @@ export default function Home() {
               onNext={advanceParent}
               onReports={() => setStage({ kind: "parent", step: 20 })}
               onProfile={() => setStage({ kind: "parent", step: 21 })}
-              onCompleteAssessment={() => setStage({ kind: "parent", step: 5 })}
             />
           );
         case 20:

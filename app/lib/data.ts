@@ -106,6 +106,29 @@ export const PARENT_GOAL_OPTIONS: ChipOption[] = [
 // land first; clan competition is a reward, not a starting point.
 export const CLAN_UNLOCK_THRESHOLD = 3;
 
+// ── Brain Health Score ─────────────────────────────────────────
+// Mirrors AttentionReportScreen's "Brain Health Score" hero card
+// (the average of DETAILS[0]'s breakdown scores: 72, 68, 55) so the
+// Parent Dashboard's summary card always shows the exact same
+// score, status, and colors — update both places together.
+export const BRAIN_HEALTH_SCORE = 65;
+export type BrainHealthStatus = "Thriving" | "Growing Steadily" | "Emerging" | "Needs Support";
+export function brainHealthStatus(score: number): BrainHealthStatus {
+  if (score >= 80) return "Thriving";
+  if (score >= 60) return "Growing Steadily";
+  if (score >= 30) return "Emerging";
+  return "Needs Support";
+}
+export const BRAIN_HEALTH_STATUS_STYLE: Record<
+  BrainHealthStatus,
+  { color: string; bg: string; ringFrom: string; ringTo: string; pillIcon: string }
+> = {
+  "Thriving":         { color: "#16A34A", bg: "#DCFCE7", ringFrom: "#6EE7B7", ringTo: "#16A34A", pillIcon: "★" },
+  "Growing Steadily": { color: "#2563EB", bg: "#DBEAFE", ringFrom: "#5EEAD4", ringTo: "#3B82F6", pillIcon: "↗" },
+  "Emerging":         { color: "#D97706", bg: "#FEF3C7", ringFrom: "#FCD34D", ringTo: "#D97706", pillIcon: "↗" },
+  "Needs Support":    { color: "#DC2626", bg: "#FEE2E2", ringFrom: "#FCA5A5", ringTo: "#DC2626", pillIcon: "↓" },
+};
+
 export const TINT = 250; // periwinkle-blue cat
 export const ACCENT_HUE = 295; // violet
 export const ACCENT_CHROMA = 0.16;
