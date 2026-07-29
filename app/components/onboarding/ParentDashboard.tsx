@@ -224,17 +224,33 @@ export function ParentDashboard({
         <span style={{ position: "absolute", top: 84, left: "36%", color: "rgba(196,181,253,0.85)", fontSize: 15 }}>✦</span>
         <span style={{ position: "absolute", top: 96, left: 8, color: "rgba(196,181,253,0.7)", fontSize: 12 }}>✦</span>
 
-        {/* notification bell */}
-        <div style={{
-          position: "absolute", top: 18, right: 18, width: 42, height: 42, borderRadius: "50%",
-          background: "rgba(255,255,255,0.06)", border: "1.5px solid rgba(255,255,255,0.22)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-        }}>
-          <BellIcon size={18} />
-          <span style={{
-            position: "absolute", top: 6, right: 7, width: 8, height: 8, borderRadius: "50%",
-            background: "#A78BFA", border: "1.5px solid #14122B",
-          }} />
+        {/* top row — "Child Mode" switch + notification bell, grouped
+            together on the right, matching the reference exactly */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 10, position: "relative", zIndex: 1, marginBottom: 18 }}>
+          <button onClick={onNext} style={{
+            display: "flex", alignItems: "center", gap: 8, cursor: "pointer",
+            fontFamily: F, fontSize: 12.5, fontWeight: 700, color: "#fff",
+            background: "linear-gradient(180deg, #5B4FE0 0%, #3E30B0 100%)",
+            border: "1.5px solid rgba(160,150,255,0.55)",
+            borderRadius: 999, padding: "11px 16px", lineHeight: 1.3,
+            boxShadow: "0 0 14px rgba(120,110,240,0.5)",
+          }}>
+            <span style={{ fontSize: 16 }}>🧒</span>
+            Child Mode
+            <span aria-hidden>→</span>
+          </button>
+
+          <div style={{
+            position: "relative", flexShrink: 0, width: 42, height: 42, borderRadius: "50%",
+            background: "rgba(255,255,255,0.06)", border: "1.5px solid rgba(255,255,255,0.22)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <BellIcon size={18} />
+            <span style={{
+              position: "absolute", top: 6, right: 7, width: 8, height: 8, borderRadius: "50%",
+              background: "#A78BFA", border: "1.5px solid #14122B",
+            }} />
+          </div>
         </div>
 
         {/* wavy bottom decoration */}
@@ -255,24 +271,9 @@ export function ParentDashboard({
               Great to see you here.
             </p>
             <p style={{ margin: "6px 0 0", color: "rgba(222,218,248,0.8)", fontSize: 12, fontWeight: 500, lineHeight: 1.4 }}>
-              Let&apos;s help your child grow<br />together. 💜
+              Here&apos;s what Fumi is working on with {CName}<br />today. 💜
             </p>
           </div>
-        </div>
-
-        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16, position: "relative", zIndex: 1 }}>
-          <button onClick={onNext} style={{
-            display: "flex", alignItems: "center", gap: 8, cursor: "pointer",
-            fontFamily: F, fontSize: 12.5, fontWeight: 700, color: "#fff",
-            background: "linear-gradient(180deg, #5B4FE0 0%, #3E30B0 100%)",
-            border: "1.5px solid rgba(160,150,255,0.55)",
-            borderRadius: 999, padding: "11px 16px", lineHeight: 1.3,
-            boxShadow: "0 0 14px rgba(120,110,240,0.5)",
-          }}>
-            <span style={{ fontSize: 16 }}>👧</span>
-            Switch to Child Dashboard
-            <span style={{ fontSize: 15, opacity: 0.75 }}>›</span>
-          </button>
         </div>
 
       </div>
@@ -293,53 +294,74 @@ export function ParentDashboard({
             const brainTier = BRAIN_HEALTH_STATUS_STYLE[brainStatus];
             const circumference = 226.2;
             const dash = (BRAIN_HEALTH_SCORE / 100) * circumference;
+            const STATUS_EMOJI: Record<typeof brainStatus, string> = {
+              "Thriving": "🌟",
+              "Growing Steadily": "🌱",
+              "Emerging": "🌤️",
+              "Needs Support": "💧",
+            };
             return (
-              <div style={{ ...CARD }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                  <div style={{ position: "relative", flexShrink: 0, width: 88, height: 88 }}>
-                    <svg width="88" height="88" viewBox="0 0 88 88">
+              <div style={{ ...CARD, overflow: "hidden", position: "relative" }}>
+                <span style={{ position: "absolute", top: 10, right: 96, color: "#DDD6FE", fontSize: 12 }}>✦</span>
+                <span style={{ position: "absolute", bottom: 14, right: 128, color: "#DDD6FE", fontSize: 9 }}>✦</span>
+
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ position: "relative", flexShrink: 0, width: 76, height: 76 }}>
+                    <span style={{ position: "absolute", top: -4, right: -2, color: "#C4B5FD", fontSize: 11 }}>✦</span>
+                    <span style={{ position: "absolute", bottom: 0, left: -6, color: "#A7F3D0", fontSize: 9 }}>✦</span>
+                    <svg width="76" height="76" viewBox="0 0 76 76">
                       <defs>
                         <linearGradient id="pd-brain-ring" x1="0%" y1="0%" x2="100%" y2="100%">
                           <stop offset="0%" stopColor={brainTier.ringFrom} />
                           <stop offset="100%" stopColor={brainTier.ringTo} />
                         </linearGradient>
                       </defs>
-                      <circle cx="44" cy="44" r="36" fill="none" stroke="#EDE9FE" strokeWidth="8" />
+                      <circle cx="38" cy="38" r="31" fill="none" stroke="#EDE9FE" strokeWidth="7" />
                       <circle
-                        cx="44" cy="44" r="36" fill="none" stroke="url(#pd-brain-ring)" strokeWidth="8" strokeLinecap="round"
-                        strokeDasharray={`${dash} ${circumference}`} transform="rotate(-90 44 44)"
+                        cx="38" cy="38" r="31" fill="none" stroke="url(#pd-brain-ring)" strokeWidth="7" strokeLinecap="round"
+                        strokeDasharray={`${(dash / circumference) * 194.8} 194.8`} transform="rotate(-90 38 38)"
                       />
                     </svg>
-                    <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 34 }}>🧠</div>
+                    <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28 }}>🧠</div>
                   </div>
 
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 5, minWidth: 0 }}>
-                        <p style={{ margin: 0, color: "#1E1B3A", fontSize: 15.5, fontWeight: 800 }}>{CName}&apos;s Brain Health</p>
-                        <span style={{ color: "#C4C7D1", fontSize: 13, flexShrink: 0 }}>ⓘ</span>
-                      </div>
-                      <div style={{
-                        display: "inline-flex", alignItems: "center", gap: 5, flexShrink: 0,
-                        background: brainTier.bg, borderRadius: 20, padding: "5px 11px",
-                      }}>
-                        <span style={{ fontSize: 12 }}>🏆</span>
-                        <span style={{ fontFamily: F, fontSize: 11, fontWeight: 800, color: brainTier.color }}>On track</span>
-                      </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 3 }}>
+                      <span style={{ fontFamily: F, fontSize: 10, fontWeight: 800, color: PURPLE, letterSpacing: "1px", textTransform: "uppercase" }}>Brain Health</span>
+                      <span style={{ color: "#C4C7D1", fontSize: 12 }}>ⓘ</span>
                     </div>
-                    <p style={{ margin: "0 0 6px", fontFamily: F, fontSize: 11.5 }}>
-                      <span style={{ color: "#1E1B3A", fontWeight: 700 }}>Status:</span>{" "}
-                      <span style={{ color: brainTier.color, fontWeight: 800 }}>{brainStatus}</span>
-                      <span style={{ color: "#D5D8E0" }}> | </span>
-                      <span style={{ color: "#1E1B3A", fontWeight: 700 }}>Score:</span>{" "}
-                      <span style={{ color: brainTier.color, fontWeight: 800 }}>{BRAIN_HEALTH_SCORE}%</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 4 }}>
+                      <p style={{ margin: 0, color: "#1E1B3A", fontSize: 16, fontWeight: 900, whiteSpace: "nowrap" }}>{brainStatus}</p>
+                      <span style={{ fontSize: 14 }}>{STATUS_EMOJI[brainStatus]}</span>
+                    </div>
+                    <p style={{ margin: "0 0 6px", color: "#7B7F8C", fontSize: 10.5, lineHeight: 1.35 }}>
+                      {CName} is improving their focus and emotional balance.
                     </p>
+                    <span style={{
+                      display: "inline-flex", alignItems: "center", gap: 4,
+                      background: "#DCFCE7", borderRadius: 20, padding: "4px 10px",
+                      fontFamily: F, fontSize: 10.5, fontWeight: 800, color: "#16A34A", whiteSpace: "nowrap",
+                    }}>
+                      ↗ +5 since last week
+                    </span>
+                  </div>
+
+                  <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                    <div style={{
+                      background: "#F3F0FF", borderRadius: 24, padding: "10px 14px",
+                      display: "flex", flexDirection: "column", alignItems: "center",
+                    }}>
+                      <p style={{ margin: 0, color: PURPLE, fontSize: 22, fontWeight: 900, lineHeight: 1, whiteSpace: "nowrap" }}>
+                        {BRAIN_HEALTH_SCORE}<span style={{ fontSize: 13, fontWeight: 800 }}>%</span>
+                      </p>
+                      <p style={{ margin: 0, color: "#8A8FA3", fontSize: 9, fontWeight: 700, whiteSpace: "nowrap" }}>Overall Score</p>
+                    </div>
                     <button
                       onClick={onReports}
                       style={{
-                        display: "flex", alignItems: "center", gap: 5, cursor: "pointer",
-                        background: "none", border: "none", padding: 0,
-                        fontFamily: F, fontSize: 12.5, fontWeight: 800, color: PURPLE,
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: 4, cursor: "pointer",
+                        background: "#fff", border: `1.5px solid ${PURPLE}`, borderRadius: 999, padding: "8px 10px",
+                        fontFamily: F, fontSize: 10.5, fontWeight: 800, color: PURPLE, whiteSpace: "nowrap",
                       }}
                     >
                       View Growth Profile
@@ -367,104 +389,105 @@ export function ParentDashboard({
             </div>
           </div>
 
-          {/* ── Stats Row — single card, 3 columns ── */}
-          <div style={{ ...CARD, display: "flex", alignItems: "center", padding: "12px 6px" }}>
-
-            {/* Streak */}
-            <div style={{ flex: 3, display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+          {/* ── Weekly Snapshot ── */}
+          <div style={{ ...CARD }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
               <div style={{
-                width: 28, height: 28, borderRadius: "50%",
-                background: "#FEF3C7",
-                display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15,
-              }}>🔥</div>
-              <p style={{ margin: 0, color: "#D97706", fontSize: 26, fontWeight: 900, lineHeight: 1 }}>1</p>
-              <p style={{ margin: 0, color: "#1E1B3A", fontSize: 10, fontWeight: 700, textAlign: "center" }}>Day Streak</p>
-              <p style={{ margin: 0, color: "#8A8FA3", fontSize: 9.5, textAlign: "center" }}>Keep it up!</p>
+                flexShrink: 0, width: 52, height: 52, borderRadius: "50%",
+                background: "#EDE9FE", display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <rect x="3.5" y="4.5" width="17" height="16" rx="3" stroke={PURPLE} strokeWidth="1.8" fill="none" />
+                  <path d="M3.5 9.5h17" stroke={PURPLE} strokeWidth="1.8" />
+                  <path d="M8 2.5v4M16 2.5v4" stroke={PURPLE} strokeWidth="1.8" strokeLinecap="round" />
+                  <rect x="7" y="12" width="4" height="4" rx="1" fill={PURPLE} />
+                </svg>
+              </div>
+              <div>
+                <p style={{ margin: 0, color: "#1E1B3A", fontSize: 15, fontWeight: 900 }}>Weekly Snapshot</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontFamily: F, fontSize: 12, color: "#8A8FA3" }}>This Week So Far</span>
+                  <span style={{ color: "#D5D8E0" }}>|</span>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontFamily: F, fontSize: 12, fontWeight: 700, color: PURPLE }}>
+                    ✦ Keep it up!
+                  </span>
+                </div>
+              </div>
             </div>
 
-            {/* Divider */}
-            <div style={{ width: 1, alignSelf: "stretch", background: "#EEF0F4", margin: "0 3px" }} />
-
-            {/* Focus Score — gauge + badge + description */}
-            <div style={{ flex: 4, display: "flex", flexDirection: "column", alignItems: "center", minWidth: 0 }}>
-              {/* SVG gauge — r=36, viewBox trimmed */}
-              <svg viewBox="0 0 160 88" style={{ width: "100%", maxWidth: 130, display: "block" }}>
-                <defs>
-                  <linearGradient id="fst-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#6D28D9" />
-                    <stop offset="100%" stopColor="#A855F7" />
-                  </linearGradient>
-                </defs>
-                {/* Track — 220° arc, r=36 */}
-                <circle cx="80" cy="62" r="36"
-                  fill="none" stroke="#EEF0F4" strokeWidth="8" strokeLinecap="round"
-                  strokeDasharray="138.5 88.1"
-                  transform="rotate(160, 80, 62)"
-                />
-                {/* Fill — 35% */}
-                <circle cx="80" cy="62" r="36"
-                  fill="none" stroke="url(#fst-grad)" strokeWidth="8" strokeLinecap="round"
-                  strokeDasharray="48.5 178.1"
-                  transform="rotate(160, 80, 62)"
-                  style={{ filter: "drop-shadow(0 0 5px rgba(168,85,247,0.35))" }}
-                />
-                {/* Score */}
-                <text x="80" y="57" textAnchor="middle" dominantBaseline="middle"
-                  fill="#1E1B3A" fontSize="32" fontWeight="900"
-                  fontFamily="var(--font-nunito), system-ui, sans-serif">35</text>
-                {/* Label */}
-                <text x="80" y="76" textAnchor="middle" dominantBaseline="middle"
-                  fill="#8A8FA3" fontSize="9.5" fontWeight="700"
-                  fontFamily="var(--font-nunito), system-ui, sans-serif">Focus Score</text>
-              </svg>
-
-              {/* Badge */}
-              <div style={{
-                display: "inline-flex", alignItems: "center", gap: 4,
-                background: "#FEF3C7", borderRadius: 20,
-                padding: "3px 10px", marginBottom: 5,
-              }}>
-                <span style={{ color: "#D97706", fontSize: 11 }}>↓</span>
-                <span style={{ fontFamily: F, fontSize: 10.5, fontWeight: 800, color: "#D97706" }}>Below average</span>
+            <div style={{ display: "flex", alignItems: "stretch", gap: 10 }}>
+              {/* Missions */}
+              <div style={{ flex: 1, minWidth: 0, position: "relative", overflow: "hidden", background: "#F0FDF4", borderRadius: 16, padding: "12px 12px" }}>
+                <div style={{ position: "relative", flexShrink: 0, width: 38, height: 38, marginBottom: 8 }}>
+                  <span style={{ position: "absolute", top: -5, right: -5, color: "#86EFAC", fontSize: 9 }}>✦</span>
+                  <span style={{ position: "absolute", bottom: -3, left: -5, color: "#86EFAC", fontSize: 7 }}>✦</span>
+                  <div style={{
+                    width: 38, height: 38, borderRadius: "50%",
+                    background: "linear-gradient(160deg, #4ADE80 0%, #16A34A 100%)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    boxShadow: "0 4px 10px rgba(22,163,74,0.3)",
+                  }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                      <path d="M5 13l4.5 4.5L19 7" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                    </svg>
+                  </div>
+                </div>
+                <p style={{ margin: "0 0 2px", color: "#16A34A", fontSize: 24, fontWeight: 900, lineHeight: 1 }}>2</p>
+                <p style={{ margin: "0 0 3px", color: "#1E1B3A", fontSize: 12.5, fontWeight: 800 }}>Missions Completed</p>
+                <p style={{ margin: "0 0 8px", color: "#8A8FA3", fontSize: 10.5 }}>Great progress this week!</p>
+                <span style={{
+                  display: "inline-flex", alignItems: "center", gap: 4,
+                  background: "#DCFCE7", borderRadius: 20, padding: "4px 9px",
+                  fontFamily: F, fontSize: 10, fontWeight: 800, color: "#16A34A",
+                }}>
+                  ↗ +1 vs last week
+                </span>
               </div>
 
-              {/* Description */}
-              <p style={{
-                margin: 0, textAlign: "center", fontFamily: F,
-                fontSize: 10, lineHeight: 1.4, color: "#8A8FA3",
-              }}>
-                Focusing better than{" "}
-                <span style={{ color: "#1E1B3A", fontWeight: 700 }}>35%</span>{" "}
-                of kids this week!
-              </p>
-            </div>
-
-            {/* Divider */}
-            <div style={{ width: 1, alignSelf: "stretch", background: "#EEF0F4", margin: "0 3px" }} />
-
-            {/* Missions */}
-            <div style={{ flex: 3, display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
-              <div style={{
-                width: 28, height: 28, borderRadius: "50%",
-                background: "#DCFCE7",
-                display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15,
-              }}>✅</div>
-              <p style={{ margin: 0, color: "#16A34A", fontSize: 26, fontWeight: 900, lineHeight: 1 }}>2</p>
-              <p style={{ margin: 0, color: "#1E1B3A", fontSize: 10, fontWeight: 700, textAlign: "center" }}>Missions Done</p>
-              <p style={{ margin: 0, color: "#8A8FA3", fontSize: 9.5, textAlign: "center" }}>This week</p>
+              {/* Streak */}
+              <div style={{ flex: 1, minWidth: 0, position: "relative", overflow: "hidden", background: "#FEF3E7", borderRadius: 16, padding: "12px 12px" }}>
+                <div style={{ position: "relative", flexShrink: 0, width: 38, height: 38, marginBottom: 8 }}>
+                  <span style={{ position: "absolute", top: -5, right: -5, color: "#FDBA74", fontSize: 9 }}>✦</span>
+                  <span style={{ position: "absolute", bottom: -3, left: -5, color: "#FDBA74", fontSize: 7 }}>✦</span>
+                  <div style={{
+                    width: 38, height: 38, borderRadius: "50%",
+                    background: "#fff", border: "1px solid #FEE9D6",
+                    display: "flex", alignItems: "center", justifyContent: "center", fontSize: 19,
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+                  }}>🔥</div>
+                </div>
+                <p style={{ margin: "0 0 2px", color: "#D97706", fontSize: 24, fontWeight: 900, lineHeight: 1 }}>1</p>
+                <p style={{ margin: "0 0 3px", color: "#1E1B3A", fontSize: 12.5, fontWeight: 800 }}>Day Streak</p>
+                <p style={{ margin: "0 0 8px", color: "#8A8FA3", fontSize: 10.5 }}>You&apos;re on fire! 🔥</p>
+                <span style={{
+                  display: "inline-flex", alignItems: "center", gap: 4,
+                  background: "#FEF3E7", borderRadius: 20, padding: "4px 9px",
+                  fontFamily: F, fontSize: 10, fontWeight: 800, color: "#D97706",
+                }}>
+                  📅 Best: 1 day
+                </span>
+              </div>
             </div>
           </div>
 
           {/* ── TODAY'S MISSION ── */}
-          <div style={{ ...CARD }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-              <p style={{ margin: 0, color: "#1E1B3A", fontSize: 15, fontWeight: 800 }}>Today&apos;s Mission</p>
+          <div style={{
+            ...CARD, position: "relative", overflow: "hidden", border: "none",
+            background: "linear-gradient(135deg, #6D28D9 0%, #4C1D95 100%)",
+            boxShadow: "0 6px 18px rgba(76,29,149,0.35)",
+          }}>
+            <span style={{ position: "absolute", top: 12, left: "42%", color: "rgba(255,255,255,0.5)", fontSize: 12 }}>✦</span>
+            <span style={{ position: "absolute", top: 34, right: 70, color: "rgba(255,255,255,0.35)", fontSize: 9 }}>✦</span>
+            <span style={{ position: "absolute", bottom: 10, left: 60, color: "rgba(255,255,255,0.3)", fontSize: 8 }}>✦</span>
+
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, position: "relative", zIndex: 1 }}>
+              <p style={{ margin: 0, color: "#fff", fontSize: 15, fontWeight: 800 }}>Today&apos;s Mission</p>
               <button
                 onClick={() => setViewAllOpen(true)}
                 style={{
                   display: "flex", alignItems: "center", gap: 4, cursor: "pointer",
                   background: "none", border: "none", padding: 0,
-                  fontFamily: F, fontSize: 12.5, fontWeight: 800, color: PURPLE,
+                  fontFamily: F, fontSize: 12.5, fontWeight: 800, color: "#fff",
                 }}
               >
                 View All
@@ -476,7 +499,7 @@ export function ParentDashboard({
               const m = MISSIONS[0];
               const Scene = TILE_STYLE[m.tile].Scene;
               return (
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative", zIndex: 1 }}>
                   {/* Tile image */}
                   <div style={{
                     width: 72, height: 72, flexShrink: 0, borderRadius: 16,
@@ -498,20 +521,20 @@ export function ParentDashboard({
 
                   {/* Details */}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ margin: "0 0 6px", color: "#1E1B3A", fontSize: 16, fontWeight: 800, lineHeight: 1.2 }}>{m.title}</p>
+                    <p style={{ margin: "0 0 6px", color: "#fff", fontSize: 16, fontWeight: 800, lineHeight: 1.2 }}>{m.title}</p>
 
                     <div style={{
                       display: "inline-flex", alignItems: "center", gap: 5, marginBottom: 8,
-                      background: "#F1EBFE", borderRadius: 14, padding: "4px 10px 4px 6px",
+                      background: "rgba(255,255,255,0.16)", borderRadius: 14, padding: "4px 10px 4px 6px",
                     }}>
                       <span style={{ fontSize: 12 }}>{m.skillTag.icon}</span>
-                      <span style={{ fontFamily: F, fontSize: 11.5, fontWeight: 800, color: PURPLE }}>{m.skillTag.label}</span>
+                      <span style={{ fontFamily: F, fontSize: 11.5, fontWeight: 800, color: "#fff" }}>{m.skillTag.label}</span>
                     </div>
 
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F, fontSize: 11, color: "#8A8FA3" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F, fontSize: 11, color: "rgba(233,224,255,0.8)" }}>
                       <span>🕐</span>
                       <span>{m.duration}</span>
-                      <span style={{ color: "#D5D8E0" }}>|</span>
+                      <span style={{ color: "rgba(255,255,255,0.3)" }}>|</span>
                       <span>🎮</span>
                       <span>{m.type}</span>
                     </div>
@@ -519,10 +542,10 @@ export function ParentDashboard({
 
                   <button style={{
                     flexShrink: 0, cursor: "pointer",
-                    fontFamily: F, fontSize: 12.5, fontWeight: 800, color: "#fff",
-                    background: "linear-gradient(180deg, #9D6FE8 0%, #7C3AED 100%)",
+                    fontFamily: F, fontSize: 12.5, fontWeight: 800, color: PURPLE,
+                    background: "#fff",
                     border: "none", borderRadius: 999, padding: "11px 16px",
-                    boxShadow: "0 3px 10px rgba(124,58,237,0.35)",
+                    boxShadow: "0 3px 10px rgba(0,0,0,0.2)",
                   }}>
                     Start Mission
                   </button>
