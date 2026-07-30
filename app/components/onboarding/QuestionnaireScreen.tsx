@@ -103,15 +103,12 @@ export function QuestionnaireScreen({
     if (idx > 0) { setDir(-1); setIdx((i) => i - 1); }
     else          onBack();
   };
-  const pick = (optId: string) =>
-    setAnswers((prev) => {
-      if (prev[idx] === optId) {
-        const next = { ...prev };
-        delete next[idx];
-        return next;
-      }
-      return { ...prev, [idx]: optId };
-    });
+  // Picking an option answers the question and moves on right away —
+  // a short beat so the selected state is visible before the slide.
+  const pick = (optId: string) => {
+    setAnswers((prev) => ({ ...prev, [idx]: optId }));
+    window.setTimeout(() => goNext(), 350);
+  };
 
   if (showInsight) {
     return (
@@ -345,7 +342,7 @@ export function QuestionnaireScreen({
             touchAction: "manipulation",
           }}
         >
-          {isLast ? "Done" : "Next"}&nbsp;→
+          Skip&nbsp;→
         </motion.button>
       </div>
 

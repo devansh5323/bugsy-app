@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { NightRoomBackdrop } from "./WhoAreYou";
 
 const AGE_OPTIONS = Array.from({ length: 11 }, (_, i) => ({
@@ -26,6 +27,7 @@ export function TellMeAboutChild({
   onBack?: () => void;
 }) {
   const canContinue = childName.trim().length > 0 && childAge !== null;
+  const [ageMenuOpen, setAgeMenuOpen] = useState(false);
 
   return (
     <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column" }}>
@@ -154,32 +156,74 @@ export function TellMeAboutChild({
             </div>
           </div>
           <div style={{ position: "relative" }}>
-            <select
-              value={childAge ?? ""}
-              onChange={(e) => setChildAge(e.target.value ? parseInt(e.target.value) : null)}
+            <button
+              type="button"
+              onClick={() => setAgeMenuOpen((v) => !v)}
               style={{
                 width: "100%", height: 52, borderRadius: 14,
                 background: "rgba(255,255,255,0.07)",
                 border: "1.5px solid rgba(124,58,237,0.35)",
                 padding: "0 40px 0 16px",
-                fontFamily: F, fontSize: 15, fontWeight: 600,
+                fontFamily: F, fontSize: 15, fontWeight: 600, textAlign: "left",
                 color: childAge ? "#fff" : "rgba(255,255,255,0.40)",
-                outline: "none", WebkitAppearance: "none", appearance: "none",
-                cursor: "pointer", boxSizing: "border-box",
+                outline: "none", cursor: "pointer", boxSizing: "border-box",
               }}
             >
-              <option value="" style={{ color: "#888" }}>Select age</option>
-              {AGE_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value} style={{ color: "#000" }}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-            <span style={{
-              position: "absolute", right: 16, top: "50%",
-              transform: "translateY(-50%)",
-              color: "#A78BFA", pointerEvents: "none", fontSize: 14,
-            }}>▼</span>
+              {childAge ? `${childAge} Years` : "Select age"}
+            </button>
+            <motion.span
+              aria-hidden
+              animate={{ rotate: ageMenuOpen ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+              style={{
+                position: "absolute", right: 16, top: "50%",
+                marginTop: -7,
+                color: "#A78BFA", pointerEvents: "none", fontSize: 14,
+              }}
+            >▼</motion.span>
+
+            <AnimatePresence>
+              {ageMenuOpen && (
+                <>
+                  <div
+                    onClick={() => setAgeMenuOpen(false)}
+                    style={{ position: "fixed", inset: 0, zIndex: 30 }}
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                    transition={{ duration: 0.15 }}
+                    style={{
+                      position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0, zIndex: 31,
+                      maxHeight: 230, overflowY: "auto",
+                      background: "#231C4E",
+                      border: "1px solid rgba(124,58,237,0.45)",
+                      borderRadius: 16, padding: 5,
+                      boxShadow: "0 10px 24px rgba(0,0,0,0.4)",
+                    }}
+                  >
+                    {AGE_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => { setChildAge(opt.value); setAgeMenuOpen(false); }}
+                        style={{
+                          width: "100%", textAlign: "left", boxSizing: "border-box",
+                          fontFamily: F, fontSize: 14.5, fontWeight: 700,
+                          color: childAge === opt.value ? "#fff" : "rgba(222,218,248,0.75)",
+                          background: childAge === opt.value ? "rgba(139,124,246,0.35)" : "transparent",
+                          border: "none", borderRadius: 11, padding: "11px 12px",
+                          cursor: "pointer", touchAction: "manipulation",
+                        }}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
           </div>
         </motion.div>
 
